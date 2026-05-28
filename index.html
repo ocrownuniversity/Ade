@@ -462,8 +462,20 @@ var DB=null,AUTH=null;
 // ═══════════════════════════════════════════
 //  DATA
 // ═══════════════════════════════════════════
-var PRODUCTS=[];
-
+var PRODUCTS=[
+ {id:'p1',name:'Obsidian Blazer',cat:'men',price:45000,cmp:60000,img:'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600',desc:'Premium tailored blazer crafted from Italian wool blend. Perfect for formal occasions and power meetings.',sizes:['S','M','L','XL','XXL'],colors:['Black','Navy'],stock:15,rating:4.8,reviews:24,badge:'New',feat:true,bs:false,na:true},
+ {id:'p2',name:'Golden Hour Timepiece',cat:'watches',price:120000,cmp:150000,img:'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600',desc:'Swiss movement luxury watch with sapphire crystal glass and genuine leather strap.',sizes:['One Size'],colors:['Gold','Silver'],stock:8,rating:4.9,reviews:42,badge:'Luxury',feat:true,bs:true,na:false},
+ {id:'p3',name:'Aria Silk Dress',cat:'women',price:38000,cmp:50000,img:'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=600',desc:'Flowing silk dress with delicate patterns. Elegant and sophisticated for any occasion.',sizes:['XS','S','M','L','XL'],colors:['Ivory','Black','Rose'],stock:20,rating:4.7,reviews:31,badge:'Featured',feat:true,bs:false,na:true},
+ {id:'p4',name:'Sovereign Leather Bag',cat:'bags',price:85000,cmp:110000,img:'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600',desc:'Handcrafted genuine leather tote with gold hardware. Timeless elegance.',sizes:['One Size'],colors:['Black','Brown','Tan'],stock:12,rating:4.9,reviews:56,badge:'Bestseller',feat:false,bs:true,na:false},
+ {id:'p5',name:'Eclipse Sneakers',cat:'sneakers',price:55000,cmp:70000,img:'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600',desc:'Premium leather sneakers with cushioned sole. Luxury comfort meets street style.',sizes:['39','40','41','42','43','44','45'],colors:['White','Black','Gold'],stock:25,rating:4.6,reviews:88,badge:'Hot',feat:true,bs:true,na:false},
+ {id:'p6',name:'Regal Agbada Set',cat:'native',price:65000,cmp:80000,img:'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=600',desc:'Premium embroidered Agbada set in rich fabric. Perfect for ceremonies and celebrations.',sizes:['M','L','XL','XXL','XXXL'],colors:['Royal Blue','Burgundy','Champagne'],stock:10,rating:4.8,reviews:19,badge:'Premium',feat:true,bs:false,na:true},
+ {id:'p7',name:'Phantom Oxford Shoes',cat:'shoes',price:42000,cmp:55000,img:'https://images.unsplash.com/photo-1449505278894-297fdb3edbc1?w=600',desc:'Classic Oxford shoes handcrafted from full-grain leather. Unmatched sophistication.',sizes:['39','40','41','42','43','44','45'],colors:['Black','Brown','Cognac'],stock:18,rating:4.7,reviews:34,badge:'Classic',feat:false,bs:true,na:false},
+ {id:'p8',name:'Lumiere Gold Bracelet',cat:'accessories',price:28000,cmp:35000,img:'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=600',desc:'18K gold-plated bracelet with diamond-cut links. Statement jewelry for the bold.',sizes:['One Size'],colors:['Gold','Rose Gold','Silver'],stock:30,rating:4.8,reviews:67,badge:'Trending',feat:true,bs:false,na:true},
+ {id:'p9',name:'Monaco Polo Shirt',cat:'men',price:18000,cmp:25000,img:'https://images.unsplash.com/photo-1586363104862-3a5e2ab60d99?w=600',desc:'Premium Egyptian cotton polo with embroidered logo. Casual luxury redefined.',sizes:['S','M','L','XL','XXL'],colors:['White','Black','Navy','Bordeaux'],stock:40,rating:4.5,reviews:52,badge:'Casual',feat:false,bs:true,na:false},
+ {id:'p10',name:'Velvet Evening Gown',cat:'women',price:95000,cmp:130000,img:'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=600',desc:'Luxurious velvet gown with sweeping train. Make an entrance at every occasion.',sizes:['XS','S','M','L'],colors:['Midnight Black','Deep Emerald','Ruby Red'],stock:5,rating:5.0,reviews:12,badge:'Luxury',feat:true,bs:false,na:true},
+ {id:'p11',name:'Casual Linen Co-ord',cat:'casual',price:22000,cmp:30000,img:'https://images.unsplash.com/photo-1589310243389-96a5483213a8?w=600',desc:'Breathable linen matching set for effortless style. Perfect for warm days.',sizes:['S','M','L','XL'],colors:['Beige','Sage','White'],stock:35,rating:4.4,reviews:41,badge:'Comfort',feat:false,bs:false,na:true},
+ {id:'p12',name:'Heritage Crossbody',cat:'bags',price:35000,cmp:45000,img:'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=600',desc:'Compact crossbody bag in pebbled leather. Organized and chic.',sizes:['One Size'],colors:['Black','Camel','Burgundy'],stock:22,rating:4.6,reviews:38,badge:'Popular',feat:false,bs:true,na:false},
+];
 var CATS=[
  {id:'men',name:"Men's Fashion",ic:'👔',col:'#1a1a2e',img:'https://images.unsplash.com/photo-1617137968427-85924c800a22?w=400'},
  {id:'women',name:"Women's Fashion",ic:'👗',col:'#2d1b33',img:'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=400'},
@@ -908,62 +920,8 @@ function adOr(){
 function updOrd(id,status){if(DB)DB.collection('orders').doc(id).update({status:status}).then(function(){toast('Status updated ✅');}).catch(function(){toast('Failed','err');});}
 function adPr(){
   var c=G('ad-c');if(!c)return;
-  var rows='';PRODUCTS.forEach(function(p){rows+='<div class="adm-pr"><img src="'+p.img+'" class="adm-pi" alt="'+p.name+'"/><div class="adm-pin"><div class="adm-pnm">'+p.name+'</div><div class="adm-pm">'+N(p.price)+' · Stock: '+p.stock+'</div><div class="adm-pc">'+p.cat+'</div></div><button style="padding:6px 10px;background:#e53935;color:#fff;border-radius:8px;font-size:10px;font-weight:700;border:none;cursor:pointer;" onclick="delProd(''+p.id+'')">Delete</button></div>';});
-  c.innerHTML='<div class="adm-p-list">'
-    +'<div class="adm-ph" style="padding:0 16px;margin-bottom:10px"><div class="adm-st" style="padding:0;margin:0">Products ('+PRODUCTS.length+')</div><button class="btn-g sm" onclick="showAddProd()">+ Add</button></div>'
-    +'<div id="add-prod-form" style="display:none;padding:0 16px 10px">'
-    +'<input class="inp" id="np-nm" placeholder="Product Name *"/>'
-    +'<input class="inp" id="np-pr" placeholder="Price (e.g. 45000) *" type="number"/>'
-    +'<input class="inp" id="np-cp" placeholder="Compare Price (e.g. 60000)" type="number"/>'
-    +'<select class="inp" id="np-ct"><option value="men">Men's Fashion</option><option value="women">Women's Fashion</option><option value="shoes">Shoes</option><option value="sneakers">Sneakers</option><option value="bags">Bags</option><option value="watches">Watches</option><option value="accessories">Accessories</option><option value="native">Native Wears</option><option value="casual">Casual Wears</option></select>'
-    +'<input class="inp" id="np-img" placeholder="Image URL *"/>'
-    +'<input class="inp" id="np-stk" placeholder="Stock quantity" type="number"/>'
-    +'<input class="inp" id="np-bdg" placeholder="Badge (e.g. New, Hot, Luxury)"/>'
-    +'<textarea class="inp" id="np-dsc" placeholder="Product Description" rows="3" style="resize:none"></textarea>'
-    +'<div style="display:flex;gap:8px;margin-top:4px">'
-    +'<label style="display:flex;align-items:center;gap:4px;font-size:11px"><input type="checkbox" id="np-ft"/> Featured</label>'
-    +'<label style="display:flex;align-items:center;gap:4px;font-size:11px"><input type="checkbox" id="np-bs"/> Best Seller</label>'
-    +'<label style="display:flex;align-items:center;gap:4px;font-size:11px"><input type="checkbox" id="np-na"/> New Arrival</label>'
-    +'</div>'
-    +'<div class="fr" style="margin-top:10px"><button class="btn-g" onclick="saveNewProd()">Save Product</button><button class="btn-o" onclick="G('add-prod-form').style.display='none'">Cancel</button></div>'
-    +'</div>'
-    +rows+'</div>';
-}
-function showAddProd(){var f=G('add-prod-form');if(f)f.style.display=f.style.display==='none'?'block':'none';}
-function saveNewProd(){
-  var nm=(G('np-nm')||{}).value||'';
-  var pr=parseFloat((G('np-pr')||{}).value)||0;
-  var img=(G('np-img')||{}).value||'';
-  if(!nm.trim()||!pr||!img.trim()){toast('Name, Price and Image URL are required','err');return;}
-  var cp=parseFloat((G('np-cp')||{}).value)||0;
-  var data={
-    name:nm, price:pr, comparePrice:cp||0,
-    category:(G('np-ct')||{}).value||'men',
-    images:[img], img:img,
-    stock:parseInt((G('np-stk')||{}).value)||0,
-    badge:(G('np-bdg')||{}).value||'',
-    description:(G('np-dsc')||{}).value||'',
-    featured:!!(G('np-ft')||{}).checked,
-    bestSeller:!!(G('np-bs')||{}).checked,
-    newArrival:!!(G('np-na')||{}).checked,
-    sizes:['S','M','L','XL'],colors:['Black','White'],
-    rating:0,reviews:0,
-    createdAt:new Date()
-  };
-  DB.collection('products').add(data).then(function(ref){
-    toast('Product added! ');
-    data.id=ref.id; data.cat=data.category; data.cmp=data.comparePrice;
-    data.feat=data.featured; data.bs=data.bestSeller; data.na=data.newArrival;
-    PRODUCTS.push(data);
-    adPr();
-  }).catch(function(e){toast('Error: '+e.message,'err');});
-}
-function delProd(id){
-  if(!confirm('Delete this product?'))return;
-  DB.collection('products').doc(id).delete().then(function(){
-    PRODUCTS=PRODUCTS.filter(function(p){return p.id!==id;});
-    toast('Product deleted');adPr();
-  }).catch(function(e){toast('Error: '+e.message,'err');});
+  var rows='';PRODUCTS.forEach(function(p){rows+='<div class="adm-pr"><img src="'+p.img+'" class="adm-pi" alt="'+p.name+'"/><div class="adm-pin"><div class="adm-pnm">'+p.name+'</div><div class="adm-pm">'+N(p.price)+' · Stock: '+p.stock+'</div><div class="adm-pc">'+p.cat+'</div></div></div>';});
+  c.innerHTML='<div class="adm-p-list"><div class="adm-ph"><div class="adm-st" style="padding:0;margin:0">Products ('+PRODUCTS.length+')</div></div>'+rows+'</div>';
 }
 function adUs(){
   var c=G('ad-c');if(!c)return;
@@ -977,219 +935,45 @@ function adUs(){
 }
 
 // ═══════════════════════════════════════════
-//  FALLBACK PRODUCTS (shown if Firestore empty)
-// ═══════════════════════════════════════════
-var FALLBACK_PRODUCTS=[
- {id:'p1',name:'Obsidian Blazer',cat:'men',price:45000,cmp:60000,img:'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600',desc:'Premium tailored blazer crafted from Italian wool blend.',sizes:['S','M','L','XL','XXL'],colors:['Black','Navy'],stock:15,rating:4.8,reviews:24,badge:'New',feat:true,bs:false,na:true},
- {id:'p2',name:'Golden Hour Timepiece',cat:'watches',price:120000,cmp:150000,img:'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600',desc:'Swiss movement luxury watch with sapphire crystal glass.',sizes:['One Size'],colors:['Gold','Silver'],stock:8,rating:4.9,reviews:42,badge:'Luxury',feat:true,bs:true,na:false},
- {id:'p3',name:'Aria Silk Dress',cat:'women',price:38000,cmp:50000,img:'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=600',desc:'Flowing silk dress with delicate patterns.',sizes:['XS','S','M','L','XL'],colors:['Ivory','Black','Rose'],stock:20,rating:4.7,reviews:31,badge:'Featured',feat:true,bs:false,na:true},
- {id:'p4',name:'Sovereign Leather Bag',cat:'bags',price:85000,cmp:110000,img:'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600',desc:'Handcrafted genuine leather tote with gold hardware.',sizes:['One Size'],colors:['Black','Brown','Tan'],stock:12,rating:4.9,reviews:56,badge:'Bestseller',feat:false,bs:true,na:false},
- {id:'p5',name:'Eclipse Sneakers',cat:'sneakers',price:55000,cmp:70000,img:'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600',desc:'Premium leather sneakers with cushioned sole.',sizes:['39','40','41','42','43','44','45'],colors:['White','Black','Gold'],stock:25,rating:4.6,reviews:88,badge:'Hot',feat:true,bs:true,na:false},
- {id:'p6',name:'Regal Agbada Set',cat:'native',price:65000,cmp:80000,img:'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=600',desc:'Premium embroidered Agbada set in rich fabric.',sizes:['M','L','XL','XXL','XXXL'],colors:['Royal Blue','Burgundy','Champagne'],stock:10,rating:4.8,reviews:19,badge:'Premium',feat:true,bs:false,na:true},
- {id:'p7',name:'Phantom Oxford Shoes',cat:'shoes',price:42000,cmp:55000,img:'https://images.unsplash.com/photo-1449505278894-297fdb3edbc1?w=600',desc:'Classic Oxford shoes handcrafted from full-grain leather.',sizes:['39','40','41','42','43','44','45'],colors:['Black','Brown','Cognac'],stock:18,rating:4.7,reviews:34,badge:'Classic',feat:false,bs:true,na:false},
- {id:'p8',name:'Lumiere Gold Bracelet',cat:'accessories',price:28000,cmp:35000,img:'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=600',desc:'18K gold-plated bracelet with diamond-cut links.',sizes:['One Size'],colors:['Gold','Rose Gold','Silver'],stock:30,rating:4.8,reviews:67,badge:'Trending',feat:true,bs:false,na:true},
- {id:'p9',name:'Monaco Polo Shirt',cat:'men',price:18000,cmp:25000,img:'https://images.unsplash.com/photo-1586363104862-3a5e2ab60d99?w=600',desc:'Premium Egyptian cotton polo.',sizes:['S','M','L','XL','XXL'],colors:['White','Black','Navy'],stock:40,rating:4.5,reviews:52,badge:'Casual',feat:false,bs:true,na:false},
- {id:'p10',name:'Velvet Evening Gown',cat:'women',price:95000,cmp:130000,img:'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=600',desc:'Luxurious velvet gown. Make an entrance at every occasion.',sizes:['XS','S','M','L'],colors:['Midnight Black','Deep Emerald','Ruby Red'],stock:5,rating:5.0,reviews:12,badge:'Luxury',feat:true,bs:false,na:true},
- {id:'p11',name:'Casual Linen Co-ord',cat:'casual',price:22000,cmp:30000,img:'https://images.unsplash.com/photo-1589310243389-96a5483213a8?w=600',desc:'Breathable linen matching set.',sizes:['S','M','L','XL'],colors:['Beige','Sage','White'],stock:35,rating:4.4,reviews:41,badge:'Comfort',feat:false,bs:false,na:true},
- {id:'p12',name:'Heritage Crossbody',cat:'bags',price:35000,cmp:45000,img:'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=600',desc:'Compact crossbody bag in pebbled leather.',sizes:['One Size'],colors:['Black','Camel','Burgundy'],stock:22,rating:4.6,reviews:38,badge:'Popular',feat:false,bs:true,na:false},
-];
-
-// ═══════════════════════════════════════════
-//  FIREBASE INIT + PRODUCTS LOADER
+//  FIREBASE INIT
 // ═══════════════════════════════════════════
 (function(){
-  var cfg={
-    apiKey:"AIzaSyAusH_i0b-O2WM9PyZW_AvFtd2ZW7iSnE0",
-    authDomain:"benim-525de.firebaseapp.com",
-    projectId:"benim-525de",
-    storageBucket:"benim-525de.firebasestorage.app",
-    messagingSenderId:"806159296289",
-    appId:"1:806159296289:web:a3b760ce9e997462a98060"
-  };
-
-  try{ firebase.initializeApp(cfg); }catch(e){}
-
-  AUTH = firebase.auth();
-  DB   = firebase.firestore();
-
-  // ── Auth state ─────────────────────────────
-  AUTH.onAuthStateChanged(function(user){
-    CU    = user;
-    ADMIN = !!(user && user.email === ADMIN_EMAIL);
-    // refresh current page UI if profile/home visible
-    var active = document.querySelector('.pg.on');
-    if(active && active.id === 'pg-profile') rProfile();
-  });
-
-  // ── Login ──────────────────────────────────
-  window.doLogin = function(){
-    var em = (G('l-em')||{}).value||'';
-    var pw = (G('l-pw')||{}).value||'';
-    if(!em||!pw){ toast('Enter email and password','err'); return; }
-    AUTH.signInWithEmailAndPassword(em,pw)
-      .then(function(c){
-        CU    = c.user;
-        ADMIN = c.user.email === ADMIN_EMAIL;
-        toast('Welcome back! ✨');
-        go(ADMIN ? 'admin' : 'home');
-      })
-      .catch(function(e){ toast(e.message,'err'); });
-  };
-
-  // ── Signup ─────────────────────────────────
-  window.doSignup = function(){
-    var nm = (G('s-nm')||{}).value||'';
-    var em = (G('s-em')||{}).value||'';
-    var pw = (G('s-pw')||{}).value||'';
-    if(!nm||!em||!pw){ toast('Please fill all fields','err'); return; }
-    AUTH.createUserWithEmailAndPassword(em,pw)
-      .then(function(c){
+  try{
+    var cfg={apiKey:"AIzaSyAusH_i0b-O2WM9PyZW_AvFtd2ZW7iSnE0",authDomain:"benim-525de.firebaseapp.com",projectId:"benim-525de",storageBucket:"benim-525de.firebasestorage.app",messagingSenderId:"806159296289",appId:"1:806159296289:web:a3b760ce9e997462a98060"};
+    firebase.initializeApp(cfg);
+    AUTH=firebase.auth();DB=firebase.firestore();
+    AUTH.onAuthStateChanged(function(user){
+      CU=user;ADMIN=!!(user&&user.email===ADMIN_EMAIL);
+    });
+    window.doLogin=function(){
+      var em=(G('l-em')||{}).value||'',pw=(G('l-pw')||{}).value||'';
+      if(!em||!pw){toast('Enter email and password','err');return;}
+      AUTH.signInWithEmailAndPassword(em,pw).then(function(c){CU=c.user;ADMIN=c.user.email===ADMIN_EMAIL;toast('Welcome back! ✨');go(ADMIN?'admin':'home');}).catch(function(){toast('Invalid credentials','err');});
+    };
+    window.doSignup=function(){
+      var nm=(G('s-nm')||{}).value||'',em=(G('s-em')||{}).value||'',pw=(G('s-pw')||{}).value||'';
+      if(!nm||!em||!pw){toast('Please fill all fields','err');return;}
+      AUTH.createUserWithEmailAndPassword(em,pw).then(function(c){
         c.user.updateProfile({displayName:nm});
-        DB.collection('users').doc(c.user.uid).set({
-          name:nm, email:em,
-          role: em===ADMIN_EMAIL ? 'admin' : 'user',
-          createdAt: new Date()
-        });
-        CU    = c.user;
-        ADMIN = em === ADMIN_EMAIL;
-        toast('Account created! Welcome ✨');
-        go(ADMIN ? 'admin' : 'home');
-      })
-      .catch(function(e){ toast(e.message,'err'); });
-  };
-
-  // ── Google login ───────────────────────────
-  window.doGoogle = function(){
-    var p = new firebase.auth.GoogleAuthProvider();
-    AUTH.signInWithPopup(p)
-      .then(function(c){
-        CU    = c.user;
-        ADMIN = c.user.email === ADMIN_EMAIL;
-        DB.collection('users').doc(c.user.uid).get().then(function(s){
-          if(!s.exists) DB.collection('users').doc(c.user.uid).set({
-            name:c.user.displayName, email:c.user.email,
-            role: c.user.email===ADMIN_EMAIL ? 'admin' : 'user',
-            createdAt: new Date()
-          });
-        });
-        toast('Welcome! ✨');
-        go(ADMIN ? 'admin' : 'home');
-      })
-      .catch(function(e){ toast(e.message,'err'); });
-  };
-
-  // ── Logout ─────────────────────────────────
-  window.doLogout = function(){
-    AUTH.signOut().then(function(){
-      CU=null; ADMIN=false;
-      CART=[]; WISH=[]; sCart(); sWish(); updBadge();
-      toast('Signed out');
-      go('home');
-    });
-  };
-
-  // ── Send message ───────────────────────────
-  window.sendMsg = function(){
-    var nm=(G('m-nm')||{}).value||'', tx=(G('m-tx')||{}).value||'';
-    if(!nm.trim()||!tx.trim()){ toast('Please fill required fields','err'); return; }
-    DB.collection('messages').add({
-      name:nm, email:(G('m-em')||{}).value||'',
-      message:tx, createdAt:new Date()
-    }).then(function(){
-      toast('Message sent! We will reply within 24 hours');
-      ['m-nm','m-em','m-tx'].forEach(function(id){ var e=G(id); if(e)e.value=''; });
-    }).catch(function(){ toast('Error sending','err'); });
-  };
-
-  // ── Place order ────────────────────────────
-  window.placeOrder = function(){
-    var nm  = (G('co-nm')||{}).value||'';
-    var ph  = (G('co-ph')||{}).value||'';
-    var em  = (G('co-em')||{}).value||'';
-    var ad  = (G('co-ad')||{}).value||'';
-    var st  = (G('co-st')||{}).value||'';
-    var pay = document.querySelector('input[name="pay"]:checked');
-    if(!nm.trim()||!ph.trim()||!ad.trim()||!st.trim()){
-      toast('Please fill all required fields','err'); return;
-    }
-    var btn=G('place-btn');
-    if(btn){ btn.textContent='Placing Order...'; btn.disabled=true; }
-    var ship = cartTot()>=50000 ? 0 : 2500;
-    var tot  = cartTot() - PROMO_D + ship;
-    DB.collection('orders').add({
-      name:nm, phone:ph, email:em, address:ad, state:st,
-      paymentMethod: pay ? pay.value : 'transfer',
-      status:'pending', total:tot,
-      promoCode:PROMO, promoDiscount:PROMO_D,
-      userId: CU ? CU.uid : 'guest',
-      items: CART.map(function(i){
-        return {id:i.id,name:i.name,price:i.price,qty:i.qty,sz:i.sz,cl:i.cl,img:i.img};
-      }),
-      createdAt: new Date()
-    }).then(function(ref){
-      CART=[]; PROMO=''; PROMO_D=0; sCart(); updBadge();
-      toast('Order placed! ID: #'+ref.id.slice(0,8).toUpperCase()+' ');
-      go('orders');
-    }).catch(function(e){
-      toast('Error: '+e.message,'err');
-      if(btn){ btn.textContent='Place Order'; btn.disabled=false; }
-    });
-  };
-
-  // ── Update order status (admin) ────────────
-  window.updOrd = function(id,status){
-    DB.collection('orders').doc(id).update({status:status})
-      .then(function(){ toast('Status updated'); })
-      .catch(function(){ toast('Update failed','err'); });
-  };
-
-  // ── LOAD PRODUCTS FROM FIRESTORE ───────────
-  // Tries 'products' collection; falls back to sample data so app is never blank
-  function loadProducts(){
-    DB.collection('products').get()
-      .then(function(snap){
-        if(!snap.empty){
-          PRODUCTS = snap.docs.map(function(d){
-            var data = d.data();
-            return {
-              id:   d.id,
-              name: data.name        || 'Unnamed',
-              cat:  data.category    || data.cat || 'men',
-              price:data.price       || 0,
-              cmp:  data.comparePrice|| data.cmp || 0,
-              img:  (data.images&&data.images[0]) || data.img || 'https://placehold.co/400x400/c9a84c/000?text=BENIM',
-              desc: data.description || data.desc || '',
-              sizes:data.sizes       || ['S','M','L','XL'],
-              colors:data.colors     || ['Black','White'],
-              stock:data.stock       || 0,
-              rating:data.rating     || 4.5,
-              reviews:data.reviews   || 0,
-              badge:data.badge       || '',
-              feat: data.featured    || false,
-              bs:   data.bestSeller  || false,
-              na:   data.newArrival  || false,
-            };
-          });
-          console.log('Loaded', PRODUCTS.length, 'products from Firestore');
-        } else {
-          console.log('No products in Firestore yet — add products via Admin > Products');
-          PRODUCTS = FALLBACK_PRODUCTS;
-        }
-        // Re-render home if it is the active page
-        var active = document.querySelector('.pg.on');
-        if(active && active.id === 'pg-home') rHome();
-      })
-      .catch(function(err){
-        console.warn('Firestore products error:', err);
-        PRODUCTS = FALLBACK_PRODUCTS;
-        var active = document.querySelector('.pg.on');
-        if(active && active.id === 'pg-home') rHome();
-      });
+        DB.collection('users').doc(c.user.uid).set({name:nm,email:em,role:em===ADMIN_EMAIL?'admin':'user',createdAt:new Date()});
+        CU=c.user;ADMIN=em===ADMIN_EMAIL;toast('Account created! Welcome ✨');go(ADMIN?'admin':'home');
+      }).catch(function(e){toast(e.message,'err');});
+    };
+    window.doGoogle=function(){
+      var p=new firebase.auth.GoogleAuthProvider();
+      AUTH.signInWithPopup(p).then(function(c){
+        CU=c.user;ADMIN=c.user.email===ADMIN_EMAIL;
+        DB.collection('users').doc(c.user.uid).get().then(function(s){if(!s.exists)DB.collection('users').doc(c.user.uid).set({name:c.user.displayName,email:c.user.email,role:c.user.email===ADMIN_EMAIL?'admin':'user',createdAt:new Date()});});
+        toast('Welcome! ✨');go(ADMIN?'admin':'home');
+      }).catch(function(e){toast(e.message,'err');});
+    };
+    window.doLogout=function(){AUTH.signOut().then(function(){CU=null;ADMIN=false;CART=[];WISH=[];sCart();sWish();updBadge();toast('Signed out');go('home');});};
+  }catch(e){
+    console.warn('Firebase error:',e);
+    window.doLogin=window.doSignup=window.doGoogle=function(){toast('Authentication unavailable','err');};
+    window.doLogout=function(){CU=null;ADMIN=false;go('home');};
   }
-
-  loadProducts();
-
-})(); // end Firebase init
+})();
 
 // ═══════════════════════════════════════════
 //  PWA
