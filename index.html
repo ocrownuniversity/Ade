@@ -459,22 +459,7 @@ body{padding-bottom:70px}
 .faq-item.open .faq-q i{transform:rotate(180deg)}
 .faq-item.open .faq-a{display:block}
 
-/* ===== SPLASH SCREEN ===== */
-#splash-screen{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;overflow:hidden;transition:opacity .7s ease,transform .7s ease}
-#splash-screen.fade-out{opacity:0;pointer-events:none;transform:scale(1.04)}
-.splash-bg{position:absolute;inset:0;background:radial-gradient(ellipse at 40% 30%,#3a1a00 0%,#1a0a00 40%,#0d0500 100%)}
-.splash-bg::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 60% 70%,rgba(200,120,10,.18) 0%,transparent 70%)}
-.splash-content{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;padding:24px}
-.splash-brand{font-family:'Poppins',sans-serif;font-size:48px;font-weight:900;letter-spacing:10px;color:#c8780a;text-shadow:0 0 40px rgba(200,120,10,.7),0 0 80px rgba(200,120,10,.3),0 2px 4px rgba(0,0,0,.6);margin-bottom:14px;animation:splashFadeUp .8s cubic-bezier(.34,1.56,.64,1) .3s both}
-.splash-tagline{font-family:'Poppins',sans-serif;font-size:15px;font-weight:600;color:rgba(220,170,80,.9);text-align:center;margin-bottom:36px;animation:splashFadeUp .7s ease .6s both;line-height:1.5}
-.splash-tagline strong{color:#ffd060;font-weight:800}
-.splash-loader{width:220px;display:flex;flex-direction:column;align-items:center;gap:8px;animation:splashFadeUp .7s ease .8s both}
-.splash-bar{width:100%;height:3px;background:rgba(200,120,10,.2);border-radius:99px;overflow:hidden}
-.splash-fill{height:100%;width:0%;background:linear-gradient(90deg,#a05010,#e8900a,#ffd060,#e8900a);border-radius:99px;transition:width .12s ease;box-shadow:0 0 8px rgba(232,144,10,.7)}
-.splash-pct{font-family:'Poppins',sans-serif;font-size:11px;font-weight:700;color:rgba(200,150,80,.6);letter-spacing:1px}
-@keyframes splashPop{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:scale(1)}}
-@keyframes splashFadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-@keyframes splashGlowPulse{0%,100%{opacity:.6;transform:scale(1)}50%{opacity:1;transform:scale(1.12)}}
+50%{opacity:1;transform:scale(1.12)}}
 
 
 /* Delivery Type Toggle */
@@ -666,19 +651,6 @@ body{padding-bottom:65px!important;background:#f2f2f2!important}
 </style>
 </head>
 <body>
-<!-- SPLASH SCREEN -->
-<div id="splash-screen">
-  <div class="splash-bg"></div>
-  <div class="splash-content">
-    <div class="splash-brand">BENIM</div>
-    <div class="splash-tagline">Where smart <strong>TRADE</strong> begins.</div>
-    <div class="splash-loader">
-      <div class="splash-bar"><div class="splash-fill" id="splash-fill"></div></div>
-      <div class="splash-pct" id="splash-pct">0%</div>
-    </div>
-  </div>
-</div>
-
 
 <!-- ====== HEADER ====== -->
 <header id="header">
@@ -3915,10 +3887,6 @@ window.adminReplyKeyPress = function(e) {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendAdminReply(); }
 };
 
-// Keep old saveChatSession alias
-async function saveChatSession(text, role) {
-  await saveSupportMessage(text, role);
-}
 
 
 async function saveChatSession(text, role) {
@@ -4229,30 +4197,6 @@ async function init() {
 
 init();
 
-// ===== SPLASH SCREEN ANIMATION =====
-(function() {
-  const splash = document.getElementById('splash-screen');
-  const fill   = document.getElementById('splash-fill');
-  const pct    = document.getElementById('splash-pct');
-  if (!splash) return;
-  // Normal load — always show splash
-  let tick = 0;
-  const steps = 87;
-  const timer = setInterval(() => {
-    tick++;
-    const raw = tick / steps;
-    const progress = Math.min(100, Math.round((1 - Math.pow(1 - raw, 2)) * 100));
-    if (fill) fill.style.width = progress + '%';
-    if (pct)  pct.textContent  = progress + '%';
-    if (tick >= steps) {
-      clearInterval(timer);
-      setTimeout(() => {
-        splash.classList.add('fade-out');
-        setTimeout(() => { splash.style.display = 'none'; }, 750);
-      }, 250);
-    }
-  }, 30);
-})();
 
 </script>
 </body>
