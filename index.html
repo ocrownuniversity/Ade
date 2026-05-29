@@ -481,7 +481,7 @@ body{padding-bottom:70px}
 
 
 /* ═══ SUPPORT CHAT PAGE ═══ */
-.support-page-wrap{display:flex;flex-direction:column;height:calc(100vh - 56px);background:#f7f8fa;overflow:hidden}
+.support-page-wrap{display:flex;flex-direction:column;position:fixed;inset:0;z-index:2000;background:#f7f8fa;overflow:hidden}
 .support-header-bar{background:#fff;border-bottom:1px solid #eee;padding:12px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0}
 .support-header-bar .support-avatar{width:40px;height:40px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;flex-shrink:0}
 .support-header-info{flex:1;min-width:0}
@@ -3625,7 +3625,7 @@ window.initSupportPage = async function() {
   }
   // Fresh start
   setSupportStatus('ai');
-  addSupportMsg("Hello! 👋 Welcome to *Benim Support*.\n\nI'm your AI assistant. I can help with products, orders, delivery, payments, and more.\n\nOr tap a quick option below to get started!", 'bot');
+  addSupportMsg("Hello! 👋 Welcome to *Benim Support*!\n\nI'm your AI assistant. Ask me about products, prices, delivery, orders, payment, or checkout.\n\nOr tap a quick option below:", 'bot');
   startSupportListener();
 };
 
@@ -3681,50 +3681,78 @@ window.escalateToHuman = async function() {
 };
 
 // ── AI Reply ──────────────────────────────────────────
+// Smart local AI — fully self-contained, no external API needed
+function _benimAIReply(t) {
+  const q = t.toLowerCase();
+  // Product search from store
+  if (typeof allProducts !== 'undefined' && allProducts.length) {
+    const found = allProducts.filter(p =>
+      (p.name||'').toLowerCase().split(' ').some(w => w.length > 3 && q.includes(w))
+    );
+    if (found.length) {
+      const p = found[0];
+      const price = Number(p.discountPrice) > 0 ? Number(p.discountPrice) : Number(p.price);
+      const orig = Number(p.price) || 0;
+      const hasDisc = Number(p.discountPrice) > 0 && price < orig;
+      let r = `I found *${p.name}*!\n\n💰 Price: ₦${price.toLocaleString()}${hasDisc ? ` (was ₦${orig.toLocaleString()})` : ''}\n📦 Stock: ${p.stock > 0 ? p.stock + ' available' : 'Out of stock'}`;
+      if (p.sizes && p.sizes.length) r += `\n📏 Sizes: ${p.sizes.join(', ')}`;
+      r += `\n\nTap the product to add it to your cart! 🛒`;
+      return r;
+    }
+  }
+  if (/^(hi|hello|hey|good\s)/i.test(t))
+    return "Hello! 👋 Welcome to *Benim Support*!\n\nHow can I help you today? You can ask about products, delivery, payment, orders, or anything else!";
+  if (/track|where.*order|order.*status|my order/i.test(q))
+    return "📦 *Track your order:*\n• Go to Menu → Track Order\n• Enter your Order ID or phone number\n\nYou also get WhatsApp updates automatically at every stage!\n\nNeed more help? Contact: *+234 916 803 1213*";
+  if (/pay|payment|transfer|bank|opay|pod|how.*pay/i.test(q))
+    return "💳 *Payment methods:*\n\n1. *Bank Transfer (Opay)*\n   Name: Adewole Aderonke Aishat\n   Acc: 9168031213\n   *(Use your Order ID as reference)*\n\n2. *Pay on Delivery* — cash when order arrives\n\nSelect your preferred method at checkout!";
+  if (/deliver|shipping|ship|how long|when.*arrive|days/i.test(q))
+    return "🚚 *Delivery times:*\n• Oyo State: 1–2 days (₦1,500)\n• Lagos: 2–3 days (₦2,500)\n• Abuja / PH: 2–3 days (₦3,500)\n• Other states: 3–5 days\n\nYour exact delivery fee shows at checkout based on your state!";
+  if (/checkout|cart|how.*buy|place.*order|how.*order/i.test(q))
+    return "🛒 *How to place an order:*\n1. Browse & tap 'Add to Cart'\n2. Go to Cart → Proceed to Checkout\n3. Add your delivery address\n4. Choose payment method\n5. Tap 'Place Order' ✅\n\nYou must be signed in to order!";
+  if (/return|refund|exchange|wrong|damaged|complaint/i.test(q))
+    return "😟 Sorry to hear that!\n\n*For returns or issues:*\n• Contact us within 24hrs of delivery\n• WhatsApp: *+234 916 803 1213*\n• Email: shopwitbenim@gmail.com\n\nBuyer protection is active on all orders. We'll make it right!";
+  if (/contact|reach|call|whatsapp|email|phone|support/i.test(q))
+    return "📞 *Contact Benim:*\n• WhatsApp: +234 916 803 1213\n• Email: shopwitbenim@gmail.com\n• Hours: Mon–Sat, 8:00 AM – 8:00 PM\n\nTap the 🟢 WhatsApp button at the top to chat directly!";
+  if (/price|cost|how much|fee|cheap|expensive/i.test(q))
+    return "💰 Prices are in Nigerian Naira (₦) and shown on each product.\n\nDelivery fees start from:\n• ₦1,500 — Oyo\n• ₦2,000 — Osun\n• ₦2,500 — Lagos\n\nTell me a *product name* and I'll find the exact price for you!";
+  if (/size|sizing|fit|measurement/i.test(q))
+    return "📏 Available sizes are listed on each product page — just tap the product to see them.\n\nSizes are selected before adding to cart. Need sizing advice? Contact us on WhatsApp: +234 916 803 1213";
+  if (/discount|sale|promo|deal|flash|offer/i.test(q))
+    return "🔥 Check our *Flash Sales* section on the home page for the best deals!\n\nSale items show a red discount badge (e.g. -20%). New deals are added regularly — keep checking! 👀";
+  if (/account|sign in|login|register|sign up|password/i.test(q))
+    return "👤 *Account help:*\n• Tap the person icon (top right)\n• Choose Sign In or Create Account\n• You can sign in with Google too!\n\nForgot password? Use 'Forgot Password' on the sign-in page.";
+  if (/categor|what.*sell|product|fashion|cloth|shoe|bags/i.test(q))
+    return "🛍️ *Benim sells:*\n• Men's & Women's Fashion\n• Shoes & Accessories\n• Electronics & Phones\n• Baby Products\n• Home & Kitchen\n• Beauty & Sports\n\nBrowse all by tapping *Categories* in the bottom menu!";
+  if (/pickup|pick up|station|collect/i.test(q))
+    return "📍 *Pickup Stations* are available in major cities!\n\nAt checkout, choose 'Pickup Station' instead of Home Delivery, then select your state and nearest station.\n\nPickup fee is just ₦500 — much cheaper than home delivery!";
+  // Default
+  return "I'd love to help! 😊 Could you give me more details?\n\nOr tap one of the quick options below, or reach us directly:\n📞 *WhatsApp: +234 916 803 1213*\n⏰ Available Mon–Sat, 8AM–8PM";
+}
+
 async function getAISupportReply(userText) {
-  // Show typing
   const wrap = document.getElementById('support-msgs');
+
+  // Show typing indicator
   const typingDiv = document.createElement('div');
   typingDiv.className = 'smsg bot';
   typingDiv.id = 'support-typing';
   typingDiv.innerHTML = `<div class="typing-bubble"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>`;
   if (wrap) { wrap.appendChild(typingDiv); wrap.scrollTop = wrap.scrollHeight; }
 
-  supportConversation.push({ role: 'user', parts: [{ text: userText }] });
+  // Natural delay — feels like AI is thinking
+  await new Promise(r => setTimeout(r, 800 + Math.random() * 500));
 
-  let reply = null;
-  let needsHuman = false;
-
-  try {
-    const res = await fetch(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyDaGmWKa4JsXZ-g7dM7fLQy5X3Mg3Nf8Y0',
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ role: 'user', parts: [{ text: getSystemContext() + '\n\nCustomer: ' + userText }] }],
-          generationConfig: { maxOutputTokens: 350, temperature: 0.7 }
-        })
-      }
-    );
-    const data = await res.json();
-    reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || null;
-  } catch(e) { reply = null; }
-
-  if (!reply) reply = smartLocalReply(userText);
-
-  // Check if AI can't resolve — suggest human
-  const humanTriggers = ['speak to','talk to','human','agent','customer care','customer service','representative','not helpful','doesn\'t help','can\'t help','cannot help','complaint','escalate','real person'];
-  needsHuman = humanTriggers.some(t => userText.toLowerCase().includes(t));
+  const reply = _benimAIReply(userText);
 
   const typing = document.getElementById('support-typing');
   if (typing) typing.remove();
 
-  supportConversation.push({ role: 'model', parts: [{ text: reply }] });
   addSupportMsg(reply, 'bot');
   await saveSupportMessage(reply, 'bot', 'Benim AI');
 
-  if (needsHuman) {
+  const humanTriggers = ['speak to','talk to','human','agent','customer care','customer service','representative','not helpful','real person','escalate','complaint'];
+  if (humanTriggers.some(t => userText.toLowerCase().includes(t))) {
     setTimeout(addEscalateButton, 400);
   }
 }
