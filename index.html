@@ -560,8 +560,15 @@ function viewP(id){
 }
 
 // ── NAVIGATE ─────────────────────────────────────────────
-function go(page,data){
+function go(page,data,skipHistory){
   if(data!==undefined){if(page==="product")CUR_P=data;if(page==="category")CUR_CAT=data;}
+  // Push to browser history so back button works within app
+  if(!skipHistory){
+    var state={page:page};
+    if(page==="product"&&CUR_P)state.productId=CUR_P.id;
+    if(page==="category"&&CUR_CAT)state.catId=CUR_CAT.id;
+    history.pushState(state,"",location.pathname+"#"+page);
+  }
   document.querySelectorAll(".pg").forEach(function(p){p.classList.remove("on");});
   var t=G("pg-"+page);if(t){t.classList.add("on");setTimeout(function(){t.scrollTop=0;},10);}
   var m={home:"ni-home",categories:"ni-categories",cart:"ni-cart",wishlist:"ni-wishlist",profile:"ni-profile"};
@@ -582,6 +589,27 @@ function go(page,data){
   else if(page==="contact")rContact();
   else if(page==="admin")rAdmin();
 }
+
+// Handle browser back/forward button
+window.addEventListener("popstate",function(e){
+  var state=e.state;
+  if(!state){
+    // No state = went back to very start, just show home
+    go("home",undefined,true);
+    return;
+  }
+  var page=state.page||"home";
+  // Restore product/category if needed
+  if(page==="product"&&state.productId){
+    var p=null;for(var i=0;i<PRODUCTS.length;i++){if(PRODUCTS[i].id===state.productId){p=PRODUCTS[i];break;}}
+    if(p)CUR_P=p;
+  }
+  if(page==="category"&&state.catId){
+    var c=null;for(var i=0;i<CATS.length;i++){if(CATS[i].id===state.catId){c=CATS[i];break;}}
+    if(c)CUR_CAT=c;
+  }
+  go(page,undefined,true);
+});
 
 // ── PRODUCT CARD ──────────────────────────────────────────
 function PC(p,sm){
@@ -1175,6 +1203,8 @@ var _gone=false;
 function dismissSplash(){
   if(_gone)return;_gone=true;
   var s=G("pg-splash");if(s)s.style.cssText="display:none!important";
+  // Replace splash state with home (so back doesn't return to splash)
+  history.replaceState({page:"home"},"",location.pathname+"#home");
   var h=G("pg-home");if(h)h.classList.add("on");
   document.querySelectorAll(".ni").forEach(function(n){n.classList.remove("on");});
   var nh=G("ni-home");if(nh)nh.classList.add("on");
