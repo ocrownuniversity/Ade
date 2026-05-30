@@ -400,8 +400,7 @@ img{max-width:100%;display:block;}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script><script>// BENIM - Luxury Fashion PWA
-// Matches YOUR exact Firestore field names:
-// category, colours, discountPrice, images, isFlash, name, price, description, rating
+// Loads ALL products from Firebase - no hardcoded products
 
 var CU=null,ADMIN=false,DB=null,AUTH=null;
 var ADMIN_EMAIL="shopwitbenim@gmail.com";
@@ -510,37 +509,48 @@ function applyTheme(){document.documentElement.setAttribute("data-theme",DARK?"d
 function toggleDark(){DARK=!DARK;localStorage.setItem("B_dark",DARK);applyTheme();}
 applyTheme();
 
-// MAP FIRESTORE DOC TO LOCAL OBJECT - handles YOUR exact field names
+// MAP FIRESTORE DOC - handles YOUR exact field names
 function mapProduct(id,x){
   return{
     id:      id,
     name:    x.name          || "Unnamed",
     cat:     x.category      || "",
-    price:   x.price         || 0,
-    cmp:     x.discountPrice || 0,
-    img:     (x.images&&x.images[0]) || "https://placehold.co/400x400/c9a84c/000?text=BENIM",
-    desc:    x.description   || "",
+    price:   Number(x.price) || 0,
+    cmp:     Number(x.discountPrice||x.comparePrice||x.originalPrice||0),
+    img:     (x.images&&x.images.length>0?x.images[0]:null) || x.image || x.img || "https://placehold.co/400x400/c9a84c/000?text=BENIM",
+    desc:    x.description   || x.desc || "",
     sizes:   x.sizes         || ["One Size"],
     colours: x.colours       || x.colors || ["Black"],
-    stock:   x.stock         || 99,
-    rating:  x.rating        || 0,
-    reviews: x.reviews       || 0,
+    stock:   Number(x.stock) || 99,
+    rating:  Number(x.rating)|| 0,
+    reviews: Number(x.reviews)||0,
     badge:   x.badge         || "",
     isFlash: x.isFlash       || false,
-    feat:    x.featured      || false,
-    bs:      x.bestSeller    || false,
-    na:      x.newArrival    || false
+    feat:    x.featured      || x.isFeatured || false,
+    bs:      x.bestSeller    || x.isBestSeller || false,
+    na:      x.newArrival    || x.isNew || false
   };
 }
 
+// Get products with filter - if no products match filter, return ALL products for home sections
 function getP(f){
   var l=PRODUCTS.slice();
   if(f.cat)l=l.filter(function(p){return p.cat===f.cat;});
-  if(f.feat)l=l.filter(function(p){return p.feat;});
-  if(f.bs)l=l.filter(function(p){return p.bs;});
-  if(f.na)l=l.filter(function(p){return p.na;});
   if(f.flash)l=l.filter(function(p){return p.isFlash;});
   if(f.q){var q=f.q.toLowerCase();l=l.filter(function(p){return(p.name+" "+p.cat).toLowerCase().indexOf(q)>-1;});}
+  // For feat/bs/na - if none match, just return all products so page is never empty
+  if(f.feat){
+    var featured=l.filter(function(p){return p.feat;});
+    return featured.length>0?featured:l;
+  }
+  if(f.bs){
+    var bs=l.filter(function(p){return p.bs;});
+    return bs.length>0?bs:l;
+  }
+  if(f.na){
+    var na=l.filter(function(p){return p.na;});
+    return na.length>0?na:l;
+  }
   return l;
 }
 
@@ -578,11 +588,11 @@ function PC(p,sm){
   var disc=(p.cmp&&p.cmp>p.price)?Math.round((1-p.price/p.cmp)*100):0;
   var h='<div class="pc'+(sm?' sm':'')+'" onclick="viewP(\''+p.id+'\')">'
     +'<div class="pi-wrap">'
-    +'<img src="'+p.img+'" alt="'+p.name+'" loading="lazy"/>';
+    +'<img src="'+p.img+'" alt="'+p.name+'" loading="lazy" onerror="this.src=\'https://placehold.co/400x400/c9a84c/000?text=BENIM\'"/>';
   if(p.isFlash)h+='<span class="flash-b">Flash Sale</span>';
   else if(p.badge)h+='<span class="bdg">'+p.badge+'</span>';
   if(disc>0)h+='<span class="disc-b">-'+disc+'%</span>';
-  h+='<button class="wb" data-pid="'+p.id+'" onclick="event.stopPropagation();wishToggle(\''+p.id+'\')">'+(inWish(p.id)?'❤️':'🤍')+'</button>'
+  h+='<button class="wb" data-pid="'+p.id+'" onclick="event.stopPropagation();wishToggle(\''+p.id+'\')">'+(inWish(p.id)?"❤️":"🤍")+'</button>'
     +'</div>'
     +'<div class="pi-info">'
     +'<div class="pi-cat">'+p.cat+'</div>'
@@ -597,23 +607,39 @@ function PC(p,sm){
 // ── HOME ──────────────────────────────────────────────────
 function rHome(){
   var el=G("pg-home");if(!el)return;
+
+  // Show ALL products in sections - never show empty if we have products
+  var allP=PRODUCTS.slice();
+  var flashP=allP.filter(function(p){return p.isFlash;});
+  // Featured: use featured flag OR first 6 products
+  var featP=allP.filter(function(p){return p.feat;});
+  if(featP.length===0)featP=allP.slice(0,6);
+  // New arrivals: use na flag OR next 6 products
+  var naP=allP.filter(function(p){return p.na;});
+  if(naP.length===0)naP=allP.slice(0,6);
+  // Best sellers: use bs flag OR all products
+  var bsP=allP.filter(function(p){return p.bs;});
+  if(bsP.length===0)bsP=allP.slice(0,8);
+
   var fH="",naH="",bsH="",flashH="",recH="";
-  getP({feat:true}).forEach(function(p){fH+=PC(p);});
-  getP({na:true}).slice(0,6).forEach(function(p){naH+=PC(p);});
-  getP({bs:true}).forEach(function(p){bsH+=PC(p);});
-  getP({flash:true}).forEach(function(p){flashH+=PC(p);});
+  featP.forEach(function(p){fH+=PC(p);});
+  naP.slice(0,6).forEach(function(p){naH+=PC(p);});
+  bsP.forEach(function(p){bsH+=PC(p);});
+  flashP.forEach(function(p){flashH+=PC(p);});
   if(RECENT.length>0){var rr="";RECENT.slice(0,6).forEach(function(p){rr+=PC(p,true);});recH='<div class="sec"><div class="sec-h"><span class="sec-ttl">Recently Viewed</span></div><div class="ps">'+rr+'</div></div>';}
+
   var BDATA=BANNERS_DATA.length?BANNERS_DATA:STATIC_BANNERS;
   var bSlides="",dots="";
   BDATA.forEach(function(b,i){
     var img=b.img||(b.images&&b.images[0])||"";
-    var ttl=b.ttl||b.title||"";var sub=b.sub||b.subtitle||"";var cta=b.cta||"Shop Now";
-    bSlides+='<div class="bn-slide"><img src="'+img+'" class="bn-img" alt="'+ttl+'" loading="'+(i===0?"eager":"lazy")+'" /><div class="bn-ov"></div><div class="bn-cnt"><div class="bn-sub">'+sub+'</div><div class="bn-ttl">'+ttl+'</div><button class="btn-g" onclick="go(\'categories\')">'+cta+'</button></div></div>';
+    var ttl=b.ttl||b.title||"BENIM";var sub=b.sub||b.subtitle||"";var cta=b.cta||"Shop Now";
+    bSlides+='<div class="bn-slide"><img src="'+img+'" class="bn-img" alt="'+ttl+'" loading="'+(i===0?"eager":"lazy")+'"/><div class="bn-ov"></div><div class="bn-cnt"><div class="bn-sub">'+sub+'</div><div class="bn-ttl">'+ttl+'</div><button class="btn-g" onclick="go(\'categories\')">'+cta+'</button></div></div>';
     dots+='<span class="dot'+(i===0?" on":"")+'" onclick="setBN('+i+')"></span>';
   });
+
   var catChips="";
   CATS.forEach(function(c,i){catChips+='<div class="cc" onclick="go(\'category\',CATS['+i+'])"><div class="cc-ic">'+c.ic+'</div><div class="cc-nm">'+c.name+'</div></div>';});
-  var pcount=PRODUCTS.length;
+
   el.innerHTML=''
     +'<div class="tb"><div class="tb-l"><button class="ib" onclick="openSB()">'
     +'<svg width="22" height="16" viewBox="0 0 22 16"><rect width="22" height="2" rx="1" fill="currentColor"/><rect y="7" width="15" height="2" rx="1" fill="currentColor"/><rect y="14" width="22" height="2" rx="1" fill="currentColor"/></svg>'
@@ -627,12 +653,12 @@ function rHome(){
     +'<div class="bn-wrap"><div class="bn-track" id="bn-track">'+bSlides+'</div><div class="bn-dots">'+dots+'</div><button class="bn-arr bn-prev" onclick="moveBN(-1)">&#8249;</button><button class="bn-arr bn-next" onclick="moveBN(1)">&#8250;</button></div>'
     +'<div class="mq"><div class="mq-t"><span>FREE SHIPPING ABOVE ₦50,000 &nbsp;✦&nbsp; </span><span>NEW ARRIVALS EVERY WEEK &nbsp;✦&nbsp; </span><span>USE CODE BENIM10 FOR 10% OFF &nbsp;✦&nbsp; </span><span>PREMIUM QUALITY GUARANTEED &nbsp;✦&nbsp; </span><span>FREE SHIPPING ABOVE ₦50,000 &nbsp;✦&nbsp; </span><span>NEW ARRIVALS EVERY WEEK &nbsp;✦&nbsp; </span><span>USE CODE BENIM10 FOR 10% OFF &nbsp;✦&nbsp; </span><span>PREMIUM QUALITY GUARANTEED &nbsp;✦&nbsp; </span></div></div>'
     +'<div class="sec"><div class="sec-h"><span class="sec-ttl">Shop by Category</span><button class="sec-lnk" onclick="go(\'categories\')">See All</button></div><div class="cs">'+catChips+'</div></div>'
-    +(pcount===0?'<div style="text-align:center;padding:20px 16px;color:var(--text3);font-size:12px">Loading products from Firebase...</div>':'')
-    +(flashH?'<div class="sec" style="background:linear-gradient(135deg,#1a0000,#0a0a0a);padding:22px 0"><div class="sec-h"><span class="sec-ttl" style="color:#fff">Flash Sales</span><button class="sec-lnk" onclick="go(\'categories\')">View All</button></div><div class="ps">'+flashH+'</div></div>':'')
-    +'<div class="sec"><div class="sec-h"><span class="sec-ttl">Featured Products</span><button class="sec-lnk" onclick="go(\'categories\')">View All</button></div><div class="ps">'+(fH||'<p style="padding:0 16px;color:var(--text3);font-size:12px">None yet</p>')+'</div></div>'
-    +'<div class="sec gold-sec"><div class="sec-h"><span class="sec-ttl">New Arrivals</span><button class="sec-lnk" onclick="go(\'categories\')">View All</button></div><div class="pg2">'+(naH||'<p style="grid-column:span 2;padding:16px;color:var(--text3);font-size:12px">None yet</p>')+'</div></div>'
+    +(PRODUCTS.length===0?'<div style="text-align:center;padding:32px 16px"><div style="font-size:32px;margin-bottom:12px">⏳</div><div style="font-size:14px;color:var(--text2);margin-bottom:8px">Loading products from Firebase...</div></div>':'')
+    +(flashH?'<div class="sec" style="background:linear-gradient(135deg,#1a0000,#0a0a0a);padding:22px 0"><div class="sec-h"><span class="sec-ttl" style="color:#fff">⚡ Flash Sales</span><button class="sec-lnk" onclick="go(\'categories\')">View All</button></div><div class="ps">'+flashH+'</div></div>':'')
+    +'<div class="sec"><div class="sec-h"><span class="sec-ttl">Featured Products</span><button class="sec-lnk" onclick="go(\'categories\')">View All</button></div><div class="ps">'+fH+'</div></div>'
+    +'<div class="sec gold-sec"><div class="sec-h"><span class="sec-ttl">New Arrivals</span><button class="sec-lnk" onclick="go(\'categories\')">View All</button></div><div class="pg2">'+naH+'</div></div>'
     +'<div class="pb" onclick="go(\'categories\')"><div class="pb-c"><div class="pb-ttl">EXCLUSIVE OFFERS</div><div class="pb-sub">Up to 30% off selected items</div><button class="btn-o">Shop Sale</button></div></div>'
-    +'<div class="sec"><div class="sec-h"><span class="sec-ttl">Best Sellers</span><button class="sec-lnk" onclick="go(\'categories\')">View All</button></div><div class="ps">'+(bsH||'<p style="padding:0 16px;color:var(--text3);font-size:12px">None yet</p>')+'</div></div>'
+    +'<div class="sec"><div class="sec-h"><span class="sec-ttl">Best Sellers</span><button class="sec-lnk" onclick="go(\'categories\')">View All</button></div><div class="ps">'+bsH+'</div></div>'
     +recH
     +'<div class="why"><div class="why-ttl">Why Choose BENIM?</div><div class="why-g"><div class="why-c"><div class="why-ic">🏆</div><div class="why-nm">Premium Quality</div><div class="why-ds">Handpicked luxury items</div></div><div class="why-c"><div class="why-ic">🚚</div><div class="why-nm">Fast Delivery</div><div class="why-ds">Nationwide shipping</div></div><div class="why-c"><div class="why-ic">🔒</div><div class="why-nm">Secure Shopping</div><div class="why-ds">100% safe payments</div></div><div class="why-c"><div class="why-ic">💎</div><div class="why-nm">Authentic Items</div><div class="why-ds">Verified luxury brands</div></div></div></div>'
     +'<div class="ft"><div class="ft-logo">BENIM</div><div class="ft-tag">Luxury Fashion &amp; Lifestyle</div>'
@@ -643,7 +669,7 @@ function rHome(){
 }
 
 function startBN(){if(BN_T)clearInterval(BN_T);BN_T=setInterval(function(){moveBN(1);},4500);}
-function moveBN(d){var tot=Math.max(BANNERS_DATA.length||0,STATIC_BANNERS.length)||1;BN_I=(BN_I+d+tot)%tot;setBN(BN_I);}
+function moveBN(d){var tot=Math.max((BANNERS_DATA.length||0),(STATIC_BANNERS.length||1));BN_I=(BN_I+d+tot)%tot;setBN(BN_I);}
 function setBN(i){BN_I=i;var t=G("bn-track");if(t)t.style.transform="translateX(-"+i*100+"%)";document.querySelectorAll(".dot").forEach(function(d,j){d.classList.toggle("on",j===i);});}
 
 // ── CATEGORIES ────────────────────────────────────────────
@@ -651,31 +677,35 @@ function rCats(){
   var el=G("pg-categories");if(!el)return;
   var h="";
   CATS.forEach(function(c,i){
+    var count=PRODUCTS.filter(function(p){return p.cat===c.id;}).length;
     h+='<div class="crd" onclick="go(\'category\',CATS['+i+'])">'
       +'<div class="crd-img" style="background:'+c.col+'"><img src="'+c.img+'" alt="'+c.name+'" loading="lazy"/><div class="crd-ov"></div></div>'
-      +'<div class="crd-body"><span style="font-size:18px">'+c.ic+'</span><span class="crd-nm">'+c.name+'</span></div></div>';
+      +'<div class="crd-body"><span style="font-size:18px">'+c.ic+'</span><div><span class="crd-nm">'+c.name+'</span><div style="font-size:10px;color:var(--text3)">'+count+' items</div></div></div></div>';
   });
-  el.innerHTML='<div><div class="ph"><div style="width:40px"></div><div class="ph-title">Shop</div>'
+  el.innerHTML='<div><div class="ph"><div style="width:40px"></div><div class="ph-title">Shop All</div>'
     +'<button class="ib" onclick="go(\'search\')"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></button></div>'
+    +'<div style="padding:12px 16px;font-size:11px;color:var(--text3)">'+PRODUCTS.length+' total products</div>'
     +'<div class="cg">'+h+'</div></div>';
 }
 
 // ── CATEGORY PAGE ─────────────────────────────────────────
 function rCat(){
   var el=G("pg-category");if(!el||!CUR_CAT)return;
-  var prods=getP({cat:CUR_CAT.id});var h="";prods.forEach(function(p){h+=PC(p);});
+  var prods=PRODUCTS.filter(function(p){return p.cat===CUR_CAT.id;});
+  var h="";prods.forEach(function(p){h+=PC(p);});
   el.innerHTML='<div><div class="ph"><button class="bb" onclick="go(\'categories\')"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button><div class="ph-title">'+CUR_CAT.name+'</div><div style="width:40px"></div></div>'
     +'<div class="cat-ban" style="background:'+CUR_CAT.col+'"><img src="'+CUR_CAT.img+'" alt="'+CUR_CAT.name+'"/><div class="cat-ban-ttl">'+CUR_CAT.name+'</div></div>'
-    +'<div class="fb"><button class="fbtn on" onclick="sortCat(this,\'all\')">All</button><button class="fbtn" onclick="sortCat(this,\'low\')">Price ↑</button><button class="fbtn" onclick="sortCat(this,\'high\')">Price ↓</button><button class="fbtn" onclick="sortCat(this,\'top\')">Top Rated</button></div>'
+    +'<div class="fb"><button class="fbtn on" onclick="sortCat(this,\'all\')">All ('+prods.length+')</button><button class="fbtn" onclick="sortCat(this,\'low\')">Price ↑</button><button class="fbtn" onclick="sortCat(this,\'high\')">Price ↓</button><button class="fbtn" onclick="sortCat(this,\'top\')">Top Rated</button><button class="fbtn" onclick="sortCat(this,\'flash\')">Flash Sale</button></div>'
     +'<div class="pg2" id="cat-g" style="padding-top:10px">'+(h||'<div style="grid-column:span 2;text-align:center;padding:40px;color:var(--text3)">No products in this category yet</div>')+'</div></div>';
   updWish();
 }
 function sortCat(btn,t){
   document.querySelectorAll(".fbtn").forEach(function(b){b.classList.remove("on");});btn.classList.add("on");
-  var l=getP({cat:CUR_CAT.id});
+  var l=PRODUCTS.filter(function(p){return p.cat===CUR_CAT.id;});
   if(t==="low")l.sort(function(a,b){return a.price-b.price;});
   else if(t==="high")l.sort(function(a,b){return b.price-a.price;});
   else if(t==="top")l.sort(function(a,b){return b.rating-a.rating;});
+  else if(t==="flash")l=l.filter(function(p){return p.isFlash;});
   var h="";l.forEach(function(p){h+=PC(p);});
   var g=G("cat-g");if(g)g.innerHTML=h||'<div style="grid-column:span 2;text-align:center;padding:40px;color:var(--text3)">No products found</div>';
   updWish();
@@ -684,25 +714,24 @@ function sortCat(btn,t){
 // ── PRODUCT DETAIL ────────────────────────────────────────
 function rProduct(){
   var el=G("pg-product");if(!el||!CUR_P)return;
-  var p=CUR_P;QTY=1;SEL_SZ=(p.sizes&&p.sizes[0])||"";SEL_CL=(p.colours&&p.colours[0])||"";
-  var catObj=null;for(var i=0;i<CATS.length;i++){if(CATS[i].id===p.cat){catObj=CATS[i];break;}}
+  var p=CUR_P;QTY=1;SEL_SZ=(p.sizes&&p.sizes[0])||"One Size";SEL_CL=(p.colours&&p.colours[0])||"Black";
   var szH="",clH="";
-  (p.sizes||[]).forEach(function(s,i){szH+='<button class="oc'+(i===0?" on":"")+'" onclick="selOpt(this,\'sz\',\''+s+'\')">'+s+'</button>';});
-  (p.colours||[]).forEach(function(c,i){clH+='<button class="oc'+(i===0?" on":"")+'" onclick="selOpt(this,\'cl\',\''+c+'\')">'+c+'</button>';});
+  (p.sizes||["One Size"]).forEach(function(s,i){szH+='<button class="oc'+(i===0?" on":"")+'" onclick="selOpt(this,\'sz\',\''+s+'\')">'+s+'</button>';});
+  (p.colours||["Black"]).forEach(function(c,i){clH+='<button class="oc'+(i===0?" on":"")+'" onclick="selOpt(this,\'cl\',\''+c+'\')">'+c+'</button>';});
   var rel="";PRODUCTS.filter(function(x){return x.cat===p.cat&&x.id!==p.id;}).slice(0,6).forEach(function(x){rel+=PC(x);});
   var save=(p.cmp&&p.cmp>p.price)?p.cmp-p.price:0;
   el.innerHTML='<div>'
     +'<div style="position:absolute;width:100%;display:flex;justify-content:space-between;padding:14px 16px;z-index:10;top:0;">'
-    +'<button style="width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;color:#fff;border:none;cursor:pointer;" onclick="go(\'home\')"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>'
+    +'<button style="width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;color:#fff;border:none;cursor:pointer;" onclick="history.back()"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>'
     +'<button style="width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;color:#fff;border:none;cursor:pointer;position:relative;" onclick="go(\'cart\')"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg></button>'
     +'</div>'
-    +'<div class="pd-gal"><img src="'+p.img+'" class="pd-main" alt="'+p.name+'"/></div>'
+    +'<div class="pd-gal"><img src="'+p.img+'" class="pd-main" alt="'+p.name+'" onerror="this.src=\'https://placehold.co/400x400/c9a84c/000?text=BENIM\'"/></div>'
     +'<div class="pd-body">'
     +'<div class="pd-top"><div><div class="pd-cat">'+p.cat+'</div><div class="pd-nm">'+p.name+'</div></div>'
-    +'<button class="wb-lg" data-pid="'+p.id+'" onclick="wishToggle(\''+p.id+'\')">'+(inWish(p.id)?'❤️':'🤍')+'</button></div>'
+    +'<button class="wb-lg" data-pid="'+p.id+'" onclick="wishToggle(\''+p.id+'\')">'+(inWish(p.id)?"❤️":"🤍")+'</button></div>'
     +(p.rating>0?'<div class="pd-rt"><span class="stars">'+stars(p.rating)+'</span><span class="rn">'+p.rating+'</span><span class="rv">('+p.reviews+' reviews)</span></div>':'')
     +'<div class="pd-pr"><span class="pr-lg">'+N(p.price)+'</span>'+(save>0?'<span class="pr-cl">'+N(p.cmp)+'</span><span class="sv-b">Save '+N(save)+'</span>':'')+'</div>'
-    +(p.isFlash?'<div style="background:#e53935;color:#fff;padding:7px 14px;border-radius:8px;font-size:11px;font-weight:700;margin-bottom:12px;display:inline-block">Flash Sale Price!</div>':'')
+    +(p.isFlash?'<div style="background:#e53935;color:#fff;padding:7px 14px;border-radius:8px;font-size:11px;font-weight:700;margin-bottom:12px;display:inline-block">⚡ Flash Sale!</div>':'')
     +(p.desc?'<div class="pd-desc">'+p.desc+'</div>':'')
     +(szH?'<div class="opt-sec"><div class="opt-lbl">Size <span id="d-sz" class="opt-sel">'+SEL_SZ+'</span></div><div class="opt-chips">'+szH+'</div></div>':'')
     +(clH?'<div class="opt-sec"><div class="opt-lbl">Colour <span id="d-cl" class="opt-sel">'+SEL_CL+'</span></div><div class="opt-chips">'+clH+'</div></div>':'')
@@ -727,10 +756,10 @@ function doBN(){doATC();go("checkout");}
 // ── CART ──────────────────────────────────────────────────
 function rCart(){
   var el=G("pg-cart");if(!el)return;
-  if(!CART.length){el.innerHTML='<div><div class="ph"><button class="bb" onclick="go(\'home\')"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button><div class="ph-title">My Cart</div><div style="width:40px"></div></div><div class="emp"><div class="emp-ic">🛒</div><div class="emp-ttl">Your cart is empty</div><div class="emp-sub">Discover our luxury collection</div><button class="btn-g" onclick="go(\'categories\')">Start Shopping</button></div></div>';return;}
+  if(!CART.length){el.innerHTML='<div><div class="ph"><button class="bb" onclick="go(\'home\')"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button><div class="ph-title">My Cart</div><div style="width:40px"></div></div><div class="emp"><div class="emp-ic">🛒</div><div class="emp-ttl">Your cart is empty</div><div class="emp-sub">Discover our collection</div><button class="btn-g" onclick="go(\'categories\')">Start Shopping</button></div></div>';return;}
   var items="";
   CART.forEach(function(item,i){
-    items+='<div class="ct-item"><img src="'+item.img+'" class="ct-img" onclick="viewP(\''+item.id+'\')" alt="'+item.name+'"/>'
+    items+='<div class="ct-item"><img src="'+item.img+'" class="ct-img" onclick="viewP(\''+item.id+'\')" alt="'+item.name+'" onerror="this.src=\'https://placehold.co/80x80/c9a84c/000?text=B\'"/>'
       +'<div class="ct-info"><div class="ct-nm">'+item.name+'</div><div class="ct-opt">'+item.sz+' · '+item.cl+'</div>'
       +'<div class="ct-pr">'+N(item.price)+'</div>'
       +'<div class="ct-qc"><button onclick="upQ('+i+',-1)">&#8722;</button><span>'+item.qty+'</span><button onclick="upQ('+i+',1)">+</button></div></div>'
@@ -772,7 +801,7 @@ function rCheckout(){
     +'<div class="ol"><span>Shipping</span><span>'+(ship?N(ship):"FREE")+'</span></div>'
     +'<div class="ol b"><span>Total</span><span>'+N(tot)+'</span></div></div>'
     +'<button class="btn-g fw" id="place-btn" onclick="placeOrder()">Place Order</button>'
-    +'<div class="sec-note">Your information is 100% secure</div></div></div>';
+    +'<div class="sec-note">🔒 Your information is 100% secure</div></div></div>';
 }
 function applyPromo(){
   var code=(G("prm-in")||{}).value||"";
@@ -794,7 +823,7 @@ function rOrders(){
       var h="";
       snap.docs.forEach(function(d){
         var o=Object.assign({id:d.id},d.data());
-        var imgs="";(o.items||[]).slice(0,3).forEach(function(i){imgs+='<img src="'+i.img+'" alt=""/>';});
+        var imgs="";(o.items||[]).slice(0,3).forEach(function(i){imgs+='<img src="'+i.img+'" alt="" onerror="this.style.display=\'none\'"/>';});
         h+='<div class="ord-card"><div class="oc-top"><div><div class="oid">#'+o.id.slice(0,8).toUpperCase()+'</div><div class="odt">'+fDate(o.createdAt)+'</div></div><span class="ost '+(o.status||"pending")+'">'+(o.status||"pending").toUpperCase()+'</span></div><div class="oi-prev">'+imgs+'</div><div class="o-tot">'+N(o.total||0)+'</div><div class="o-pay">'+(o.paymentMethod==="transfer"?"Bank Transfer":"Pay on Delivery")+'</div></div>';
       });
       el.innerHTML='<div>'+hdr+'<div class="ord-list">'+h+'</div></div>';
@@ -814,17 +843,26 @@ function rWish(){
 // ── SEARCH ────────────────────────────────────────────────
 function rSearch(){
   var el=G("pg-search");if(!el)return;
-  el.innerHTML='<div><div class="ph"><button class="bb" onclick="go(\'home\')"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button><div class="si-wrap"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><input id="s-in" class="si" placeholder="Search BENIM..." value="'+SEARCH+'" oninput="doSearch(this.value)"/><button onclick="G(\'s-in\').value=\'\';doSearch(\'\')">&#10005;</button></div></div>'
-    +'<div id="s-res"><div class="ss"><div class="ss-ttl">Popular Searches</div><div class="ss-chips"><button class="s-chip" onclick="fillS(\'Men\')">Men\'s</button><button class="s-chip" onclick="fillS(\'Women\')">Women\'s</button><button class="s-chip" onclick="fillS(\'Shoes\')">Shoes</button><button class="s-chip" onclick="fillS(\'Bags\')">Bags</button><button class="s-chip" onclick="fillS(\'Watches\')">Watches</button><button class="s-chip" onclick="fillS(\'Native\')">Native</button></div></div></div></div>';
+  // Get unique categories from actual products
+  var cats={};PRODUCTS.forEach(function(p){if(p.cat)cats[p.cat]=true;});
+  var catBtns=Object.keys(cats).slice(0,6).map(function(c){return '<button class="s-chip" onclick="fillS(\''+c+'\')">'+c+'</button>';}).join("");
+  el.innerHTML='<div><div class="ph"><button class="bb" onclick="go(\'home\')"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button><div class="si-wrap"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><input id="s-in" class="si" placeholder="Search '+PRODUCTS.length+' products..." value="'+SEARCH+'" oninput="doSearch(this.value)"/><button onclick="G(\'s-in\').value=\'\';doSearch(\'\')">&#10005;</button></div></div>'
+    +'<div id="s-res"><div class="ss"><div class="ss-ttl">Browse by Category</div><div class="ss-chips">'+catBtns+'</div></div></div></div>';
   if(SEARCH)doSearch(SEARCH);
   setTimeout(function(){var s=G("s-in");if(s)s.focus();},120);
 }
 function fillS(q){var s=G("s-in");if(s)s.value=q;doSearch(q);}
 function doSearch(q){
   SEARCH=q;var res=G("s-res");if(!res)return;
-  if(!q.trim()){res.innerHTML='<div class="ss"><div class="ss-ttl">Popular Searches</div><div class="ss-chips"><button class="s-chip" onclick="fillS(\'Men\')">Men\'s</button><button class="s-chip" onclick="fillS(\'Bags\')">Bags</button><button class="s-chip" onclick="fillS(\'Shoes\')">Shoes</button></div></div>';return;}
-  var found=getP({q:q});var h="";found.forEach(function(p){h+=PC(p);});
-  res.innerHTML=found.length?'<div class="s-cnt">'+found.length+' result'+(found.length>1?'s':'')+' for "'+q+'"</div><div class="pg2" style="padding:0 16px 16px">'+h+'</div>':'<div class="emp"><div class="emp-ic">🔍</div><div class="emp-ttl">No results for "'+q+'"</div></div>';
+  if(!q.trim()){
+    var cats={};PRODUCTS.forEach(function(p){if(p.cat)cats[p.cat]=true;});
+    var catBtns=Object.keys(cats).slice(0,6).map(function(c){return '<button class="s-chip" onclick="fillS(\''+c+'\')">'+c+'</button>';}).join("");
+    res.innerHTML='<div class="ss"><div class="ss-ttl">Browse by Category</div><div class="ss-chips">'+catBtns+'</div></div>';return;
+  }
+  var ql=q.toLowerCase();
+  var found=PRODUCTS.filter(function(p){return(p.name+" "+p.cat+" "+(p.desc||"")).toLowerCase().indexOf(ql)>-1;});
+  var h="";found.forEach(function(p){h+=PC(p);});
+  res.innerHTML=found.length?'<div class="s-cnt">'+found.length+' result'+(found.length>1?'s':'')+' for "'+q+'"</div><div class="pg2" style="padding:0 16px 16px">'+h+'</div>':'<div class="emp"><div class="emp-ic">🔍</div><div class="emp-ttl">No results for "'+q+'"</div><div class="emp-sub">Try searching by category name</div></div>';
   updWish();
 }
 
@@ -854,23 +892,21 @@ function rProfile(){
     +'<button class="pm-it" onclick="toggleDark()"><span>🌙</span><span>Toggle Dark Mode</span><span>›</span></button><button class="pm-it danger" onclick="doLogout()"><span>🚪</span><span>Sign Out</span><span>›</span></button></div></div>';
 }
 
-// ── ABOUT ─────────────────────────────────────────────────
+// ── ABOUT / CONTACT ───────────────────────────────────────
 function rAbout(){
   var el=G("pg-about");if(!el)return;
   el.innerHTML='<div><div class="ph"><button class="bb" onclick="go(\'home\')"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button><div class="ph-title">About BENIM</div><div style="width:40px"></div></div>'
     +'<div class="ab-hero"><div class="ab-logo">BENIM</div><div class="ab-tag">Where Luxury Meets Lifestyle</div></div>'
-    +'<div class="ab-body"><p>BENIM is a premium fashion and lifestyle brand dedicated to bringing you the finest in luxury clothing, accessories, footwear, and more. We curate only the best for the discerning individual who demands quality and style.</p><p>From the boardroom to the runway, from casual Sundays to grand ceremonies — BENIM has everything you need to look and feel extraordinary.</p>'
+    +'<div class="ab-body"><p>BENIM is a premium fashion and lifestyle brand dedicated to bringing you the finest in luxury clothing, accessories, footwear, and more.</p><p>From the boardroom to the runway, from casual Sundays to grand ceremonies — BENIM has everything you need to look and feel extraordinary.</p>'
     +'<div class="ab-vals"><div class="av"><span>🏆</span>Premium Quality</div><div class="av"><span>💎</span>Authentic Products</div><div class="av"><span>🚚</span>Nationwide Delivery</div><div class="av"><span>🔒</span>Secure Shopping</div></div>'
     +'<button class="btn-g" onclick="go(\'contact\')" style="margin-top:22px;width:100%">Get in Touch</button></div></div>';
 }
-
-// ── CONTACT ───────────────────────────────────────────────
 function rContact(){
   var el=G("pg-contact");if(!el)return;
   el.innerHTML='<div><div class="ph"><button class="bb" onclick="go(\'home\')"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button><div class="ph-title">Contact Us</div><div style="width:40px"></div></div>'
     +'<div class="co-pg"><div class="co-intro">We are here to help. Reach us through any channel below.</div>'
-    +'<div class="co-cards"><a href="https://wa.me/2349168031213" target="_blank" class="co-card"><div class="co-ic">💬</div><div><div class="co-nm">WhatsApp</div><div class="co-vl">+234 916 803 1213</div><div class="co-cta">Chat Now</div></div></a><a href="tel:+2349168031213" class="co-card"><div class="co-ic">📞</div><div><div class="co-nm">Phone</div><div class="co-vl">+234 916 803 1213</div><div class="co-cta">Call Now</div></div></a><a href="mailto:shopwitbenim@gmail.com" class="co-card"><div class="co-ic">📧</div><div><div class="co-nm">Email</div><div class="co-vl">shopwitbenim@gmail.com</div><div class="co-cta">Send Mail</div></div></a></div>'
-    +'<div class="bk-info"><div class="bk-ttl">Bank Transfer Details</div><div class="bk-d"><b>Bank:</b>Opay</div><div class="bk-d"><b>Account:</b>916 803 1213</div><div class="bk-d"><b>Name:</b>Adewole Aderonke Aishat</div><button class="btn-o" style="margin-top:10px" onclick="copyAcct()">Copy Account Number</button></div>'
+    +'<div class="co-cards"><a href="https://wa.me/2349168031213" target="_blank" class="co-card"><div class="co-ic">💬</div><div><div class="co-nm">WhatsApp</div><div class="co-vl">+234 916 803 1213</div><div class="co-cta">Chat Now →</div></div></a><a href="tel:+2349168031213" class="co-card"><div class="co-ic">📞</div><div><div class="co-nm">Phone</div><div class="co-vl">+234 916 803 1213</div><div class="co-cta">Call Now →</div></div></a><a href="mailto:shopwitbenim@gmail.com" class="co-card"><div class="co-ic">📧</div><div><div class="co-nm">Email</div><div class="co-vl">shopwitbenim@gmail.com</div><div class="co-cta">Send Mail →</div></div></a></div>'
+    +'<div class="bk-info"><div class="bk-ttl">Bank Transfer Details</div><div class="bk-d"><b>Bank:</b> Opay</div><div class="bk-d"><b>Account:</b> 916 803 1213</div><div class="bk-d"><b>Name:</b> Adewole Aderonke Aishat</div><button class="btn-o" style="margin-top:10px" onclick="copyAcct()">Copy Account Number</button></div>'
     +'<div class="co-msg"><div class="co-ttl">Send a Message</div><input class="inp" id="m-nm" placeholder="Your Name"/><input class="inp" id="m-em" placeholder="Email Address" type="email"/><textarea class="inp" id="m-tx" placeholder="Your Message" rows="4" style="resize:none"></textarea><button class="btn-g fw" onclick="sendMsg()">Send Message</button></div></div></div>';
 }
 function copyAcct(){try{navigator.clipboard.writeText("9168031213").then(function(){toast("Account number copied!");});}catch(e){toast("9168031213 - copy manually");}}
@@ -916,8 +952,9 @@ function adOr(){
       var o=Object.assign({id:d.id},d.data());
       var opts=["pending","confirmed","processing","shipped","delivered","cancelled"].map(function(s){return '<option value="'+s+'"'+(o.status===s?" selected":"")+'>'+s+'</option>';}).join("");
       h+='<div class="adm-oc"><div class="aoc-top"><span style="font-weight:700;font-size:12px">#'+o.id.slice(0,8).toUpperCase()+'</span><span class="ost '+(o.status||"pending")+'">'+(o.status||"pending")+'</span></div>'
-        +'<div class="aoc-i">'+( o.name||"Guest")+' | '+(o.phone||"-")+'</div>'
-        +'<div class="aoc-i">'+(o.address||"-")+', '+(o.state||"")+'</div>'
+        +'<div class="aoc-i">👤 '+(o.name||"Guest")+' | 📱 '+(o.phone||"-")+'</div>'
+        +'<div class="aoc-i">📍 '+(o.address||"-")+', '+(o.state||"")+'</div>'
+        +'<div class="aoc-i">💰 '+(o.paymentMethod==="transfer"?"Bank Transfer":"Pay on Delivery")+'</div>'
         +'<div class="aoc-bot"><span class="aoc-amt">'+N(o.total||0)+'</span><select class="ssel" onchange="updOrd(\''+o.id+'\',this.value)">'+opts+'</select></div></div>';
     });
     c.innerHTML=h+'</div>';
@@ -928,22 +965,24 @@ function adPr(){
   var c=G("ad-c");if(!c)return;
   var rows="";
   PRODUCTS.forEach(function(p){
-    rows+='<div class="adm-pr-row"><img src="'+p.img+'" class="adm-pi" alt="'+p.name+'"/>'
-      +'<div class="adm-pin"><div class="adm-pnm">'+p.name+'</div><div class="adm-pm">'+N(p.price)+' | '+p.cat+'</div><div class="adm-pc">'+(p.isFlash?"Flash":"")+(p.feat?" Featured":"")+'</div></div>'
-      +'<button style="padding:5px 9px;background:#e53935;color:#fff;border-radius:7px;font-size:10px;font-weight:700;border:none;cursor:pointer;" onclick="delProd(\''+p.id+'\')">Del</button></div>';
+    rows+='<div class="adm-pr-row"><img src="'+p.img+'" class="adm-pi" alt="'+p.name+'" onerror="this.src=\'https://placehold.co/52x52/c9a84c/000?text=B\'"/>'
+      +'<div class="adm-pin"><div class="adm-pnm">'+p.name+'</div><div class="adm-pm">'+N(p.price)+(p.cmp&&p.cmp>p.price?' | Was: '+N(p.cmp):'')+'</div><div class="adm-pc">'+p.cat+(p.isFlash?' | Flash':'')+'</div></div>'
+      +'<button style="padding:5px 9px;background:#e53935;color:#fff;border-radius:7px;font-size:10px;font-weight:700;border:none;cursor:pointer;flex-shrink:0" onclick="delProd(\''+p.id+'\')">Del</button></div>';
   });
   c.innerHTML='<div style="padding:0 16px 16px">'
     +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><span style="font-size:13px;font-weight:700">Products ('+PRODUCTS.length+')</span><button class="btn-g sm" onclick="showAddProd()">+ Add</button></div>'
-    +'<div id="apf" style="display:none;background:var(--surface2);border-radius:12px;padding:14px;margin-bottom:10px">'
+    +'<div id="apf" style="display:none;background:var(--surface2);border-radius:12px;padding:14px;margin-bottom:12px">'
     +'<input class="inp" id="np-nm" placeholder="Product Name *"/>'
     +'<input class="inp" id="np-pr" placeholder="Price e.g. 5000 *" type="number"/>'
     +'<input class="inp" id="np-dp" placeholder="Original Price (discountPrice)" type="number"/>'
     +'<select class="inp" id="np-ct"><option>Men\'s Fashion</option><option>Women\'s Fashion</option><option>Shoes</option><option>Sneakers</option><option>Bags</option><option>Watches</option><option>Accessories</option><option>Native Wears</option><option>Casual Wears</option><option>Luxury</option></select>'
     +'<input class="inp" id="np-img" placeholder="Image URL *"/>'
+    +'<input class="inp" id="np-cl" placeholder="Colours (comma separated e.g. Black,White)"/>'
+    +'<input class="inp" id="np-sz" placeholder="Sizes (comma separated e.g. S,M,L,XL)"/>'
     +'<input class="inp" id="np-stk" placeholder="Stock quantity" type="number"/>'
-    +'<input class="inp" id="np-bdg" placeholder="Badge (New, Hot, Luxury)"/>'
+    +'<input class="inp" id="np-bdg" placeholder="Badge (e.g. New, Hot)"/>'
     +'<textarea class="inp" id="np-dsc" placeholder="Description" rows="3" style="resize:none"></textarea>'
-    +'<div style="display:flex;gap:12px;margin-bottom:10px;font-size:11px">'
+    +'<div style="display:flex;gap:12px;margin-bottom:10px;font-size:11px;flex-wrap:wrap">'
     +'<label><input type="checkbox" id="np-ft"/> Featured</label>'
     +'<label><input type="checkbox" id="np-bs"/> Best Seller</label>'
     +'<label><input type="checkbox" id="np-na"/> New Arrival</label>'
@@ -957,11 +996,15 @@ function saveNewProd(){
   var pr=parseFloat((G("np-pr")||{}).value)||0;
   var img=(G("np-img")||{}).value||"";
   if(!nm.trim()||!pr||!img.trim()){toast("Name, Price and Image are required","err");return;}
+  var clRaw=(G("np-cl")||{}).value||"Black";
+  var szRaw=(G("np-sz")||{}).value||"One Size";
   var data={
-    name:nm, price:pr,
+    name:nm.trim(), price:pr,
     discountPrice:parseFloat((G("np-dp")||{}).value)||0,
     category:(G("np-ct")||{}).value||"Men's Fashion",
-    images:[img],
+    images:[img.trim()],
+    colours:clRaw.split(",").map(function(s){return s.trim();}),
+    sizes:szRaw.split(",").map(function(s){return s.trim();}),
     stock:parseInt((G("np-stk")||{}).value)||99,
     badge:(G("np-bdg")||{}).value||"",
     description:(G("np-dsc")||{}).value||"",
@@ -969,20 +1012,18 @@ function saveNewProd(){
     bestSeller:!!(G("np-bs")||{}).checked,
     newArrival:!!(G("np-na")||{}).checked,
     isFlash:!!(G("np-fl")||{}).checked,
-    colours:["Black","White"],
-    sizes:["S","M","L","XL"],
     rating:0, reviews:0,
     createdAt:new Date()
   };
   if(!DB){toast("Firebase not connected","err");return;}
   DB.collection("products").add(data).then(function(ref){
-    toast("Product added!");
+    toast("Product added successfully!");
     PRODUCTS.push(mapProduct(ref.id,data));
     adPr();
   }).catch(function(e){toast("Error: "+e.message,"err");});
 }
 function delProd(id){
-  if(!confirm("Delete this product?"))return;
+  if(!confirm("Delete this product? This cannot be undone."))return;
   if(!DB){toast("Firebase not connected","err");return;}
   DB.collection("products").doc(id).delete().then(function(){
     PRODUCTS=PRODUCTS.filter(function(p){return p.id!==id;});
@@ -994,10 +1035,11 @@ function adUs(){
   c.innerHTML='<div class="lds">Loading users...</div>';
   if(!DB){c.innerHTML='<div class="ers">Firebase not connected</div>';return;}
   DB.collection("users").get().then(function(snap){
-    var h='<div style="padding:0 16px 16px">';
+    var h='<div style="padding:0 16px 16px">'
+      +'<div style="font-size:13px;font-weight:700;margin-bottom:10px">Total: '+snap.size+' customers</div>';
     snap.docs.forEach(function(d){
       var u=Object.assign({id:d.id},d.data());
-      h+='<div class="adm-ur"><div class="adm-uav">'+((u.name||u.email||"?")[0].toUpperCase())+'</div><div class="adm-ui"><div class="adm-unm">'+(u.name||"-")+'</div><div class="adm-uem">'+(u.email||"")+'</div></div><span class="rb '+(u.role||"user")+'">'+(u.role||"user")+'</span></div>';
+      h+='<div class="adm-ur"><div class="adm-uav">'+((u.name||u.email||"?")[0].toUpperCase())+'</div><div class="adm-ui"><div class="adm-unm">'+(u.name||"—")+'</div><div class="adm-uem">'+(u.email||"")+'</div></div><span class="rb '+(u.role||"user")+'">'+(u.role||"user")+'</span></div>';
     });
     c.innerHTML=h+'</div>';
   }).catch(function(){c.innerHTML='<div class="ers">Error loading users</div>';});
@@ -1036,10 +1078,13 @@ function placeOrder(){
       messagingSenderId:"806159296289",
       appId:"1:806159296289:web:a3b760ce9e997462a98060"
     });
-  }catch(e){}
+  }catch(e){console.warn("Firebase init:",e.message);}
 
   AUTH=firebase.auth();
   DB=firebase.firestore();
+
+  // Enable offline persistence
+  DB.enablePersistence().catch(function(){});
 
   AUTH.onAuthStateChanged(function(user){
     CU=user;
@@ -1054,7 +1099,6 @@ function placeOrder(){
       .then(function(c){CU=c.user;ADMIN=c.user.email===ADMIN_EMAIL;updSidebar();toast("Welcome back!");go(ADMIN?"admin":"home");})
       .catch(function(e){toast(e.message,"err");});
   };
-
   window.doSignup=function(){
     var nm=(G("s-nm")||{}).value||"",em=(G("s-em")||{}).value||"",pw=(G("s-pw")||{}).value||"";
     if(!nm||!em||!pw){toast("Please fill all fields","err");return;}
@@ -1066,7 +1110,6 @@ function placeOrder(){
         toast("Account created! Welcome");go(ADMIN?"admin":"home");
       }).catch(function(e){toast(e.message,"err");});
   };
-
   window.doGoogle=function(){
     var p=new firebase.auth.GoogleAuthProvider();
     AUTH.signInWithPopup(p)
@@ -1078,65 +1121,56 @@ function placeOrder(){
         toast("Welcome!");go(ADMIN?"admin":"home");
       }).catch(function(e){toast(e.message,"err");});
   };
-
   window.doLogout=function(){
     AUTH.signOut().then(function(){CU=null;ADMIN=false;CART=[];WISH=[];sCart();sWish();updBadge();updSidebar();toast("Signed out");go("home");});
   };
 
-  // LOAD YOUR FIRESTORE PRODUCTS
-  // Maps YOUR exact field names: category, colours, discountPrice, images, isFlash
+  // LOAD ALL PRODUCTS FROM FIRESTORE - no limit, no filter, get everything
   DB.collection("products").get()
     .then(function(snap){
-      if(snap&&!snap.empty){
-        PRODUCTS=snap.docs.map(function(d){return mapProduct(d.id,d.data());});
-        console.log("Loaded",PRODUCTS.length,"products from Firestore");
-      } else {
-        console.log("No products in Firestore yet");
-        PRODUCTS=[];
-      }
+      console.log("Firestore returned",snap.size,"product documents");
+      PRODUCTS=snap.docs.map(function(d){
+        var data=d.data();
+        console.log("Product:",d.id,data.name,data.category,data.price);
+        return mapProduct(d.id,data);
+      });
+      console.log("Mapped",PRODUCTS.length,"products");
+      // Re-render home with products
       var h=G("pg-home");
-      if(h&&h.classList.contains("on"))try{rHome();}catch(e){}
+      if(h&&h.classList.contains("on")){try{rHome();}catch(e){console.warn(e);}}
     })
     .catch(function(err){
-      console.warn("Products error:",err.message);
+      console.error("Firestore products error:",err.code,err.message);
       PRODUCTS=[];
-      var h=G("pg-home");
-      if(h&&h.classList.contains("on"))try{rHome();}catch(e){}
     });
 
-  // LOAD BANNERS from your banners collection
-  DB.collection("banners").get()
+  // LOAD BANNERS
+  DB.collection("banners").orderBy("order").get()
     .then(function(snap){
       if(snap&&!snap.empty){
         BANNERS_DATA=snap.docs.map(function(d){return d.data();});
-        var h=G("pg-home");if(h&&h.classList.contains("on"))try{rHome();}catch(e){}
+        console.log("Loaded",BANNERS_DATA.length,"banners");
+        var h=G("pg-home");if(h&&h.classList.contains("on")){try{rHome();}catch(e){}}
       }
-    }).catch(function(){});
-
+    }).catch(function(e){
+      // Try without orderBy if index doesn't exist
+      DB.collection("banners").get().then(function(snap){
+        if(snap&&!snap.empty){BANNERS_DATA=snap.docs.map(function(d){return d.data();});var h=G("pg-home");if(h&&h.classList.contains("on")){try{rHome();}catch(e){}}}
+      }).catch(function(){});
+    });
 })();
 
 // ── PWA ───────────────────────────────────────────────────
 try{
   var ml=G("pwa-manifest");
-  if(ml){
-    var m={name:"BENIM - Luxury Fashion",short_name:"BENIM",start_url:"./",display:"standalone",background_color:"#0a0a0a",theme_color:"#0a0a0a",
-      icons:[{src:"https://placehold.co/192x192/c9a84c/000000?text=B",sizes:"192x192",type:"image/png"},{src:"https://placehold.co/512x512/c9a84c/000000?text=B",sizes:"512x512",type:"image/png",purpose:"any maskable"}]};
-    ml.href=URL.createObjectURL(new Blob([JSON.stringify(m)],{type:"application/json"}));
-  }
+  if(ml){var m={name:"BENIM - Luxury Fashion",short_name:"BENIM",start_url:"./",display:"standalone",background_color:"#0a0a0a",theme_color:"#0a0a0a",icons:[{src:"https://placehold.co/192x192/c9a84c/000000?text=B",sizes:"192x192",type:"image/png"},{src:"https://placehold.co/512x512/c9a84c/000000?text=B",sizes:"512x512",type:"image/png",purpose:"any maskable"}]};ml.href=URL.createObjectURL(new Blob([JSON.stringify(m)],{type:"application/json"}));}
 }catch(e){}
-
 var _dp=null;
 window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();_dp=e;var b=G("install-btn");if(b)b.style.display="flex";});
 function doInstall(){if(_dp)_dp.prompt();}
+if("serviceWorker" in navigator){try{var sw="self.addEventListener('install',function(){self.skipWaiting();});self.addEventListener('activate',function(){self.clients.claim();});self.addEventListener('fetch',function(e){if(e.request.method!=='GET')return;e.respondWith(fetch(e.request).catch(function(){return caches.match(e.request);}));});";navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"application/javascript"})));}catch(e){}}
 
-if("serviceWorker" in navigator){
-  try{
-    var sw="self.addEventListener('install',function(){self.skipWaiting();});self.addEventListener('activate',function(){self.clients.claim();});self.addEventListener('fetch',function(e){if(e.request.method!=='GET')return;e.respondWith(fetch(e.request).catch(function(){return caches.match(e.request);}));});";
-    navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"application/javascript"})));
-  }catch(e){}
-}
-
-// ── SPLASH DISMISS (triple fallback) ─────────────────────
+// ── SPLASH DISMISS ────────────────────────────────────────
 var _gone=false;
 function dismissSplash(){
   if(_gone)return;_gone=true;
