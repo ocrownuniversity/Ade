@@ -2,950 +2,1117 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<meta name="theme-color" content="#FFD700"/>
-<meta name="description" content="ZMONIE - Premium VTU & Fintech Platform Nigeria"/>
-<title>ZMONIE - Smart Money Platform</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+<meta name="theme-color" content="#ffffff"/>
+<title>ZMONIE</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet"/>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{--gold:#FFD700;--gold-d:#B8860B;--gold-l:#FFF8DC;--black:#0A0A0A;--w:#fff;--g50:#F9FAFB;--g100:#F3F4F6;--g200:#E5E7EB;--g400:#9CA3AF;--g600:#4B5563;--g800:#1F2937;--ok:#10B981;--err:#EF4444;--info:#3B82F6}
-body{font-family:'DM Sans',sans-serif;background:#fff;color:#0A0A0A;-webkit-tap-highlight-color:transparent;overflow-x:hidden}
-.page{display:none;min-height:100vh}.page.active{display:block}
-.btn-g{background:linear-gradient(135deg,#FFD700,#FFA500);color:#000;font-weight:700;border:none;cursor:pointer;transition:all .25s;box-shadow:0 4px 15px rgba(255,215,0,.35);font-family:'DM Sans',sans-serif}
-.btn-g:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(255,215,0,.5)}
-.btn-g:active{transform:scale(.97)}
-.btn-out{background:transparent;color:#000;border:2px solid var(--gold);font-weight:600;cursor:pointer;transition:all .25s;font-family:'DM Sans',sans-serif}
-.btn-out:hover{background:var(--gold)}
-.card{background:#fff;border-radius:16px;box-shadow:0 2px 20px rgba(0,0,0,.08);border:1px solid var(--g200)}
-.card-dark{background:linear-gradient(135deg,#111,#1e1e1e);border-radius:20px;color:#fff;position:relative;overflow:hidden}
-.card-dark::before{content:'';position:absolute;top:-40%;right:-15%;width:180px;height:180px;background:radial-gradient(circle,rgba(255,215,0,.18),transparent 70%);border-radius:50%;pointer-events:none}
-.card-dark::after{content:'';position:absolute;bottom:-30%;left:-10%;width:140px;height:140px;background:radial-gradient(circle,rgba(255,165,0,.12),transparent 70%);border-radius:50%;pointer-events:none}
-.inp{width:100%;padding:14px 16px;border:2px solid var(--g200);border-radius:12px;font-size:16px;font-family:'DM Sans',sans-serif;transition:border-color .25s;background:#fff;outline:none}
-.inp:focus{border-color:var(--gold)}
-.nav-i{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 10px;cursor:pointer;transition:all .2s;flex:1;color:var(--g400)}
-.nav-i.active{color:#B8860B}
-.nav-i span.lbl{font-size:10px;font-weight:600}
-.svc-card{background:#fff;border-radius:16px;padding:14px 8px;text-align:center;cursor:pointer;transition:all .25s;border:2px solid transparent;box-shadow:0 2px 12px rgba(0,0,0,.06)}
-.svc-card:hover,.svc-card:active{border-color:var(--gold);box-shadow:0 6px 20px rgba(255,215,0,.2);transform:translateY(-3px)}
-.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;align-items:flex-end;backdrop-filter:blur(3px)}
-.modal.open{display:flex}
-.modal-box{background:#fff;border-radius:24px 24px 0 0;padding:24px;width:100%;max-height:90vh;overflow-y:auto;animation:slideUp .3s ease}
-@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-.pin-box{width:52px;height:60px;border:2px solid var(--g200);border-radius:12px;font-size:22px;text-align:center;font-weight:700;outline:none;transition:border-color .25s;font-family:'DM Sans',sans-serif}
-.pin-box:focus{border-color:var(--gold)}
-.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:11px 22px;border-radius:50px;font-size:14px;font-weight:500;z-index:9999;animation:toastIn .3s ease;white-space:nowrap;max-width:90vw}
-@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
-.badge{display:inline-flex;align-items:center;justify-content:center;background:var(--err);color:#fff;border-radius:50%;width:17px;height:17px;font-size:10px;font-weight:700;position:absolute;top:-3px;right:-3px}
-.promo-wrap{position:relative;overflow:hidden;border-radius:16px;min-height:110px}
-.promo-track{display:flex;transition:transform .5s cubic-bezier(.25,.46,.45,.94)}
-.promo-slide{min-width:100%;padding:18px 20px}
-.dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.35);cursor:pointer;transition:all .3s}
-.dot.active{width:22px;background:#FFD700}
-.tx-row{display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid var(--g100);transition:background .15s;cursor:default}
-.tx-row:last-child{border-bottom:none}
-.tx-row:hover{background:var(--g50)}
-.chip{display:inline-flex;align-items:center;padding:4px 10px;border-radius:50px;font-size:11px;font-weight:700}
-.chip-ok{background:rgba(16,185,129,.1);color:var(--ok)}
-.chip-err{background:rgba(239,68,68,.1);color:var(--err)}
-.chip-warn{background:rgba(255,215,0,.15);color:#92400e}
-.chip-info{background:rgba(59,130,246,.1);color:var(--info)}
-.bot-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--g200);display:flex;z-index:50;padding:6px 0 calc(6px + env(safe-area-inset-bottom,0px))}
-.hdr{background:#fff;border-bottom:1px solid var(--g100);position:sticky;top:0;z-index:40;padding:12px 16px}
-.faq-item{border:1px solid var(--g200);border-radius:12px;margin-bottom:8px;overflow:hidden}
-.faq-q{padding:15px 16px;cursor:pointer;font-weight:600;font-size:14px;display:flex;justify-content:space-between;align-items:center}
-.faq-q:hover{background:var(--g50)}
-.faq-a{max-height:0;overflow:hidden;transition:max-height .3s ease,padding .3s;font-size:13px;color:var(--g600);line-height:1.7}
-.faq-a.open{max-height:180px;padding:0 16px 14px}
-.notif-row{padding:14px 16px;border-bottom:1px solid var(--g100);cursor:pointer}
-.notif-row.unread{background:rgba(255,215,0,.04);border-left:3px solid var(--gold)}
-.toggle-sw{position:relative;width:46px;height:25px;background:var(--g200);border-radius:50px;cursor:pointer;transition:background .3s;flex-shrink:0}
-.toggle-sw.on{background:var(--gold)}
-.toggle-sw::after{content:'';position:absolute;width:19px;height:19px;background:#fff;border-radius:50%;top:3px;left:3px;transition:transform .3s;box-shadow:0 1px 4px rgba(0,0,0,.2)}
-.toggle-sw.on::after{transform:translateX(21px)}
-.live-row{background:#fff;border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px;font-size:13px;box-shadow:0 2px 8px rgba(0,0,0,.05);animation:fadeIn .4s ease}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-.pulse-dot{width:8px;height:8px;background:#10B981;border-radius:50%;flex-shrink:0;animation:pulse 1.5s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.admin-side{width:240px;background:#0A0A0A;min-height:100vh;padding:20px 0;position:fixed;left:0;top:0;z-index:100;overflow-y:auto}
-.admin-main{margin-left:240px;padding:24px;min-height:100vh;background:var(--g50)}
-@media(max-width:768px){.admin-side{display:none}.admin-main{margin-left:0;padding:16px}}
-.a-nav{display:flex;align-items:center;gap:10px;padding:11px 16px;border-radius:10px;cursor:pointer;margin-bottom:3px;transition:all .2s;color:rgba(255,255,255,.55);font-size:14px;font-weight:500}
-.a-nav:hover,.a-nav.active{background:rgba(255,215,0,.1);color:#FFD700}
-.stat-c{border-radius:16px;padding:20px;color:#fff;position:relative;overflow:hidden}
-.stat-c::after{content:'';position:absolute;right:-20px;top:-20px;width:100px;height:100px;background:rgba(255,255,255,.05);border-radius:50%}
-.scroll-x{overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none}
-.scroll-x::-webkit-scrollbar{display:none}
-.google-btn{width:100%;padding:14px;border-radius:14px;border:2px solid var(--g200);background:#fff;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:border-color .25s;font-family:'DM Sans',sans-serif}
-.google-btn:hover{border-color:var(--gold)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{width:100%;overflow-x:hidden;}
+body{font-family:'Inter',sans-serif;background:#f5f5f5;color:#111;min-height:100vh;}
+.page{display:none;min-height:100vh;}
+.page.active{display:block;}
+/* AUTH */
+.auth-bg{background:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
+.auth-card{width:100%;max-width:400px;}
+.auth-logo{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:32px;}
+.auth-logo-icon{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#C9A84C,#E8C97A);display:flex;align-items:center;justify-content:center;}
+.auth-logo span{font-size:28px;font-weight:800;letter-spacing:-0.5px;color:#111;}
+.tab-row{display:flex;background:#f2f2f2;border-radius:12px;padding:4px;margin-bottom:24px;}
+.tab-btn{flex:1;padding:10px;border:none;border-radius:9px;font-family:'Inter',sans-serif;font-weight:600;font-size:14px;cursor:pointer;transition:all 0.25s;background:transparent;color:#888;}
+.tab-btn.active{background:#fff;color:#111;box-shadow:0 1px 4px rgba(0,0,0,0.12);}
+.form-label{font-size:13px;font-weight:500;color:#555;display:block;margin-bottom:6px;}
+.form-input{width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:13px 14px;font-family:'Inter',sans-serif;font-size:15px;outline:none;color:#111;background:#fff;transition:border-color 0.2s;}
+.form-input:focus{border-color:#C9A84C;}
+.form-group{margin-bottom:14px;}
+.pw-wrap{position:relative;}
+.pw-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#aaa;padding:4px;}
+.btn-primary{width:100%;padding:14px;border-radius:10px;background:#C9A84C;border:none;color:#fff;font-family:'Inter',sans-serif;font-weight:700;font-size:15px;cursor:pointer;transition:background 0.2s;margin-bottom:12px;}
+.btn-primary:active{background:#b8973e;}
+.btn-google{width:100%;padding:12px;border-radius:10px;border:1.5px solid #e0e0e0;background:#fff;font-family:'Inter',sans-serif;font-weight:600;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:border-color 0.2s;margin-bottom:10px;}
+.btn-google:hover{border-color:#C9A84C;}
+.link-text{color:#C9A84C;font-weight:600;cursor:pointer;font-size:13px;}
+/* MAIN APP LAYOUT */
+#mainApp{background:#f5f5f5;min-height:100vh;width:100%;}
+.app-header{background:#fff;padding:0;border-bottom:none;width:100%;position:sticky;top:0;z-index:50;}
+.header-inner{max-width:520px;margin:0 auto;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;width:100%;}
+.header-avatar{width:42px;height:42px;border-radius:50%;background:#e0e0e0;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:#555;}
+.header-level{font-size:14px;font-weight:600;color:#111;margin-left:10px;}
+.header-icons{display:flex;align-items:center;gap:10px;}
+.icon-btn{width:38px;height:38px;border-radius:50%;border:none;background:#f5f5f5;cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative;flex-shrink:0;}
+.notif-dot{position:absolute;top:7px;right:7px;width:7px;height:7px;background:#C9A84C;border-radius:50%;border:1.5px solid #fff;}
+/* CONTENT */
+.main-content{max-width:520px;margin:0 auto;padding:0 0 80px;width:100%;}
+/* KYC BANNER */
+.kyc-banner{margin:12px 16px;background:#fff5f5;border:1px solid #fdd;border-radius:12px;padding:12px 14px;display:flex;align-items:flex-start;gap:10px;}
+/* WALLET CARD */
+.wallet-area{padding:0 16px;margin-bottom:4px;}
+.wallet-card{background:linear-gradient(160deg,#1a2340 0%,#1e2a4a 100%);border-radius:16px;padding:18px 20px;color:#fff;position:relative;overflow:hidden;}
+.wallet-acct{font-size:13px;color:rgba(255,255,255,0.75);display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+.wallet-acct span{font-weight:600;}
+.wallet-balance-row{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.wallet-balance{font-size:30px;font-weight:700;letter-spacing:-0.5px;}
+.wallet-updated{font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:16px;}
+.wallet-actions{display:flex;gap:10px;}
+.wallet-action-btn{display:flex;align-items:center;gap:6px;padding:9px 14px;border-radius:20px;background:rgba(255,255,255,0.12);border:none;color:#fff;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;}
+.wallet-action-btn:active{background:rgba(255,255,255,0.2);}
+/* SLIDER DOTS */
+.card-dots{display:flex;justify-content:center;gap:6px;margin:8px 0 4px;}
+.card-dot{width:8px;height:8px;border-radius:50%;background:#ddd;cursor:pointer;transition:all 0.25s;}
+.card-dot.active{background:#C9A84C;width:20px;border-radius:4px;}
+/* SECTION */
+.section{padding:0 16px;margin-top:16px;}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.section-title{font-size:14px;font-weight:500;color:#888;}
+.section-action{font-size:14px;font-weight:600;color:#C9A84C;cursor:pointer;}
+/* SERVICES GRID */
+.services-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;}
+.svc-item{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 4px;cursor:pointer;border-radius:12px;transition:background 0.15s;}
+.svc-item:active{background:#f5f5f5;}
+.svc-icon{width:52px;height:52px;border-radius:14px;background:#f5f5f5;display:flex;align-items:center;justify-content:center;margin-bottom:2px;}
+.svc-label{font-size:12px;font-weight:500;color:#111;text-align:center;line-height:1.3;}
+/* REWARDS */
+.rewards-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.reward-card{background:#fff;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:6px;}
+.reward-icon{font-size:24px;margin-bottom:2px;}
+.reward-label{font-size:13px;color:#888;font-weight:500;}
+.reward-amount{font-size:17px;font-weight:700;color:#111;}
+/* TX LIST */
+.tx-item{background:#fff;border-radius:12px;padding:14px;display:flex;align-items:center;gap:12px;margin-bottom:8px;}
+.tx-icon-wrap{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.tx-details{flex:1;min-width:0;}
+.tx-name{font-size:14px;font-weight:600;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tx-date{font-size:12px;color:#aaa;margin-top:2px;}
+.tx-amount{font-size:15px;font-weight:700;text-align:right;flex-shrink:0;}
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #eee;z-index:50;padding:8px 0 12px;}
+.bottom-nav-inner{max-width:520px;margin:0 auto;display:flex;justify-content:space-around;}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 10px;border-radius:10px;transition:background 0.15s;}
+.nav-item span{font-size:11px;font-weight:500;color:#aaa;}
+.nav-item.active span{color:#C9A84C;}
+.nav-item svg{color:#aaa;}
+.nav-item.active svg{color:#C9A84C;}
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:none;align-items:flex-end;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal-sheet{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;padding:20px;animation:sheetUp 0.3s ease;}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-handle{width:40px;height:4px;background:#e0e0e0;border-radius:2px;margin:0 auto 16px;}
+.modal-title{font-size:18px;font-weight:700;margin-bottom:16px;text-align:center;}
+/* PIN */
+.pin-row{display:flex;gap:12px;justify-content:center;margin:20px 0;}
+.pin-box{width:52px;height:58px;border:2px solid #e0e0e0;border-radius:12px;font-size:26px;text-align:center;font-family:'Inter',sans-serif;font-weight:700;outline:none;transition:border-color 0.2s;}
+.pin-box:focus{border-color:#C9A84C;}
+/* TOAST */
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:11px 20px;border-radius:10px;font-size:13px;font-weight:500;z-index:9999;display:none;white-space:nowrap;}
+.toast.show{display:block;}
+/* PROFILE */
+.profile-header{background:linear-gradient(135deg,#1a2340,#1e2a4a);padding:30px 20px;margin-bottom:16px;}
+/* FUND ACCOUNT CARD */
+.fund-acct-card{border:1.5px solid #eee;border-radius:14px;padding:16px;margin-bottom:12px;background:#fafafa;}
+.fund-acct-name{font-size:13px;color:#888;margin-bottom:4px;}
+.fund-acct-num{font-size:22px;font-weight:700;letter-spacing:2px;color:#111;}
+.fund-acct-bank{font-size:12px;color:#aaa;margin-bottom:10px;}
+.copy-btn{padding:7px 16px;border-radius:8px;background:#C9A84C;color:#fff;border:none;font-family:'Inter',sans-serif;font-weight:600;font-size:13px;cursor:pointer;}
+/* ADMIN */
+.admin-stat-card{background:#fff;border-radius:14px;padding:16px;text-align:center;}
+.admin-stat-val{font-size:24px;font-weight:800;color:#C9A84C;margin-top:4px;}
+.admin-tab-btn{padding:8px 14px;border-radius:20px;border:none;font-family:'Inter',sans-serif;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap;background:#f0f0f0;color:#555;transition:all 0.2s;}
+.admin-tab-btn.active{background:#C9A84C;color:#fff;}
+/* SETUP PIN */
+.setup-bg{min-height:100vh;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
+/* UTILS */
+.divider{height:1px;background:#f0f0f0;margin:4px 0;}
+.spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;display:inline-block;vertical-align:middle;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.green{color:#22c55e;}
+.red{color:#ef4444;}
+.status-chip{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;}
+.chip-ok{background:#dcfce7;color:#16a34a;}
+.chip-pend{background:#fef9c3;color:#ca8a04;}
+.chip-fail{background:#fee2e2;color:#dc2626;}
+/* PROMO SLIDER */
+.promo-slider{position:relative;overflow:hidden;border-radius:14px;margin-bottom:4px;}
+.promo-track{display:flex;transition:transform 0.45s cubic-bezier(0.25,0.46,0.45,0.94);}
+.promo-slide{min-width:100%;border-radius:14px;padding:18px 20px;min-height:110px;display:flex;align-items:center;gap:16px;}
+/* FAQ */
+.faq-item{background:#fff;border-radius:12px;margin-bottom:8px;overflow:hidden;}
+.faq-q{padding:14px 16px;font-weight:600;font-size:14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;}
+.faq-a{display:none;padding:0 16px 14px;font-size:13px;color:#555;line-height:1.7;}
 </style>
 </head>
 <body>
 
-<!-- ========== LANDING PAGE ========== -->
-<div id="pg-landing" class="page active">
-  <!-- Header -->
-  <header style="background:#fff;border-bottom:1px solid #f0f0f0;position:sticky;top:0;z-index:50;padding:13px 20px">
-    <div style="max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px">
-      <div style="display:flex;align-items:center;gap:9px;flex-shrink:0">
-        <div style="width:38px;height:38px;background:linear-gradient(135deg,#FFD700,#FFA500);border-radius:11px;display:flex;align-items:center;justify-content:center">
-          <span style="font-family:'Playfair Display',serif;font-weight:900;font-size:17px;color:#000">Z</span>
-        </div>
-        <span style="font-family:'Playfair Display',serif;font-weight:800;font-size:21px">ZMONIE</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px" class="scroll-x">
-        <button onclick="goPg('pg-login')" class="btn-out" style="padding:8px 18px;border-radius:50px;font-size:13px;white-space:nowrap">Login</button>
-        <button onclick="goPg('pg-register')" class="btn-g" style="padding:9px 18px;border-radius:50px;font-size:13px;white-space:nowrap">Get Started</button>
-        <a href="https://wa.me/2348068886569" target="_blank" style="display:flex;align-items:center;gap:6px;background:#25D366;color:#fff;padding:9px 14px;border-radius:50px;font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap">
-          <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-          WhatsApp
-        </a>
-        <a href="tel:08068886569" style="background:#111;color:#FFD700;padding:9px 14px;border-radius:50px;font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap">📞 Call</a>
-      </div>
-    </div>
-  </header>
+<div id="toast" class="toast"></div>
 
-  <!-- Hero -->
-  <section style="background:linear-gradient(140deg,#0A0A0A 0%,#1a1a1a 100%);padding:64px 20px 80px;text-align:center;position:relative;overflow:hidden">
-    <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% -10%,rgba(255,215,0,.13),transparent 65%);pointer-events:none"></div>
-    <div style="max-width:580px;margin:0 auto;position:relative;z-index:1">
-      <div style="display:inline-flex;align-items:center;gap:7px;background:rgba(255,215,0,.08);border:1px solid rgba(255,215,0,.25);border-radius:50px;padding:6px 14px;margin-bottom:22px">
-        <div class="pulse-dot"></div>
-        <span style="color:#FFD700;font-size:12px;font-weight:600">CAC Registered · No: 9576761</span>
+<!-- ========== AUTH PAGE ========== -->
+<div id="authPage" class="page active">
+<div class="auth-bg">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-logo-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
-      <h1 style="font-family:'Playfair Display',serif;font-size:clamp(34px,8vw,62px);font-weight:900;color:#fff;line-height:1.1;margin-bottom:14px">
-        Smart Money<br/><span style="color:#FFD700">Starts Here</span>
-      </h1>
-      <p style="color:rgba(255,255,255,.65);font-size:16px;line-height:1.7;margin-bottom:34px">Nigeria's premium VTU platform. Buy airtime, data, pay bills — instantly and securely, 24/7.</p>
-      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-        <button onclick="goPg('pg-register')" class="btn-g" style="padding:15px 32px;border-radius:14px;font-size:16px">Get Started Free</button>
-        <button onclick="goPg('pg-login')" class="btn-out" style="padding:15px 32px;border-radius:14px;font-size:16px;color:#fff;border-color:rgba(255,255,255,.25)">Sign In</button>
-      </div>
-      <div style="display:flex;gap:28px;justify-content:center;margin-top:44px">
-        <div style="text-align:center"><div style="font-family:'Playfair Display',serif;font-size:26px;font-weight:900;color:#FFD700">10K+</div><div style="color:rgba(255,255,255,.45);font-size:12px;margin-top:2px">Happy Users</div></div>
-        <div style="width:1px;background:rgba(255,255,255,.08)"></div>
-        <div style="text-align:center"><div style="font-family:'Playfair Display',serif;font-size:26px;font-weight:900;color:#FFD700">₦5M+</div><div style="color:rgba(255,255,255,.45);font-size:12px;margin-top:2px">Transacted</div></div>
-        <div style="width:1px;background:rgba(255,255,255,.08)"></div>
-        <div style="text-align:center"><div style="font-family:'Playfair Display',serif;font-size:26px;font-weight:900;color:#FFD700">99.9%</div><div style="color:rgba(255,255,255,.45);font-size:12px;margin-top:2px">Uptime</div></div>
-      </div>
+      <span>ZMONIE</span>
     </div>
-  </section>
-
-  <!-- Services -->
-  <section style="padding:56px 20px;background:#fff">
-    <div style="max-width:900px;margin:0 auto">
-      <div style="text-align:center;margin-bottom:36px">
-        <h2 style="font-family:'Playfair Display',serif;font-size:32px;font-weight:800;margin-bottom:8px">Everything You Need</h2>
-        <p style="color:var(--g600);font-size:15px">All services in one powerful platform</p>
+    <div class="tab-row">
+      <button class="tab-btn active" id="tabLoginBtn" onclick="switchTab('login')">Sign In</button>
+      <button class="tab-btn" id="tabRegBtn" onclick="switchTab('register')">Create Account</button>
+    </div>
+    <!-- LOGIN -->
+    <div id="loginForm">
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input type="email" id="loginEmail" class="form-input" placeholder="you@example.com"/>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px">
-        <div class="svc-card"><div style="font-size:34px;margin-bottom:8px">📱</div><div style="font-weight:700;font-size:14px">Airtime</div><div style="color:var(--g400);font-size:11px;margin-top:3px">All Networks</div></div>
-        <div class="svc-card"><div style="font-size:34px;margin-bottom:8px">🌐</div><div style="font-weight:700;font-size:14px">Data Plans</div><div style="color:var(--g400);font-size:11px;margin-top:3px">Cheap & Fast</div></div>
-        <div class="svc-card"><div style="font-size:34px;margin-bottom:8px">📺</div><div style="font-weight:700;font-size:14px">Cable TV</div><div style="color:var(--g400);font-size:11px;margin-top:3px">DSTV / GOTV</div></div>
-        <div class="svc-card"><div style="font-size:34px;margin-bottom:8px">💡</div><div style="font-weight:700;font-size:14px">Electricity</div><div style="color:var(--g400);font-size:11px;margin-top:3px">Pay Bills</div></div>
-        <div class="svc-card"><div style="font-size:34px;margin-bottom:8px">👛</div><div style="font-weight:700;font-size:14px">Wallet</div><div style="color:var(--g400);font-size:11px;margin-top:3px">Fund Anytime</div></div>
-        <div class="svc-card"><div style="font-size:34px;margin-bottom:8px">🔒</div><div style="font-weight:700;font-size:14px">PIN Secure</div><div style="color:var(--g400);font-size:11px;margin-top:3px">4-Digit PIN</div></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Live Feed -->
-  <section style="padding:40px 20px;background:var(--g50)">
-    <div style="max-width:560px;margin:0 auto">
-      <h3 style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;text-align:center;margin-bottom:14px">🔴 Live Transactions</h3>
-      <div id="liveFeed" style="display:flex;flex-direction:column;gap:9px"></div>
-    </div>
-  </section>
-
-  <!-- Testimonials -->
-  <section style="padding:56px 20px;background:#fff">
-    <div style="max-width:900px;margin:0 auto">
-      <h2 style="font-family:'Playfair Display',serif;font-size:30px;font-weight:800;text-align:center;margin-bottom:36px">What Users Say</h2>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px">
-        <div class="card" style="padding:22px"><div style="margin-bottom:10px;color:#FFD700;font-size:15px">★★★★★</div><p style="color:var(--g600);font-size:13px;line-height:1.7;margin-bottom:14px">"ZMONIE is the fastest VTU platform I've used. Data subscription delivered instantly!"</p><div style="font-weight:700;font-size:13px">Adunola K.</div><div style="color:var(--g400);font-size:11px">Lagos, Nigeria</div></div>
-        <div class="card" style="padding:22px"><div style="margin-bottom:10px;color:#FFD700;font-size:15px">★★★★★</div><p style="color:var(--g600);font-size:13px;line-height:1.7;margin-bottom:14px">"Very reliable and affordable. I use ZMONIE for all my household bills. Highly recommended!"</p><div style="font-weight:700;font-size:13px">Emeka O.</div><div style="color:var(--g400);font-size:11px">Abuja, Nigeria</div></div>
-        <div class="card" style="padding:22px"><div style="margin-bottom:10px;color:#FFD700;font-size:15px">★★★★★</div><p style="color:var(--g600);font-size:13px;line-height:1.7;margin-bottom:14px">"Excellent WhatsApp support. Wallet funded in minutes. 10/10 customer service!"</p><div style="font-weight:700;font-size:13px">Fatima B.</div><div style="color:var(--g400);font-size:11px">Kano, Nigeria</div></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- FAQ -->
-  <section style="padding:56px 20px;background:var(--g50)">
-    <div style="max-width:680px;margin:0 auto">
-      <h2 style="font-family:'Playfair Display',serif;font-size:30px;font-weight:800;text-align:center;margin-bottom:28px">FAQs</h2>
-      <div id="faqWrap"></div>
-    </div>
-  </section>
-
-  <!-- Footer -->
-  <footer style="background:#0A0A0A;color:#fff;padding:44px 20px 28px">
-    <div style="max-width:1000px;margin:0 auto">
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:28px;margin-bottom:28px">
-        <div>
-          <div style="display:flex;align-items:center;gap:9px;margin-bottom:14px">
-            <div style="width:34px;height:34px;background:linear-gradient(135deg,#FFD700,#FFA500);border-radius:9px;display:flex;align-items:center;justify-content:center"><span style="font-family:'Playfair Display',serif;font-weight:900;font-size:15px;color:#000">Z</span></div>
-            <span style="font-family:'Playfair Display',serif;font-weight:800;font-size:19px">ZMONIE</span>
-          </div>
-          <p style="color:rgba(255,255,255,.4);font-size:12px;line-height:1.7">Nigeria's trusted VTU platform.<br/>CAC No: 9576761</p>
-        </div>
-        <div>
-          <div style="font-weight:700;margin-bottom:12px;color:#FFD700;font-size:14px">Contact Us</div>
-          <div style="color:rgba(255,255,255,.55);font-size:13px;line-height:2.1">
-            <div>📞 <a href="tel:08068886569" style="color:inherit;text-decoration:none">08068886569</a></div>
-            <div>✉️ <a href="mailto:zmonieservice@gmail.com" style="color:inherit;text-decoration:none">zmonieservice@gmail.com</a></div>
-            <div>📍 No. 1 Ibijoke St, Oregun, Ikeja, Lagos</div>
-          </div>
-        </div>
-        <div>
-          <div style="font-weight:700;margin-bottom:12px;color:#FFD700;font-size:14px">Legal</div>
-          <div style="display:flex;flex-direction:column;gap:8px">
-            <button onclick="openM('m-terms')" style="background:none;border:none;color:rgba(255,255,255,.55);cursor:pointer;text-align:left;font-size:13px;font-family:'DM Sans',sans-serif;padding:0">Terms & Conditions</button>
-            <button onclick="openM('m-privacy')" style="background:none;border:none;color:rgba(255,255,255,.55);cursor:pointer;text-align:left;font-size:13px;font-family:'DM Sans',sans-serif;padding:0">Privacy Policy</button>
-          </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="loginPass" class="form-input" placeholder="Your password" style="padding-right:44px;"/>
+          <button class="pw-toggle" onclick="togglePw('loginPass')"><svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
         </div>
       </div>
-      <div style="border-top:1px solid rgba(255,255,255,.08);padding-top:18px;text-align:center;color:rgba(255,255,255,.3);font-size:12px">
-        © 2025 ZMONIE. All rights reserved. | <a href="tel:08068886569" style="color:#FFD700">08068886569</a>
-      </div>
+      <button class="btn-primary" id="loginBtn" onclick="doLogin()">Sign In</button>
+      <button class="btn-google" onclick="doGoogle()">
+        <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        Continue with Google
+      </button>
+      <p style="text-align:center;font-size:13px;color:#888;">Forgot password? <span class="link-text" onclick="doForgotPw()">Reset here</span></p>
     </div>
-  </footer>
+    <!-- REGISTER -->
+    <div id="registerForm" style="display:none;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div class="form-group"><label class="form-label">First Name</label><input type="text" id="regFirst" class="form-input" placeholder="John"/></div>
+        <div class="form-group"><label class="form-label">Last Name</label><input type="text" id="regLast" class="form-input" placeholder="Doe"/></div>
+      </div>
+      <div class="form-group"><label class="form-label">Phone Number</label><input type="tel" id="regPhone" class="form-input" placeholder="08012345678"/></div>
+      <div class="form-group"><label class="form-label">Email Address</label><input type="email" id="regEmail" class="form-input" placeholder="you@example.com"/></div>
+      <div class="form-group"><label class="form-label">Password</label><div class="pw-wrap"><input type="password" id="regPass" class="form-input" placeholder="Min. 8 characters" style="padding-right:44px;"/><button class="pw-toggle" onclick="togglePw('regPass')"><svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
+      <button class="btn-primary" id="regBtn" onclick="doRegister()">Create Account</button>
+      <button class="btn-google" onclick="doGoogle()">
+        <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        Continue with Google
+      </button>
+    </div>
+    <p style="text-align:center;font-size:11px;color:#bbb;margin-top:16px;">CAC No: 9576761 · ZMONIE © 2024</p>
+  </div>
+</div>
 </div>
 
-<!-- ========== LOGIN PAGE ========== -->
-<div id="pg-login" class="page">
-  <div style="min-height:100vh;background:linear-gradient(140deg,#0A0A0A,#1a1a1a);display:flex;align-items:center;justify-content:center;padding:24px 16px">
-    <div style="width:100%;max-width:400px">
-      <div style="text-align:center;margin-bottom:28px">
-        <div style="width:60px;height:60px;background:linear-gradient(135deg,#FFD700,#FFA500);border-radius:18px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px">
-          <span style="font-family:'Playfair Display',serif;font-weight:900;font-size:26px;color:#000">Z</span>
-        </div>
-        <h1 style="font-family:'Playfair Display',serif;font-size:26px;font-weight:800;color:#fff;margin-bottom:5px">Welcome Back</h1>
-        <p style="color:rgba(255,255,255,.45);font-size:13px">Sign in to your ZMONIE account</p>
+<!-- ========== SETUP PIN PAGE ========== -->
+<div id="setupPinPage" class="page">
+<div class="setup-bg">
+  <div style="width:64px;height:64px;border-radius:20px;background:linear-gradient(135deg,#C9A84C,#E8C97A);display:flex;align-items:center;justify-content:center;margin-bottom:20px;">
+    <svg width="30" height="30" fill="none" viewBox="0 0 24 24" stroke="#fff" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+  </div>
+  <h2 style="font-size:22px;font-weight:700;margin-bottom:8px;text-align:center;">Set Transaction PIN</h2>
+  <p style="font-size:14px;color:#888;text-align:center;margin-bottom:28px;max-width:280px;">Create a 4-digit PIN to secure all your transactions</p>
+  <div class="pin-row">
+    <input class="pin-box" type="password" maxlength="1" id="sp1" oninput="pf('sp',1,4)" onkeydown="pb(event,'sp',1)"/>
+    <input class="pin-box" type="password" maxlength="1" id="sp2" oninput="pf('sp',2,4)" onkeydown="pb(event,'sp',2)"/>
+    <input class="pin-box" type="password" maxlength="1" id="sp3" oninput="pf('sp',3,4)" onkeydown="pb(event,'sp',3)"/>
+    <input class="pin-box" type="password" maxlength="1" id="sp4" oninput="pf('sp',4,4)" onkeydown="pb(event,'sp',4)"/>
+  </div>
+  <button class="btn-primary" onclick="savePin()" style="max-width:300px;">Continue</button>
+</div>
+</div>
+
+<!-- ========== MAIN APP ========== -->
+<div id="mainApp" class="page">
+  <!-- HEADER -->
+  <div class="app-header">
+    <div class="header-inner">
+      <div style="display:flex;align-items:center;gap:0;">
+        <div class="header-avatar" id="headerAvatar">U</div>
+        <span class="header-level" id="headerLevel" style="margin-left:10px;">Level 1</span>
       </div>
-      <div class="card" style="padding:26px">
-        <div style="margin-bottom:16px">
-          <label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:7px;display:block">Email Address</label>
-          <input class="inp" type="email" id="li-email" placeholder="you@example.com"/>
-        </div>
-        <div style="margin-bottom:22px">
-          <label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:7px;display:block">Password</label>
-          <div style="position:relative">
-            <input class="inp" type="password" id="li-pass" placeholder="••••••••" style="padding-right:44px" onkeydown="if(event.key==='Enter')doLogin()"/>
-            <button onclick="tPass('li-pass',this)" style="position:absolute;right:13px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:17px;color:var(--g400)">👁</button>
-          </div>
-        </div>
-        <button onclick="doLogin()" class="btn-g" style="width:100%;padding:15px;border-radius:13px;font-size:15px;margin-bottom:14px">Sign In</button>
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-          <div style="flex:1;height:1px;background:var(--g200)"></div>
-          <span style="color:var(--g400);font-size:12px;white-space:nowrap">or continue with</span>
-          <div style="flex:1;height:1px;background:var(--g200)"></div>
-        </div>
-        <button onclick="doGoogle()" class="google-btn" style="margin-bottom:4px">
-          <svg width="19" height="19" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-          Continue with Google
+      <div class="header-icons">
+        <button class="icon-btn" onclick="openModal('notifModal')">
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#555" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+          <span class="notif-dot" id="notifDot" style="display:none;"></span>
         </button>
-        <p style="text-align:center;margin-top:18px;font-size:13px;color:var(--g600)">No account? <button onclick="goPg('pg-register')" style="background:none;border:none;color:#B8860B;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">Sign Up</button></p>
-      </div>
-      <button onclick="goPg('pg-landing')" style="display:block;margin:14px auto 0;background:none;border:none;color:rgba(255,255,255,.35);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif">← Back to Home</button>
-    </div>
-  </div>
-</div>
-
-<!-- ========== REGISTER PAGE ========== -->
-<div id="pg-register" class="page">
-  <div style="min-height:100vh;background:linear-gradient(140deg,#0A0A0A,#1a1a1a);display:flex;align-items:center;justify-content:center;padding:24px 16px">
-    <div style="width:100%;max-width:400px">
-      <div style="text-align:center;margin-bottom:24px">
-        <div style="width:60px;height:60px;background:linear-gradient(135deg,#FFD700,#FFA500);border-radius:18px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px">
-          <span style="font-family:'Playfair Display',serif;font-weight:900;font-size:26px;color:#000">Z</span>
-        </div>
-        <h1 style="font-family:'Playfair Display',serif;font-size:26px;font-weight:800;color:#fff;margin-bottom:5px">Create Account</h1>
-        <p style="color:rgba(255,255,255,.45);font-size:13px">Join thousands of ZMONIE users</p>
-      </div>
-      <div class="card" style="padding:24px">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:13px">
-          <div><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:7px;display:block">First Name</label><input class="inp" id="rg-fn" placeholder="John"/></div>
-          <div><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:7px;display:block">Last Name</label><input class="inp" id="rg-ln" placeholder="Doe"/></div>
-        </div>
-        <div style="margin-bottom:13px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:7px;display:block">Email Address</label><input class="inp" type="email" id="rg-email" placeholder="you@example.com"/></div>
-        <div style="margin-bottom:13px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:7px;display:block">Phone Number</label><input class="inp" type="tel" id="rg-phone" placeholder="080XXXXXXXX"/></div>
-        <div style="margin-bottom:13px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:7px;display:block">Password</label><input class="inp" type="password" id="rg-pass" placeholder="Min. 6 characters"/></div>
-        <div style="margin-bottom:20px">
-          <label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:10px;display:block">Set Transaction PIN (4 digits)</label>
-          <div style="display:flex;gap:10px;justify-content:center">
-            <input class="pin-box" type="password" maxlength="1" id="rp1" oninput="pNext('rp1','rp2')"/>
-            <input class="pin-box" type="password" maxlength="1" id="rp2" oninput="pNext('rp2','rp3')"/>
-            <input class="pin-box" type="password" maxlength="1" id="rp3" oninput="pNext('rp3','rp4')"/>
-            <input class="pin-box" type="password" maxlength="1" id="rp4"/>
-          </div>
-        </div>
-        <button onclick="doRegister()" class="btn-g" style="width:100%;padding:15px;border-radius:13px;font-size:15px;margin-bottom:14px">Create Account</button>
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-          <div style="flex:1;height:1px;background:var(--g200)"></div>
-          <span style="color:var(--g400);font-size:12px">or</span>
-          <div style="flex:1;height:1px;background:var(--g200)"></div>
-        </div>
-        <button onclick="doGoogle()" class="google-btn">
-          <svg width="19" height="19" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-          Continue with Google
+        <button class="icon-btn" onclick="openModal('notifModal')">
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#555" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/><circle cx="18" cy="5" r="3" fill="#C9A84C" stroke="none"/></svg>
         </button>
-        <p style="text-align:center;margin-top:16px;font-size:13px;color:var(--g600)">Have an account? <button onclick="goPg('pg-login')" style="background:none;border:none;color:#B8860B;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">Sign In</button></p>
       </div>
     </div>
   </div>
-</div>
 
-<!-- ========== DASHBOARD ========== -->
-<div id="pg-dash" class="page">
-  <div style="max-width:480px;margin:0 auto;padding-bottom:88px">
-    <div class="hdr">
-      <div style="display:flex;align-items:center;justify-content:space-between">
-        <div>
-          <p style="font-size:11px;color:var(--g400);font-weight:500">Good day 👋</p>
-          <p style="font-weight:700;font-size:15px" id="d-name">Loading...</p>
+  <div class="main-content">
+    <!-- HOME SECTION -->
+    <div id="homeSection">
+      <!-- WALLET CARD AREA -->
+      <div style="padding:12px 16px 0;">
+        <!-- PROMO SLIDER -->
+        <div class="promo-slider" id="promoSlider">
+          <div class="promo-track" id="promoTrack"></div>
         </div>
-        <div style="display:flex;align-items:center;gap:11px">
-          <button onclick="goPg('pg-notif')" style="position:relative;background:none;border:none;cursor:pointer;font-size:21px;line-height:1">🔔<span class="badge" id="nbadge" style="display:none">0</span></button>
-          <button onclick="goPg('pg-profile')" style="width:38px;height:38px;background:linear-gradient(135deg,#FFD700,#FFA500);border-radius:11px;border:none;cursor:pointer;font-size:17px">👤</button>
-        </div>
+        <div class="card-dots" id="promoDots"></div>
       </div>
-    </div>
-    <div style="padding:14px 16px">
-      <!-- Wallet Card -->
-      <div class="card-dark" style="padding:22px;margin-bottom:18px">
-        <div style="position:relative;z-index:1">
-          <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:5px;font-weight:500;text-transform:uppercase;letter-spacing:.5px">Wallet Balance</div>
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px">
-            <span style="font-family:'Playfair Display',serif;font-size:34px;font-weight:800;color:#FFD700" id="d-bal">₦0.00</span>
-            <button onclick="togBal()" style="background:none;border:none;cursor:pointer;font-size:19px;color:rgba(255,255,255,.5)">👁</button>
+
+      <!-- WALLET CARD -->
+      <div style="padding:8px 16px 0;">
+        <div class="wallet-card">
+          <div class="wallet-acct">
+            <span id="walletAcctNum">—</span>
+            <span>|</span>
+            <span>ZMONIE Wallet</span>
+            <button onclick="copyWallet()" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.7);padding:0;display:flex;">
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            </button>
           </div>
-          <div style="display:flex;gap:10px">
-            <button onclick="openM('m-fund')" class="btn-g" style="flex:1;padding:11px;border-radius:11px;font-size:13px">+ Fund Wallet</button>
-            <button onclick="goPg('pg-history')" style="flex:1;padding:11px;border-radius:11px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">History</button>
+          <div class="wallet-balance-row">
+            <span class="wallet-balance" id="walletBal">₦0.00</span>
+            <button onclick="toggleBal()" style="background:rgba(255,255,255,0.15);border:none;cursor:pointer;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;" id="balEye">
+              <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="rgba(255,255,255,0.8)" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23" stroke="rgba(255,255,255,0.8)" stroke-width="2"/></svg>
+            </button>
+          </div>
+          <p class="wallet-updated">Last updated just now</p>
+          <div class="wallet-actions">
+            <button class="wallet-action-btn" onclick="openModal('fundModal')">
+              <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add Money
+            </button>
+            <button class="wallet-action-btn" onclick="showSection('history')">
+              <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              History
+            </button>
+            <button class="wallet-action-btn" onclick="openModal('fundModal')">
+              <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
+              Accounts
+            </button>
           </div>
         </div>
       </div>
 
-      <!-- Promo Slider -->
-      <div class="promo-wrap" id="promoWrap" style="margin-bottom:18px;background:#111">
-        <div class="promo-track" id="promoTrack"></div>
-        <div style="display:flex;gap:5px;justify-content:center;padding:8px 0" id="promoDots"></div>
-      </div>
-
-      <!-- Services Grid -->
-      <div style="margin-bottom:18px">
-        <div style="font-weight:700;font-size:15px;margin-bottom:12px">Quick Services</div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
-          <div class="svc-card" onclick="openSvc('airtime')"><div style="font-size:26px;margin-bottom:6px">📱</div><div style="font-size:11px;font-weight:700">Airtime</div></div>
-          <div class="svc-card" onclick="openSvc('data')"><div style="font-size:26px;margin-bottom:6px">🌐</div><div style="font-size:11px;font-weight:700">Data</div></div>
-          <div class="svc-card" onclick="openSvc('cable')"><div style="font-size:26px;margin-bottom:6px">📺</div><div style="font-size:11px;font-weight:700">Cable TV</div></div>
-          <div class="svc-card" onclick="openSvc('electricity')"><div style="font-size:26px;margin-bottom:6px">💡</div><div style="font-size:11px;font-weight:700">Electricity</div></div>
+      <!-- SERVICES -->
+      <div class="section" style="margin-top:20px;">
+        <div class="section-header">
+          <span class="section-title">Services</span>
+          <span class="section-action" onclick="showSection('services')">Edit</span>
+        </div>
+        <div style="background:#fff;border-radius:14px;padding:4px 0;">
+          <div class="services-grid">
+            <div class="svc-item" onclick="openSvc('airtime')">
+              <div class="svc-icon"><svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#555" stroke-width="1.8"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.46 9.81a19.79 19.79 0 01-3-8.57A2 2 0 012.43 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.91 9.94a16 16 0 006.15 6.15l1.3-1.3a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg></div>
+              <span class="svc-label">Airtime</span>
+            </div>
+            <div class="svc-item" onclick="openSvc('data')">
+              <div class="svc-icon"><svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#555" stroke-width="1.8"><path d="M1 6l11-4 11 4M1 12l11-4 11 4M1 18l11-4 11 4"/></svg></div>
+              <span class="svc-label">Data</span>
+            </div>
+            <div class="svc-item" onclick="openSvc('cable')">
+              <div class="svc-icon"><svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#555" stroke-width="1.8"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg></div>
+              <span class="svc-label">Cable TV</span>
+            </div>
+            <div class="svc-item" onclick="openSvc('loan')">
+              <div class="svc-icon"><svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#555" stroke-width="1.8"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
+              <span class="svc-label">Loans</span>
+            </div>
+          </div>
+          <div class="divider"></div>
+          <div class="services-grid">
+            <div class="svc-item" onclick="openSvc('electricity')">
+              <div class="svc-icon"><svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#555" stroke-width="1.8"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+              <span class="svc-label">Electricity</span>
+            </div>
+            <div class="svc-item" onclick="openSvc('result')">
+              <div class="svc-icon"><svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#555" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div>
+              <span class="svc-label">Result Checker</span>
+            </div>
+            <div class="svc-item" onclick="openSvc('education')">
+              <div class="svc-icon"><svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#555" stroke-width="1.8"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg></div>
+              <span class="svc-label">Education</span>
+            </div>
+            <div class="svc-item" onclick="showSection('services')">
+              <div class="svc-icon"><svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#555" stroke-width="1.8"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></div>
+              <span class="svc-label">More</span>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Recent Transactions -->
-      <div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-          <div style="font-weight:700;font-size:15px">Recent Transactions</div>
-          <button onclick="goPg('pg-history')" style="background:none;border:none;color:#B8860B;font-weight:600;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif">See All →</button>
-        </div>
-        <div class="card" id="dash-tx" style="overflow:hidden">
-          <div style="padding:36px;text-align:center;color:var(--g400)"><div style="font-size:36px;margin-bottom:8px">📋</div><p style="font-size:13px">No transactions yet</p></div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="bot-nav">
-    <div class="nav-i active" onclick="navGo('pg-dash',this)"><span style="font-size:20px">🏠</span><span class="lbl">Home</span></div>
-    <div class="nav-i" onclick="navGo('pg-history',this)"><span style="font-size:20px">📋</span><span class="lbl">History</span></div>
-    <div class="nav-i" onclick="openSvc('airtime')" style="flex:none;padding:0 14px"><div style="width:44px;height:44px;background:linear-gradient(135deg,#FFD700,#FFA500);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-top:-10px;box-shadow:0 4px 14px rgba(255,215,0,.4)"><span style="font-size:20px">⚡</span></div><span class="lbl" style="margin-top:2px">Buy</span></div>
-    <div class="nav-i" onclick="navGo('pg-notif',this)"><span style="font-size:20px">🔔</span><span class="lbl">Alerts</span></div>
-    <div class="nav-i" onclick="navGo('pg-profile',this)"><span style="font-size:20px">👤</span><span class="lbl">Profile</span></div>
-  </div>
-</div>
-
-<!-- ========== HISTORY PAGE ========== -->
-<div id="pg-history" class="page">
-  <div style="max-width:480px;margin:0 auto;padding-bottom:88px">
-    <div class="hdr"><div style="display:flex;align-items:center;gap:12px"><button onclick="goPg('pg-dash')" style="background:none;border:none;cursor:pointer;font-size:20px;color:#000">←</button><span style="font-family:'Playfair Display',serif;font-size:19px;font-weight:700">Transaction History</span></div></div>
-    <div style="padding:14px 16px">
-      <div class="scroll-x" style="display:flex;gap:7px;margin-bottom:14px;padding-bottom:2px">
-        <button class="chip chip-warn" onclick="fltTx('all',this)">All</button>
-        <button class="chip" style="background:var(--g100);color:var(--g600)" onclick="fltTx('airtime',this)">Airtime</button>
-        <button class="chip" style="background:var(--g100);color:var(--g600)" onclick="fltTx('data',this)">Data</button>
-        <button class="chip" style="background:var(--g100);color:var(--g600)" onclick="fltTx('cable',this)">Cable</button>
-        <button class="chip" style="background:var(--g100);color:var(--g600)" onclick="fltTx('electricity',this)">Electricity</button>
-        <button class="chip" style="background:var(--g100);color:var(--g600)" onclick="fltTx('credit',this)">Credits</button>
-      </div>
-      <div class="card" id="hist-list" style="overflow:hidden"><div style="padding:36px;text-align:center;color:var(--g400)"><div style="font-size:36px;margin-bottom:8px">📋</div><p style="font-size:13px">No transactions yet</p></div></div>
-    </div>
-  </div>
-  <div class="bot-nav">
-    <div class="nav-i" onclick="navGo('pg-dash',this)"><span style="font-size:20px">🏠</span><span class="lbl">Home</span></div>
-    <div class="nav-i active" onclick="navGo('pg-history',this)"><span style="font-size:20px">📋</span><span class="lbl">History</span></div>
-    <div class="nav-i" onclick="openSvc('airtime')" style="flex:none;padding:0 14px"><div style="width:44px;height:44px;background:linear-gradient(135deg,#FFD700,#FFA500);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-top:-10px;box-shadow:0 4px 14px rgba(255,215,0,.4)"><span style="font-size:20px">⚡</span></div><span class="lbl" style="margin-top:2px">Buy</span></div>
-    <div class="nav-i" onclick="navGo('pg-notif',this)"><span style="font-size:20px">🔔</span><span class="lbl">Alerts</span></div>
-    <div class="nav-i" onclick="navGo('pg-profile',this)"><span style="font-size:20px">👤</span><span class="lbl">Profile</span></div>
-  </div>
-</div>
-
-<!-- ========== NOTIFICATIONS PAGE ========== -->
-<div id="pg-notif" class="page">
-  <div style="max-width:480px;margin:0 auto;padding-bottom:88px">
-    <div class="hdr"><div style="display:flex;align-items:center;gap:12px"><button onclick="goPg('pg-dash')" style="background:none;border:none;cursor:pointer;font-size:20px;color:#000">←</button><span style="font-family:'Playfair Display',serif;font-size:19px;font-weight:700">Notifications</span></div></div>
-    <div id="notif-list" style="padding:14px 16px"></div>
-  </div>
-  <div class="bot-nav">
-    <div class="nav-i" onclick="navGo('pg-dash',this)"><span style="font-size:20px">🏠</span><span class="lbl">Home</span></div>
-    <div class="nav-i" onclick="navGo('pg-history',this)"><span style="font-size:20px">📋</span><span class="lbl">History</span></div>
-    <div class="nav-i" onclick="openSvc('airtime')" style="flex:none;padding:0 14px"><div style="width:44px;height:44px;background:linear-gradient(135deg,#FFD700,#FFA500);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-top:-10px;box-shadow:0 4px 14px rgba(255,215,0,.4)"><span style="font-size:20px">⚡</span></div><span class="lbl" style="margin-top:2px">Buy</span></div>
-    <div class="nav-i active" onclick="navGo('pg-notif',this)"><span style="font-size:20px">🔔</span><span class="lbl">Alerts</span></div>
-    <div class="nav-i" onclick="navGo('pg-profile',this)"><span style="font-size:20px">👤</span><span class="lbl">Profile</span></div>
-  </div>
-</div>
-
-<!-- ========== PROFILE PAGE ========== -->
-<div id="pg-profile" class="page">
-  <div style="max-width:480px;margin:0 auto;padding-bottom:88px">
-    <div class="hdr"><div style="display:flex;align-items:center;gap:12px"><button onclick="goPg('pg-dash')" style="background:none;border:none;cursor:pointer;font-size:20px;color:#000">←</button><span style="font-family:'Playfair Display',serif;font-size:19px;font-weight:700">My Profile</span></div></div>
-    <div style="padding:14px 16px">
-      <div style="text-align:center;padding:22px 0">
-        <div style="width:76px;height:76px;background:linear-gradient(135deg,#FFD700,#FFA500);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:30px">👤</div>
-        <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700" id="pr-name">—</div>
-        <div style="color:var(--g400);font-size:13px;margin-top:3px" id="pr-email">—</div>
-      </div>
-      <div class="card" style="overflow:hidden;margin-bottom:14px">
-        <div class="tx-row" onclick="openM('m-chgpin')" style="cursor:pointer"><div style="width:38px;height:38px;background:rgba(255,215,0,.1);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">🔒</div><div style="flex:1;margin-left:12px"><div style="font-weight:600;font-size:14px">Change PIN</div><div style="font-size:11px;color:var(--g400)">Update your 4-digit transaction PIN</div></div><span style="color:var(--g400)">›</span></div>
-        <div class="tx-row" onclick="openM('m-forgotpin')" style="cursor:pointer"><div style="width:38px;height:38px;background:rgba(59,130,246,.1);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">❓</div><div style="flex:1;margin-left:12px"><div style="font-weight:600;font-size:14px">Forgot PIN</div><div style="font-size:11px;color:var(--g400)">Request admin PIN reset</div></div><span style="color:var(--g400)">›</span></div>
-        <div class="tx-row" onclick="openM('m-terms')" style="cursor:pointer"><div style="width:38px;height:38px;background:rgba(0,0,0,.04);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">📜</div><div style="flex:1;margin-left:12px"><div style="font-weight:600;font-size:14px">Terms & Conditions</div></div><span style="color:var(--g400)">›</span></div>
-        <div class="tx-row" onclick="openM('m-privacy')" style="cursor:pointer"><div style="width:38px;height:38px;background:rgba(0,0,0,.04);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">🛡</div><div style="flex:1;margin-left:12px"><div style="font-weight:600;font-size:14px">Privacy Policy</div></div><span style="color:var(--g400)">›</span></div>
-        <a href="https://wa.me/2348068886569" target="_blank" class="tx-row" style="cursor:pointer;text-decoration:none;color:inherit;display:flex"><div style="width:38px;height:38px;background:rgba(16,185,129,.1);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">💬</div><div style="flex:1;margin-left:12px"><div style="font-weight:600;font-size:14px">WhatsApp Support</div><div style="font-size:11px;color:var(--g400)">08068886569</div></div><span style="color:var(--g400)">›</span></a>
-        <a href="tel:08068886569" class="tx-row" style="cursor:pointer;text-decoration:none;color:inherit;display:flex;border-bottom:none"><div style="width:38px;height:38px;background:rgba(59,130,246,.1);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">📞</div><div style="flex:1;margin-left:12px"><div style="font-weight:600;font-size:14px">Call Support</div><div style="font-size:11px;color:var(--g400)">08068886569</div></div><span style="color:var(--g400)">›</span></a>
-      </div>
-      <button onclick="doLogout()" style="width:100%;padding:15px;border-radius:13px;background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.18);color:var(--err);font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">Sign Out</button>
-    </div>
-  </div>
-  <div class="bot-nav">
-    <div class="nav-i" onclick="navGo('pg-dash',this)"><span style="font-size:20px">🏠</span><span class="lbl">Home</span></div>
-    <div class="nav-i" onclick="navGo('pg-history',this)"><span style="font-size:20px">📋</span><span class="lbl">History</span></div>
-    <div class="nav-i" onclick="openSvc('airtime')" style="flex:none;padding:0 14px"><div style="width:44px;height:44px;background:linear-gradient(135deg,#FFD700,#FFA500);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-top:-10px;box-shadow:0 4px 14px rgba(255,215,0,.4)"><span style="font-size:20px">⚡</span></div><span class="lbl" style="margin-top:2px">Buy</span></div>
-    <div class="nav-i" onclick="navGo('pg-notif',this)"><span style="font-size:20px">🔔</span><span class="lbl">Alerts</span></div>
-    <div class="nav-i active" onclick="navGo('pg-profile',this)"><span style="font-size:20px">👤</span><span class="lbl">Profile</span></div>
-  </div>
-</div>
-
-<!-- ========== ADMIN PAGE ========== -->
-<div id="pg-admin" class="page">
-  <div style="display:flex;min-height:100vh">
-    <div class="admin-side">
-      <div style="padding:0 16px 20px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:8px">
-        <div style="display:flex;align-items:center;gap:9px">
-          <div style="width:34px;height:34px;background:linear-gradient(135deg,#FFD700,#FFA500);border-radius:9px;display:flex;align-items:center;justify-content:center"><span style="font-family:'Playfair Display',serif;font-weight:900;font-size:15px;color:#000">Z</span></div>
-          <div><div style="font-family:'Playfair Display',serif;font-weight:700;color:#fff;font-size:15px">ZMONIE</div><div style="font-size:10px;color:rgba(255,255,255,.35)">Admin Panel</div></div>
+      <!-- REWARDS -->
+      <div class="section">
+        <div class="section-header"><span class="section-title">Rewards</span></div>
+        <div class="rewards-grid">
+          <div class="reward-card">
+            <div class="reward-icon">🎁</div>
+            <div class="reward-label">Cashback</div>
+            <div class="reward-amount" id="cashbackAmt">₦0.00</div>
+          </div>
+          <div class="reward-card">
+            <div class="reward-icon">📣</div>
+            <div class="reward-label">Referrals</div>
+            <div class="reward-amount">₦0.00</div>
+          </div>
         </div>
       </div>
-      <nav style="padding:0 10px" id="admin-nav">
-        <div class="a-nav active" onclick="aTab('overview')">📊 Overview</div>
-        <div class="a-nav" onclick="aTab('users')">👥 Users</div>
-        <div class="a-nav" onclick="aTab('transactions')">💳 Transactions</div>
-        <div class="a-nav" onclick="aTab('funding')">💰 Funding Requests</div>
-        <div class="a-nav" onclick="aTab('pins')">🔒 PIN Requests</div>
-        <div class="a-nav" onclick="aTab('promos')">🎯 Promo Slides</div>
-        <div class="a-nav" onclick="aTab('broadcast')">📢 Broadcast</div>
-        <div class="a-nav" onclick="aTab('wallet')">👛 Wallet Ops</div>
-      </nav>
-      <div style="position:absolute;bottom:20px;left:0;right:0;padding:0 10px">
-        <button onclick="doLogout()" style="width:100%;padding:11px;border-radius:10px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.18);color:#f87171;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Sign Out</button>
+
+      <!-- RECENT TX -->
+      <div class="section">
+        <div class="section-header">
+          <span class="section-title">Recent transactions</span>
+          <span class="section-action" onclick="showSection('history')">View All</span>
+        </div>
+        <div id="recentTxList"><p style="text-align:center;color:#aaa;font-size:13px;padding:24px 0;">No transactions yet</p></div>
+      </div>
+    </div><!-- end homeSection -->
+
+    <!-- SERVICES SECTION -->
+    <div id="servicesSection" style="display:none;padding:16px;">
+      <h2 style="font-size:18px;font-weight:700;margin-bottom:16px;">All Services</h2>
+      <div style="background:#fff;border-radius:14px;padding:4px 0;">
+        <div class="services-grid">
+          <div class="svc-item" onclick="openSvc('airtime')"><div class="svc-icon"><svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#555" stroke-width="1.8"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.46 9.81a19.79 19.79 0 01-3-8.57A2 2 0 012.43 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.91 9.94a16 16 0 006.15 6.15l1.3-1.3a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg></div><span class="svc-label">Airtime</span></div>
+          <div class="svc-item" onclick="openSvc('data')"><div class="svc-icon"><svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#555" stroke-width="1.8"><path d="M1 6l11-4 11 4M1 12l11-4 11 4M1 18l11-4 11 4"/></svg></div><span class="svc-label">Data</span></div>
+          <div class="svc-item" onclick="openSvc('cable')"><div class="svc-icon"><svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#555" stroke-width="1.8"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg></div><span class="svc-label">Cable TV</span></div>
+          <div class="svc-item" onclick="openSvc('electricity')"><div class="svc-icon"><svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#555" stroke-width="1.8"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><span class="svc-label">Electricity</span></div>
+        </div>
+        <div class="divider"></div>
+        <div class="services-grid">
+          <div class="svc-item" onclick="openSvc('loan')"><div class="svc-icon"><svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#555" stroke-width="1.8"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div><span class="svc-label">Loans</span></div>
+          <div class="svc-item" onclick="openSvc('result')"><div class="svc-icon"><svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#555" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div><span class="svc-label">Result Checker</span></div>
+          <div class="svc-item" onclick="openSvc('education')"><div class="svc-icon"><svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#555" stroke-width="1.8"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg></div><span class="svc-label">Education</span></div>
+          <div class="svc-item" onclick="openModal('fundModal')"><div class="svc-icon"><svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#555" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div><span class="svc-label">Fund Wallet</span></div>
+        </div>
       </div>
     </div>
-    <div class="admin-main" style="flex:1">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-        <h1 style="font-family:'Playfair Display',serif;font-size:22px;font-weight:800" id="a-title">Overview</h1>
-        <button onclick="doLogout()" style="padding:8px 14px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.18);color:var(--err);border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Logout</button>
+
+    <!-- HISTORY SECTION -->
+    <div id="historySection" style="display:none;padding:16px;">
+      <h2 style="font-size:18px;font-weight:700;margin-bottom:16px;">Transaction History</h2>
+      <div id="fullTxList"><p style="text-align:center;color:#aaa;font-size:13px;padding:30px 0;">No transactions yet</p></div>
+    </div>
+
+    <!-- REWARDS SECTION -->
+    <div id="rewardsSection" style="display:none;padding:16px;">
+      <h2 style="font-size:18px;font-weight:700;margin-bottom:16px;">Rewards</h2>
+      <div class="rewards-grid" style="margin-bottom:16px;">
+        <div class="reward-card"><div class="reward-icon">🎁</div><div class="reward-label">Cashback</div><div class="reward-amount">₦0.00</div></div>
+        <div class="reward-card"><div class="reward-icon">📣</div><div class="reward-label">Referrals</div><div class="reward-amount">₦0.00</div></div>
       </div>
-      <div class="scroll-x" style="display:flex;gap:7px;margin-bottom:18px;padding-bottom:2px">
-        <button onclick="aTab('overview')" style="padding:7px 14px;border-radius:50px;border:none;background:#FFD700;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">📊 Overview</button>
-        <button onclick="aTab('users')" style="padding:7px 14px;border-radius:50px;border:1px solid var(--g200);background:#fff;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">👥 Users</button>
-        <button onclick="aTab('funding')" style="padding:7px 14px;border-radius:50px;border:1px solid var(--g200);background:#fff;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">💰 Funding</button>
-        <button onclick="aTab('pins')" style="padding:7px 14px;border-radius:50px;border:1px solid var(--g200);background:#fff;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">🔒 PINs</button>
-        <button onclick="aTab('promos')" style="padding:7px 14px;border-radius:50px;border:1px solid var(--g200);background:#fff;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">🎯 Promos</button>
-        <button onclick="aTab('broadcast')" style="padding:7px 14px;border-radius:50px;border:1px solid var(--g200);background:#fff;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">📢 Broadcast</button>
-        <button onclick="aTab('wallet')" style="padding:7px 14px;border-radius:50px;border:1px solid var(--g200);background:#fff;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">👛 Wallet</button>
+      <div style="background:#fff;border-radius:14px;padding:20px;text-align:center;">
+        <div style="font-size:36px;margin-bottom:10px;">🏆</div>
+        <p style="font-weight:600;font-size:15px;margin-bottom:6px;">Earn More Rewards</p>
+        <p style="font-size:13px;color:#888;margin-bottom:16px;">Invite friends to ZMONIE and earn ₦200 for every successful referral</p>
+        <button class="btn-primary" onclick="toast2('Referral link copied!','success')" style="max-width:200px;margin:0 auto;">Share Invite Link</button>
       </div>
-      <div id="a-content"></div>
+    </div>
+
+    <!-- PROFILE SECTION -->
+    <div id="profileSection" style="display:none;">
+      <div class="profile-header">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div style="width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:#C9A84C;" id="profAvatarBig">U</div>
+          <div><h3 id="profName" style="font-size:18px;font-weight:700;color:#fff;"></h3><p id="profEmail" style="font-size:13px;color:rgba(255,255,255,0.65);margin-top:2px;"></p><p id="profPhone" style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:2px;"></p></div>
+        </div>
+      </div>
+      <div style="padding:0 16px;display:flex;flex-direction:column;gap:8px;">
+        <div onclick="openModal('changePinModal')" style="background:#fff;border-radius:12px;padding:15px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;">
+          <div style="display:flex;align-items:center;gap:12px;"><div style="width:38px;height:38px;border-radius:10px;background:#fff8e8;display:flex;align-items:center;justify-content:center;"><svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#C9A84C" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div><div><p style="font-size:14px;font-weight:600;">Change Transaction PIN</p><p style="font-size:12px;color:#aaa;">Update your 4-digit PIN</p></div></div><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#ccc" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+        <div onclick="openModal('forgotPinModal')" style="background:#fff;border-radius:12px;padding:15px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;">
+          <div style="display:flex;align-items:center;gap:12px;"><div style="width:38px;height:38px;border-radius:10px;background:#fff0f0;display:flex;align-items:center;justify-content:center;"><svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#ef4444" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div><p style="font-size:14px;font-weight:600;">Forgot PIN</p><p style="font-size:12px;color:#aaa;">Request admin reset</p></div></div><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#ccc" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+        <div onclick="window.open('https://wa.me/2348068886569','_blank')" style="background:#fff;border-radius:12px;padding:15px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;">
+          <div style="display:flex;align-items:center;gap:12px;"><div style="width:38px;height:38px;border-radius:10px;background:#f0fff4;display:flex;align-items:center;justify-content:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="#22c55e"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></div><div><p style="font-size:14px;font-weight:600;">WhatsApp Support</p><p style="font-size:12px;color:#aaa;">08068886569</p></div></div><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#ccc" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+        <div onclick="showSection('faq')" style="background:#fff;border-radius:12px;padding:15px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;">
+          <div style="display:flex;align-items:center;gap:12px;"><div style="width:38px;height:38px;border-radius:10px;background:#f5f0ff;display:flex;align-items:center;justify-content:center;"><svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#8b5cf6" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><span style="font-size:14px;font-weight:600;">FAQ &amp; Help</span></div><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#ccc" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+        <button onclick="doLogout()" style="width:100%;padding:14px;border-radius:12px;background:#fff0f0;border:none;color:#ef4444;font-family:'Inter',sans-serif;font-weight:600;font-size:14px;cursor:pointer;margin-top:4px;">Sign Out</button>
+        <p style="text-align:center;font-size:11px;color:#ccc;padding:8px 0;">CAC No: 9576761 · ZMONIE &copy; 2024<br/>No.1 Ibijoke St, Oregun, Ikeja, Lagos</p>
+      </div>
+    </div>
+
+    <!-- FAQ SECTION -->
+    <div id="faqSection" style="display:none;padding:16px;">
+      <button onclick="showSection('profile')" style="display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;margin-bottom:16px;font-size:14px;font-weight:600;color:#555;"><svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg> Back</button>
+      <h2 style="font-size:18px;font-weight:700;margin-bottom:16px;">FAQ &amp; Help</h2>
+      <div id="faqList"></div>
+      <div style="background:linear-gradient(135deg,#1a2340,#1e2a4a);border-radius:14px;padding:20px;color:#fff;margin-top:16px;">
+        <p style="font-weight:700;font-size:15px;margin-bottom:10px;">Contact Us</p>
+        <p style="font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:3px;">📧 zmonieservice@gmail.com</p>
+        <p style="font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:3px;">📱 08068886569</p>
+        <p style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:16px;">📍 No. 1 Ibijoke Street, Oregun, Ikeja, Lagos</p>
+        <div style="display:flex;gap:10px;"><button onclick="window.open('https://wa.me/2348068886569','_blank')" style="flex:1;padding:10px;border-radius:10px;background:#25D366;border:none;color:#fff;font-weight:600;font-size:13px;cursor:pointer;">WhatsApp</button><button onclick="window.open('tel:08068886569')" style="flex:1;padding:10px;border-radius:10px;background:rgba(255,255,255,0.15);border:none;color:#fff;font-weight:600;font-size:13px;cursor:pointer;">Call Us</button></div>
+      </div>
+    </div>
+
+    <!-- ADMIN SECTION -->
+    <div id="adminSection" style="display:none;padding:16px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <h2 style="font-size:18px;font-weight:700;">Admin Dashboard</h2>
+        <span style="background:#C9A84C;color:#fff;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;">ADMIN</span>
+      </div>
+      <div id="adminStats" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;"></div>
+      <div style="display:flex;gap:8px;overflow-x:auto;margin-bottom:16px;padding-bottom:4px;" id="adminTabRow"></div>
+      <div id="adminTabContent"></div>
+    </div>
+
+  </div><!-- end main-content -->
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <div class="bottom-nav-inner">
+      <div class="nav-item active" id="nav-home" onclick="showSection('home')">
+        <svg width="22" height="22" fill="currentColor" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+        <span>Home</span>
+      </div>
+      <div class="nav-item" id="nav-services" onclick="showSection('services')">
+        <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="8" height="8" rx="1"/><rect x="14" y="3" width="8" height="8" rx="1"/><rect x="2" y="14" width="8" height="8" rx="1"/><rect x="14" y="14" width="8" height="8" rx="1"/></svg>
+        <span>Services</span>
+      </div>
+      <div class="nav-item" id="nav-history" onclick="showSection('history')">
+        <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+        <span>Card</span>
+      </div>
+      <div class="nav-item" id="nav-rewards" onclick="showSection('rewards')">
+        <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 010-5C7 4 12 8 12 8s-5 4-7.5 4A2.5 2.5 0 014.5 9H6"/><path d="M18 9h1.5a2.5 2.5 0 000-5C17 4 12 8 12 8s5 4 7.5 4A2.5 2.5 0 0019.5 9H18"/><path d="M12 8v13M8 21h8"/></svg>
+        <span>Rewards</span>
+      </div>
+      <div class="nav-item" id="nav-profile" onclick="showSection('profile')">
+        <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>Profile</span>
+      </div>
+      <div class="nav-item" id="nav-admin" onclick="showSection('admin')" style="display:none;">
+        <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <span>Admin</span>
+      </div>
     </div>
   </div>
+</div><!-- end mainApp -->
+
+<!-- ====== MODALS ====== -->
+
+<!-- FUND -->
+<div id="fundModal" class="modal-overlay" onclick="if(event.target===this)closeModal('fundModal')">
+<div class="modal-sheet">
+  <div class="modal-handle"></div>
+  <p class="modal-title">Add Money</p>
+  <p style="font-size:13px;color:#888;text-align:center;margin-bottom:20px;">Transfer to any account below then send proof via WhatsApp.</p>
+  <div class="fund-acct-card">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;"><div style="width:32px;height:32px;border-radius:8px;background:#111;display:flex;align-items:center;justify-content:center;"><span style="font-size:9px;font-weight:800;color:#C9A84C;">MP</span></div><div><p style="font-size:13px;font-weight:600;">Moniepoint</p><p style="font-size:11px;color:#aaa;">OgaBuy Online Shopping</p></div></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;"><span class="fund-acct-num">5101670209</span><button class="copy-btn" onclick="doCopy('5101670209',this)">Copy</button></div>
+  </div>
+  <div class="fund-acct-card">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;"><div style="width:32px;height:32px;border-radius:8px;background:#dc2626;display:flex;align-items:center;justify-content:center;"><span style="font-size:9px;font-weight:800;color:#fff;">ZB</span></div><div><p style="font-size:13px;font-weight:600;">Zenith Bank</p><p style="font-size:11px;color:#aaa;">OgaBuy Online Shopping</p></div></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;"><span class="fund-acct-num">1310344253</span><button class="copy-btn" onclick="doCopy('1310344253',this)">Copy</button></div>
+  </div>
+  <button onclick="sendProofWA()" style="width:100%;padding:14px;border-radius:10px;background:#25D366;border:none;color:#fff;font-family:'Inter',sans-serif;font-weight:700;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px;">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    Send Payment Proof
+  </button>
+</div>
 </div>
 
-<!-- ========== MODALS ========== -->
+<!-- SERVICE MODAL -->
+<div id="svcModal" class="modal-overlay" onclick="if(event.target===this)closeModal('svcModal')">
+<div class="modal-sheet" id="svcModalBody"></div>
+</div>
 
-<!-- Fund Wallet -->
-<div class="modal" id="m-fund"><div class="modal-box">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
-    <h3 style="font-family:'Playfair Display',serif;font-size:19px;font-weight:700">Fund Wallet</h3>
-    <button onclick="closeM('m-fund')" style="background:var(--g100);border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:15px">✕</button>
-  </div>
-  <p style="color:var(--g600);font-size:13px;margin-bottom:18px;line-height:1.6">Transfer to any account below, then send proof via WhatsApp. Admin will credit your wallet.</p>
-  <div class="card" style="padding:15px;margin-bottom:11px;border-left:4px solid #FFD700">
-    <div style="font-size:10px;font-weight:700;color:var(--g400);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Moniepoint</div>
-    <div style="font-weight:700;font-size:14px;margin-bottom:2px">OgaBuy Online Shopping</div>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
-      <div style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;color:#B8860B">5101670209</div>
-      <button onclick="cpAcc('5101670209')" class="btn-g" style="padding:7px 14px;border-radius:9px;font-size:12px">Copy</button>
-    </div>
-  </div>
-  <div class="card" style="padding:15px;margin-bottom:18px;border-left:4px solid #B22222">
-    <div style="font-size:10px;font-weight:700;color:var(--g400);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Zenith Bank</div>
-    <div style="font-weight:700;font-size:14px;margin-bottom:2px">OgaBuy Online Shopping</div>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
-      <div style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;color:#B8860B">1310344253</div>
-      <button onclick="cpAcc('1310344253')" class="btn-g" style="padding:7px 14px;border-radius:9px;font-size:12px">Copy</button>
-    </div>
-  </div>
-  <a href="https://wa.me/2348068886569?text=Hello%20ZMONIE%2C%20I%20have%20made%20a%20payment%20and%20I%27m%20sending%20my%20proof." target="_blank" class="btn-g" style="display:flex;align-items:center;justify-content:center;gap:9px;padding:15px;border-radius:13px;font-size:14px;font-weight:700;text-decoration:none;color:#000">
-    <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-    Send Proof via WhatsApp
-  </a>
-</div></div>
+<!-- PIN MODAL -->
+<div id="pinModal" class="modal-overlay">
+<div class="modal-sheet" style="text-align:center;">
+  <div class="modal-handle"></div>
+  <div style="width:52px;height:52px;border-radius:16px;background:#fff8e8;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;"><svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="#C9A84C" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>
+  <p style="font-size:18px;font-weight:700;margin-bottom:6px;">Enter PIN</p>
+  <p style="font-size:13px;color:#888;margin-bottom:4px;">Enter your 4-digit transaction PIN</p>
+  <div class="pin-row"><input class="pin-box" type="password" maxlength="1" id="tp1" oninput="pf('tp',1,4)" onkeydown="pb(event,'tp',1)"/><input class="pin-box" type="password" maxlength="1" id="tp2" oninput="pf('tp',2,4)" onkeydown="pb(event,'tp',2)"/><input class="pin-box" type="password" maxlength="1" id="tp3" oninput="pf('tp',3,4)" onkeydown="pb(event,'tp',3)"/><input class="pin-box" type="password" maxlength="1" id="tp4" oninput="pf('tp',4,4)" onkeydown="pb(event,'tp',4)"/></div>
+  <button class="btn-primary" onclick="verifyPin()">Confirm</button>
+  <button onclick="closeModal('pinModal');clrPin('tp',4)" style="width:100%;padding:12px;border-radius:10px;background:#f5f5f5;border:none;font-family:'Inter',sans-serif;font-weight:600;font-size:14px;cursor:pointer;">Cancel</button>
+</div>
+</div>
 
-<!-- PIN Verify -->
-<div class="modal" id="m-pin"><div class="modal-box">
-  <div style="text-align:center;margin-bottom:22px">
-    <div style="width:52px;height:52px;background:linear-gradient(135deg,#FFD700,#FFA500);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:22px">🔒</div>
-    <h3 style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;margin-bottom:5px">Enter Transaction PIN</h3>
-    <p style="color:var(--g400);font-size:13px">Enter your 4-digit PIN to continue</p>
-  </div>
-  <div style="display:flex;gap:13px;justify-content:center;margin-bottom:22px">
-    <input class="pin-box" type="password" maxlength="1" id="vp1" oninput="pNext('vp1','vp2')"/>
-    <input class="pin-box" type="password" maxlength="1" id="vp2" oninput="pNext('vp2','vp3')"/>
-    <input class="pin-box" type="password" maxlength="1" id="vp3" oninput="pNext('vp3','vp4')"/>
-    <input class="pin-box" type="password" maxlength="1" id="vp4"/>
-  </div>
-  <button onclick="verPin()" class="btn-g" style="width:100%;padding:15px;border-radius:13px;font-size:15px;margin-bottom:10px">Confirm</button>
-  <button onclick="closeM('m-pin')" style="width:100%;padding:13px;border-radius:13px;background:var(--g100);border:none;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Cancel</button>
-</div></div>
+<!-- CHANGE PIN -->
+<div id="changePinModal" class="modal-overlay" onclick="if(event.target===this)closeModal('changePinModal')">
+<div class="modal-sheet">
+  <div class="modal-handle"></div>
+  <p class="modal-title">Change PIN</p>
+  <p style="font-size:13px;color:#888;text-align:center;margin-bottom:16px;">Current PIN</p>
+  <div class="pin-row"><input class="pin-box" type="password" maxlength="1" id="cp1" oninput="pf('cp',1,4)" onkeydown="pb(event,'cp',1)"/><input class="pin-box" type="password" maxlength="1" id="cp2" oninput="pf('cp',2,4)" onkeydown="pb(event,'cp',2)"/><input class="pin-box" type="password" maxlength="1" id="cp3" oninput="pf('cp',3,4)" onkeydown="pb(event,'cp',3)"/><input class="pin-box" type="password" maxlength="1" id="cp4" oninput="pf('cp',4,4)" onkeydown="pb(event,'cp',4)"/></div>
+  <p style="font-size:13px;color:#888;text-align:center;margin-bottom:4px;">New PIN</p>
+  <div class="pin-row"><input class="pin-box" type="password" maxlength="1" id="np1" oninput="pf('np',1,4)" onkeydown="pb(event,'np',1)"/><input class="pin-box" type="password" maxlength="1" id="np2" oninput="pf('np',2,4)" onkeydown="pb(event,'np',2)"/><input class="pin-box" type="password" maxlength="1" id="np3" oninput="pf('np',3,4)" onkeydown="pb(event,'np',3)"/><input class="pin-box" type="password" maxlength="1" id="np4" oninput="pf('np',4,4)" onkeydown="pb(event,'np',4)"/></div>
+  <button class="btn-primary" onclick="doChangePin()" style="margin-top:8px;">Update PIN</button>
+</div>
+</div>
 
-<!-- Service Modal -->
-<div class="modal" id="m-svc"><div class="modal-box">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
-    <h3 style="font-family:'Playfair Display',serif;font-size:19px;font-weight:700" id="svc-title">Service</h3>
-    <button onclick="closeM('m-svc')" style="background:var(--g100);border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:15px">✕</button>
-  </div>
-  <div id="svc-body"></div>
-</div></div>
+<!-- FORGOT PIN -->
+<div id="forgotPinModal" class="modal-overlay" onclick="if(event.target===this)closeModal('forgotPinModal')">
+<div class="modal-sheet" style="text-align:center;">
+  <div class="modal-handle"></div>
+  <div style="font-size:48px;margin-bottom:12px;">🔐</div>
+  <p style="font-size:18px;font-weight:700;margin-bottom:8px;">Reset PIN</p>
+  <p style="font-size:13px;color:#888;margin-bottom:20px;">An admin will review your request and approve a PIN reset. You'll be notified once approved.</p>
+  <button class="btn-primary" onclick="reqPinReset()">Send Reset Request</button>
+  <button onclick="closeModal('forgotPinModal')" style="width:100%;padding:12px;border-radius:10px;background:#f5f5f5;border:none;font-family:'Inter',sans-serif;font-weight:600;cursor:pointer;margin-top:8px;">Cancel</button>
+</div>
+</div>
 
-<!-- Change PIN -->
-<div class="modal" id="m-chgpin"><div class="modal-box">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
-    <h3 style="font-family:'Playfair Display',serif;font-size:19px;font-weight:700">Change PIN</h3>
-    <button onclick="closeM('m-chgpin')" style="background:var(--g100);border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:15px">✕</button>
-  </div>
-  <div style="margin-bottom:16px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:9px;display:block">Current PIN</label><div style="display:flex;gap:10px;justify-content:center"><input class="pin-box" type="password" maxlength="1" id="cp1" oninput="pNext('cp1','cp2')"/><input class="pin-box" type="password" maxlength="1" id="cp2" oninput="pNext('cp2','cp3')"/><input class="pin-box" type="password" maxlength="1" id="cp3" oninput="pNext('cp3','cp4')"/><input class="pin-box" type="password" maxlength="1" id="cp4"/></div></div>
-  <div style="margin-bottom:20px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:9px;display:block">New PIN</label><div style="display:flex;gap:10px;justify-content:center"><input class="pin-box" type="password" maxlength="1" id="np1" oninput="pNext('np1','np2')"/><input class="pin-box" type="password" maxlength="1" id="np2" oninput="pNext('np2','np3')"/><input class="pin-box" type="password" maxlength="1" id="np3" oninput="pNext('np3','np4')"/><input class="pin-box" type="password" maxlength="1" id="np4"/></div></div>
-  <button onclick="doChgPin()" class="btn-g" style="width:100%;padding:15px;border-radius:13px;font-size:15px">Update PIN</button>
-</div></div>
+<!-- NOTIFICATIONS -->
+<div id="notifModal" class="modal-overlay" onclick="if(event.target===this)closeModal('notifModal')">
+<div class="modal-sheet">
+  <div class="modal-handle"></div>
+  <p class="modal-title">Notifications</p>
+  <div id="notifList"><p style="text-align:center;color:#aaa;font-size:13px;padding:24px;">No notifications yet</p></div>
+</div>
+</div>
 
-<!-- Forgot PIN -->
-<div class="modal" id="m-forgotpin"><div class="modal-box">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
-    <h3 style="font-family:'Playfair Display',serif;font-size:19px;font-weight:700">Forgot PIN</h3>
-    <button onclick="closeM('m-forgotpin')" style="background:var(--g100);border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:15px">✕</button>
-  </div>
-  <div style="background:rgba(255,215,0,.08);border:1px solid rgba(255,215,0,.25);border-radius:12px;padding:15px;margin-bottom:18px"><p style="font-size:13px;line-height:1.7;color:var(--g600)">⚠️ A PIN reset request will be sent to admin. This may take up to 24 hours. Admin must approve before your PIN is reset.</p></div>
-  <button onclick="reqPinReset()" class="btn-g" style="width:100%;padding:15px;border-radius:13px;font-size:15px;margin-bottom:10px">Send Reset Request</button>
-  <button onclick="closeM('m-forgotpin')" style="width:100%;padding:13px;border-radius:13px;background:var(--g100);border:none;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Cancel</button>
-</div></div>
+<!-- ADMIN CREDIT -->
+<div id="adminCreditModal" class="modal-overlay" onclick="if(event.target===this)closeModal('adminCreditModal')">
+<div class="modal-sheet">
+  <div class="modal-handle"></div>
+  <p class="modal-title">Credit / Debit Wallet</p>
+  <input type="hidden" id="creditUID"/>
+  <div class="form-group"><label class="form-label">Amount (₦)</label><input type="number" id="creditAmt" class="form-input" placeholder="Enter amount"/></div>
+  <div class="form-group" style="margin-bottom:20px;"><label class="form-label">Note</label><input type="text" id="creditNote" class="form-input" placeholder="e.g. Wallet funding confirmed"/></div>
+  <div style="display:flex;gap:10px;"><button onclick="adminWallet('credit')" class="btn-primary" style="margin:0;">Credit</button><button onclick="adminWallet('debit')" style="flex:1;padding:14px;border-radius:10px;background:#fff0f0;border:none;color:#ef4444;font-family:'Inter',sans-serif;font-weight:700;cursor:pointer;">Debit</button></div>
+</div>
+</div>
 
-<!-- Add Promo -->
-<div class="modal" id="m-addpromo"><div class="modal-box">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
-    <h3 style="font-family:'Playfair Display',serif;font-size:19px;font-weight:700">Add Promo Slide</h3>
-    <button onclick="closeM('m-addpromo')" style="background:var(--g100);border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:15px">✕</button>
+<!-- ADMIN SLIDE -->
+<div id="adminSlideModal" class="modal-overlay" onclick="if(event.target===this)closeModal('adminSlideModal')">
+<div class="modal-sheet">
+  <div class="modal-handle"></div>
+  <p class="modal-title" id="slideModalT">Add Promo Slide</p>
+  <input type="hidden" id="slideEID"/>
+  <div class="form-group"><label class="form-label">Title</label><input type="text" id="slideT" class="form-input" placeholder="e.g. Get Instant Loans"/></div>
+  <div class="form-group"><label class="form-label">Description</label><input type="text" id="slideD" class="form-input" placeholder="Short description"/></div>
+  <div class="form-group"><label class="form-label">CTA Button (optional)</label><input type="text" id="slideCTA" class="form-input" placeholder="e.g. Learn More"/></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+    <div class="form-group"><label class="form-label">Background Color</label><input type="text" id="slideBG" class="form-input" value="#1a2340"/></div>
+    <div class="form-group"><label class="form-label">Emoji</label><input type="text" id="slideEM" class="form-input" value="💰"/></div>
   </div>
-  <div style="margin-bottom:13px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:7px;display:block">Title</label><input class="inp" id="pm-title" placeholder="Get Instant Loans"/></div>
-  <div style="margin-bottom:13px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:7px;display:block">Description</label><input class="inp" id="pm-desc" placeholder="Short description..."/></div>
-  <div style="margin-bottom:13px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:7px;display:block">Emoji Icon</label><input class="inp" id="pm-icon" placeholder="💰" maxlength="4"/></div>
-  <div style="margin-bottom:13px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:7px;display:block">CTA Button (optional)</label><input class="inp" id="pm-cta" placeholder="Learn More"/></div>
-  <div style="margin-bottom:20px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:7px;display:block">Background</label>
-    <select class="inp" id="pm-bg">
-      <option value="linear-gradient(135deg,#1a1a2e,#16213e)">Deep Blue</option>
-      <option value="linear-gradient(135deg,#2d1b00,#5a3700)">Gold Dark</option>
-      <option value="linear-gradient(135deg,#003300,#005500)">Forest Green</option>
-      <option value="linear-gradient(135deg,#1a0030,#3a0060)">Purple</option>
-      <option value="linear-gradient(135deg,#1a1a1a,#2d2d2d)">Charcoal</option>
-    </select>
-  </div>
-  <button onclick="savePromo()" class="btn-g" style="width:100%;padding:15px;border-radius:13px;font-size:15px">Add Slide</button>
-</div></div>
-
-<!-- Terms -->
-<div class="modal" id="m-terms"><div class="modal-box">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px"><h3 style="font-family:'Playfair Display',serif;font-size:19px;font-weight:700">Terms & Conditions</h3><button onclick="closeM('m-terms')" style="background:var(--g100);border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:15px">✕</button></div>
-  <div style="color:var(--g600);font-size:13px;line-height:1.8">
-    <p style="margin-bottom:12px"><b>1. Acceptance of Terms.</b> By using ZMONIE, you agree to these terms. ZMONIE is duly registered in Nigeria (CAC No: 9576761).</p>
-    <p style="margin-bottom:12px"><b>2. Services.</b> ZMONIE provides VTU services including airtime, data subscriptions, cable TV, and electricity payments.</p>
-    <p style="margin-bottom:12px"><b>3. Wallet Funding.</b> Wallet credits are processed manually after payment proof via WhatsApp. Processing may take up to 30 minutes.</p>
-    <p style="margin-bottom:12px"><b>4. Transaction PIN.</b> You are responsible for keeping your 4-digit PIN confidential. ZMONIE will never ask for your PIN.</p>
-    <p style="margin-bottom:12px"><b>5. Refunds.</b> Failed transactions are automatically reversed. Contact support for unresolved issues.</p>
-    <p style="margin-bottom:12px"><b>6. Prohibited Use.</b> Fraud, money laundering, and illegal activities are strictly prohibited.</p>
-    <p><b>7. Contact.</b> zmonieservice@gmail.com | 08068886569</p>
-  </div>
-</div></div>
-
-<!-- Privacy -->
-<div class="modal" id="m-privacy"><div class="modal-box">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px"><h3 style="font-family:'Playfair Display',serif;font-size:19px;font-weight:700">Privacy Policy</h3><button onclick="closeM('m-privacy')" style="background:var(--g100);border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:15px">✕</button></div>
-  <div style="color:var(--g600);font-size:13px;line-height:1.8">
-    <p style="margin-bottom:12px"><b>Data Collection.</b> We collect your name, email, phone number, and transaction data to provide our services.</p>
-    <p style="margin-bottom:12px"><b>Data Use.</b> Your data is used only to process transactions, provide customer support, and improve our platform.</p>
-    <p style="margin-bottom:12px"><b>Data Security.</b> All data is encrypted and stored securely using Firebase. Transaction PINs are hashed and never stored in plain text.</p>
-    <p style="margin-bottom:12px"><b>Data Sharing.</b> We do not sell your personal data to any third party.</p>
-    <p><b>Contact.</b> Privacy concerns: zmonieservice@gmail.com</p>
-  </div>
-</div></div>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;"><input type="checkbox" id="slideActive" checked style="width:15px;height:15px;accent-color:#C9A84C;"/><label for="slideActive" style="font-size:13px;font-weight:500;cursor:pointer;">Active (show to users)</label></div>
+  <button class="btn-primary" onclick="doSaveSlide()">Save Slide</button>
+</div>
+</div>
 
 <script>
-// ===== FIREBASE INIT =====
-const fbCfg={apiKey:"AIzaSyCHOa7B3BWSdNGak4NMNLG0kc_s57K2uYo",authDomain:"sunrise-7f82c.firebaseapp.com",projectId:"sunrise-7f82c",storageBucket:"sunrise-7f82c.firebasestorage.app",messagingSenderId:"518496778912",appId:"1:518496778912:web:3415aa8b061bce632c27c5"};
-firebase.initializeApp(fbCfg);
-const auth=firebase.auth(),db=firebase.firestore();
-const gProv=new firebase.auth.GoogleAuthProvider();
-
-// ===== STATE =====
-let CU=null,UD=null,balHid=false,pendSvc=null,allTx=[],pIdx=0,pTimer=null,pSlides=[];
-const ADMINS=['zmonieservice@gmail.com'];
-const isAdmin=e=>ADMINS.includes((e||'').toLowerCase());
-
-// ===== PIN HASH =====
-function hPin(p){let h=0;for(let c of p)h=(h<<5)-h+c.charCodeAt(0)|0;return h.toString(36);}
-
-// ===== PAGE NAV =====
-function goPg(id){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));const el=document.getElementById(id);if(el)el.classList.add('active');}
-function navGo(id,el){document.querySelectorAll('.nav-i').forEach(n=>n.classList.remove('active'));if(el)el.classList.add('active');goPg(id);if(id==='pg-history')loadHist();if(id==='pg-notif')loadNotifs();}
-
-// ===== MODALS =====
-function openM(id){document.getElementById(id).classList.add('open');}
-function closeM(id){document.getElementById(id).classList.remove('open');}
-document.addEventListener('click',e=>{if(e.target.classList.contains('modal'))e.target.classList.remove('open');});
+// ===== FIREBASE =====
+firebase.initializeApp({apiKey:"AIzaSyCHOa7B3BWSdNGak4NMNLG0kc_s57K2uYo",authDomain:"sunrise-7f82c.firebaseapp.com",projectId:"sunrise-7f82c",storageBucket:"sunrise-7f82c.firebasestorage.app",messagingSenderId:"518496778912",appId:"1:518496778912:web:3415aa8b061bce632c27c5"});
+const auth=firebase.auth(), db=firebase.firestore();
+const SALT='ZMONIE_SEC_2024', ADMINS=['zmonieservice@gmail.com'];
+let CU=null, UP=null, pinCB=null, balHidden=false, promoIdx=0, promoTimer=null, promoSlides=[];
 
 // ===== TOAST =====
-function toast(msg,d=3000){let t=document.querySelector('.toast');if(t)t.remove();t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t?.remove(),d);}
+function toast2(msg,type=''){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show';clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3200);}
 
-// ===== AUTH STATE =====
-auth.onAuthStateChanged(async u=>{
-  if(u){
-    CU=u;
-    const ref=db.collection('users').doc(u.uid);
-    const snap=await ref.get();
-    if(!snap.exists){
-      await ref.set({name:u.displayName||'User',email:u.email,phone:'',balance:0,pin:'',role:'user',createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-    }
-    UD=(await ref.get()).data();
-    if(isAdmin(u.email)){goPg('pg-admin');loadAdmin();}
-    else{goPg('pg-dash');loadDash();}
-  }else{CU=null;UD=null;goPg('pg-landing');}
-});
+// ===== AUTH =====
+function switchTab(t){
+  document.getElementById('loginForm').style.display=t==='login'?'block':'none';
+  document.getElementById('registerForm').style.display=t==='register'?'block':'none';
+  document.getElementById('tabLoginBtn').classList.toggle('active',t==='login');
+  document.getElementById('tabRegBtn').classList.toggle('active',t==='register');
+}
+function togglePw(id){const e=document.getElementById(id);e.type=e.type==='password'?'text':'password';}
 
-// ===== AUTH ACTIONS =====
 async function doLogin(){
-  const e=document.getElementById('li-email').value.trim(),p=document.getElementById('li-pass').value;
-  if(!e||!p){toast('Please fill all fields');return;}
-  try{await auth.signInWithEmailAndPassword(e,p);}catch(er){toast('Login failed: '+er.message);}
+  const email=document.getElementById('loginEmail').value.trim();
+  const pass=document.getElementById('loginPass').value;
+  if(!email||!pass){toast2('Fill all fields');return;}
+  const btn=document.getElementById('loginBtn');
+  btn.innerHTML='<span class="spinner"></span>';
+  try{await auth.signInWithEmailAndPassword(email,pass);}
+  catch(e){toast2(e.message.replace('Firebase:','').trim());btn.textContent='Sign In';}
 }
 async function doRegister(){
-  const fn=document.getElementById('rg-fn').value.trim(),ln=document.getElementById('rg-ln').value.trim();
-  const em=document.getElementById('rg-email').value.trim(),ph=document.getElementById('rg-phone').value.trim();
-  const pw=document.getElementById('rg-pass').value;
-  const pin=[1,2,3,4].map(i=>document.getElementById('rp'+i).value).join('');
-  if(!fn||!ln||!em||!ph||!pw||pin.length!==4){toast('Please complete all fields');return;}
+  const fn=document.getElementById('regFirst').value.trim(), ln=document.getElementById('regLast').value.trim();
+  const ph=document.getElementById('regPhone').value.trim(), em=document.getElementById('regEmail').value.trim();
+  const pw=document.getElementById('regPass').value;
+  if(!fn||!ln||!ph||!em||!pw){toast2('Fill all fields');return;}
+  if(pw.length<8){toast2('Password min 8 characters');return;}
+  const btn=document.getElementById('regBtn');btn.innerHTML='<span class="spinner"></span>';
   try{
-    const cr=await auth.createUserWithEmailAndPassword(em,pw);
-    await db.collection('users').doc(cr.user.uid).set({name:fn+' '+ln,email:em,phone:ph,balance:0,pin:hPin(pin),role:'user',createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-    await addNotif(cr.user.uid,'🎉 Welcome to ZMONIE!','Your account has been created. Fund your wallet to get started.');
-  }catch(er){toast('Registration failed: '+er.message);}
+    const c=await auth.createUserWithEmailAndPassword(em,pw);
+    await db.collection('users').doc(c.user.uid).set({firstName:fn,lastName:ln,phone:ph,email:em,walletBalance:0,pin:null,role:'user',createdAt:firebase.firestore.FieldValue.serverTimestamp(),notifications:[]});
+  }catch(e){toast2(e.message.replace('Firebase:','').trim());btn.textContent='Create Account';}
 }
 async function doGoogle(){
   try{
-    const r=await auth.signInWithPopup(gProv);
-    const ref=db.collection('users').doc(r.user.uid);
-    if(!(await ref.get()).exists){
-      await ref.set({name:r.user.displayName||'User',email:r.user.email,phone:'',balance:0,pin:'',role:'user',createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-      await addNotif(r.user.uid,'🎉 Welcome to ZMONIE!','Account created via Google. Please set your transaction PIN in Profile.');
+    const p=new firebase.auth.GoogleAuthProvider();
+    const r=await auth.signInWithPopup(p);
+    const doc=await db.collection('users').doc(r.user.uid).get();
+    if(!doc.exists){
+      const nm=(r.user.displayName||'').split(' ');
+      await db.collection('users').doc(r.user.uid).set({firstName:nm[0]||'',lastName:nm.slice(1).join(' ')||'',phone:'',email:r.user.email||'',walletBalance:0,pin:null,role:'user',createdAt:firebase.firestore.FieldValue.serverTimestamp(),notifications:[]});
     }
-  }catch(er){toast('Google sign-in failed: '+er.message);}
+  }catch(e){toast2(e.message.replace('Firebase:','').trim());}
 }
-async function doLogout(){await auth.signOut();}
+function doForgotPw(){
+  const em=document.getElementById('loginEmail').value.trim();
+  if(!em){toast2('Enter your email first');return;}
+  auth.sendPasswordResetEmail(em).then(()=>toast2('Reset email sent!')).catch(e=>toast2(e.message));
+}
+async function doLogout(){if(confirm('Sign out?'))await auth.signOut();}
 
-// ===== DASHBOARD =====
-async function loadDash(){
+// ===== AUTH STATE =====
+auth.onAuthStateChanged(async(u)=>{
+  if(u){
+    CU=u;
+    await loadUP();
+    if(UP&&!UP.pin){showPage('setupPinPage');}
+    else{showPage('mainApp');initApp();}
+  }else{CU=null;UP=null;showPage('authPage');}
+});
+async function loadUP(){
+  try{const d=await db.collection('users').doc(CU.uid).get();UP=d.exists?{id:d.id,...d.data()}:null;}catch(e){UP=null;}
+}
+
+// ===== SETUP PIN =====
+async function savePin(){
+  const pin=[1,2,3,4].map(i=>document.getElementById('sp'+i).value).join('');
+  if(pin.length<4){toast2('Enter complete 4-digit PIN');return;}
+  const h=btoa(pin+SALT);
+  await db.collection('users').doc(CU.uid).update({pin:h});
+  UP.pin=h;toast2('PIN set! Welcome 🎉');
+  showPage('mainApp');initApp();
+}
+
+// ===== INIT =====
+function initApp(){
+  loadUserData();loadTx();loadPromoSlides();loadNotifs();
+  if(ADMINS.includes(CU.email))document.getElementById('nav-admin').style.display='flex';
+  setGreeting();
+}
+function setGreeting(){
+  const h=new Date().getHours();
+  const lvl=document.getElementById('headerLevel');
+  if(lvl)lvl.textContent='Level '+(UP?.level||1);
+}
+async function loadUserData(){
   if(!CU)return;
-  const s=await db.collection('users').doc(CU.uid).get();UD=s.data();
-  document.getElementById('d-name').textContent=UD.name||'User';
-  document.getElementById('d-bal').textContent='₦'+fmt(UD.balance||0);
-  document.getElementById('pr-name').textContent=UD.name||'—';
-  document.getElementById('pr-email').textContent=UD.email||'—';
-  loadNBadge();loadDashTx();loadSlider();
+  const d=await db.collection('users').doc(CU.uid).get();
+  if(!d.exists)return;
+  UP={id:d.id,...d.data()};
+  const nm=UP.firstName||'User';
+  const ini=nm.charAt(0).toUpperCase();
+  document.getElementById('headerAvatar').textContent=ini;
+  document.getElementById('headerLevel').textContent='Level '+(UP.level||1);
+  document.getElementById('walletAcctNum').textContent=UP.acctNumber||CU.uid.slice(0,10).toUpperCase();
+  if(document.getElementById('profAvatarBig'))document.getElementById('profAvatarBig').textContent=ini;
+  if(document.getElementById('profName'))document.getElementById('profName').textContent=(UP.firstName||'')+' '+(UP.lastName||'');
+  if(document.getElementById('profEmail'))document.getElementById('profEmail').textContent=UP.email||'';
+  if(document.getElementById('profPhone'))document.getElementById('profPhone').textContent=UP.phone||'';
+  updateBal();
 }
-function fmt(n){return parseFloat(n||0).toLocaleString('en-NG',{minimumFractionDigits:2,maximumFractionDigits:2});}
-function fmtDate(ts){if(!ts)return'—';const d=ts.toDate?ts.toDate():new Date(ts);return d.toLocaleDateString('en-NG',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});}
-function togBal(){balHid=!balHid;document.getElementById('d-bal').textContent=balHid?'₦••••':'₦'+fmt(UD?.balance||0);}
+function updateBal(){
+  if(!UP)return;
+  const v=UP.walletBalance||0;
+  document.getElementById('walletBal').textContent=balHidden?'₦••••••':fmt(v);
+}
+function toggleBal(){balHidden=!balHidden;updateBal();}
+function fmt(n){return'₦'+Number(n).toLocaleString('en-NG',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function copyWallet(){doCopy(document.getElementById('walletAcctNum').textContent,null);}
 
-async function loadDashTx(){
-  const s=await db.collection('transactions').where('userId','==',CU.uid).orderBy('createdAt','desc').limit(5).get();
-  const el=document.getElementById('dash-tx');
-  if(s.empty){el.innerHTML='<div style="padding:36px;text-align:center;color:var(--g400)"><div style="font-size:36px;margin-bottom:8px">📋</div><p style="font-size:13px">No transactions yet</p></div>';return;}
-  el.innerHTML=s.docs.map(d=>txRow(d.data())).join('');
+// ===== TX =====
+async function loadTx(){
+  if(!CU)return;
+  try{
+    const s=await db.collection('transactions').where('userId','==',CU.uid).orderBy('createdAt','desc').limit(30).get();
+    const txs=s.docs.map(d=>({id:d.id,...d.data()}));
+    renderTx(txs,'recentTxList',5);renderTx(txs,'fullTxList',30);
+  }catch(e){}
 }
-function txRow(tx){
-  const ic={airtime:'📱',data:'🌐',cable:'📺',electricity:'💡',credit:'💰',wallet:'💰'};
-  const cr=tx.type==='credit'||tx.type==='wallet';
-  return`<div class="tx-row"><div style="width:38px;height:38px;background:${cr?'rgba(16,185,129,.1)':'rgba(255,215,0,.1)'};border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">${ic[tx.type]||'💳'}</div><div style="flex:1;min-width:0;margin-left:11px"><div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${tx.description||tx.type}</div><div style="font-size:11px;color:var(--g400);margin-top:2px">${fmtDate(tx.createdAt)}</div></div><div style="text-align:right;flex-shrink:0;margin-left:8px"><div style="font-weight:700;font-size:13px;color:${cr?'var(--ok)':'var(--err)'}">${cr?'+':'-'}₦${fmt(tx.amount)}</div><div class="chip ${tx.status==='success'?'chip-ok':'chip-warn'}" style="margin-top:2px">${tx.status||'pending'}</div></div></div>`;
+function renderTx(txs,cid,lim){
+  const el=document.getElementById(cid);if(!el)return;
+  const lst=txs.slice(0,lim);
+  if(!lst.length){el.innerHTML='<p style="text-align:center;color:#aaa;font-size:13px;padding:24px;">No transactions yet</p>';return;}
+  el.innerHTML=lst.map(tx=>{
+    const ico={airtime:'📱',data:'📶',cable:'📺',electricity:'⚡',wallet:'💰',loan:'🏦',result:'📋',education:'📚'}[tx.type]||'💳';
+    const cls=tx.status==='success'?'chip-ok':tx.status==='pending'?'chip-pend':'chip-fail';
+    const sign=tx.type==='wallet'?'+':'-';
+    const clr=tx.type==='wallet'?'#22c55e':'#ef4444';
+    const dt=tx.createdAt?.toDate?tx.createdAt.toDate().toLocaleDateString('en-NG',{day:'2-digit',month:'short'}):'—';
+    return`<div class="tx-item"><div class="tx-icon-wrap" style="background:#f5f5f5;">${ico}</div><div class="tx-details"><p class="tx-name">${tx.description||tx.type}</p><p class="tx-date">${dt} · <span class="status-chip ${cls}">${tx.status}</span></p></div><p class="tx-amount" style="color:${clr};">${sign}${fmt(tx.amount)}</p></div>`;
+  }).join('');
 }
 
-// ===== PROMO SLIDER =====
-async function loadSlider(){
-  const s=await db.collection('promos').where('active','==',true).orderBy('order').get();
-  pSlides=s.empty?defPromos():s.docs.map(d=>({id:d.id,...d.data()}));
-  renderSlider();
+// ===== PROMO SLIDES =====
+const DEF_SLIDES=[
+  {id:'d1',emoji:'💸',title:'Fast Wallet Funding',description:'Receive credit in under 5 minutes',cta:'Fund Now',bgColor:'#1a2340',active:true},
+  {id:'d2',emoji:'📶',title:'Data at Cheap Rates',description:'Bundles for all networks, always discounted',cta:'Buy Data',bgColor:'#0d2211',active:true},
+  {id:'d3',emoji:'🎁',title:'Refer & Earn ₦200',description:'Invite friends, earn on every signup',cta:'Invite',bgColor:'#1a0d2b',active:true},
+  {id:'d4',emoji:'⚡',title:'Pay Bills Instantly',description:'Electricity, cable & more in one tap',cta:'Pay Now',bgColor:'#2b1500',active:true},
+  {id:'d5',emoji:'🏦',title:'Instant Loans',description:'Quick loans, no paperwork needed',cta:'Apply',bgColor:'#001a2b',active:true},
+];
+async function loadPromoSlides(){
+  try{
+    const s=await db.collection('promoSlides').orderBy('order','asc').get();
+    promoSlides=s.empty?DEF_SLIDES:s.docs.map(d=>({id:d.id,...d.data()})).filter(sl=>sl.active!==false);
+    if(!promoSlides.length)promoSlides=DEF_SLIDES;
+  }catch(e){promoSlides=DEF_SLIDES;}
+  buildPromo();
 }
-function defPromos(){return[
-  {title:'Get Instant Loans',desc:'Access quick loans up to ₦500,000',icon:'💳',bg:'linear-gradient(135deg,#1a1a2e,#16213e)',cta:'Apply Now'},
-  {title:'Data at Best Rates',desc:'Discounted data on all networks',icon:'🌐',bg:'linear-gradient(135deg,#003300,#005500)',cta:'Buy Data'},
-  {title:'Refer & Earn',desc:'Earn ₦200 for every friend you refer',icon:'🎁',bg:'linear-gradient(135deg,#2d1b00,#5a3700)',cta:'Invite Friends'},
-  {title:'Pay Bills Easily',desc:'Electricity, cable, internet — all in one',icon:'⚡',bg:'linear-gradient(135deg,#1a0030,#3a0060)',cta:'Pay Now'},
-  {title:'New User Bonus',desc:'Get ₦100 bonus on first wallet funding',icon:'🎉',bg:'linear-gradient(135deg,#1a1a1a,#2d2d2d)',cta:'Fund Wallet'},
-];}
-function renderSlider(){
-  const tr=document.getElementById('promoTrack'),dt=document.getElementById('promoDots');
-  if(!tr)return;
-  tr.innerHTML=pSlides.map(s=>`<div class="promo-slide" style="background:${s.bg||'#111'};min-width:100%;border-radius:16px"><div style="display:flex;align-items:center;gap:14px"><div style="font-size:44px">${s.icon||'⭐'}</div><div style="flex:1"><div style="font-family:'Playfair Display',serif;font-size:17px;font-weight:800;color:#FFD700;margin-bottom:4px">${s.title}</div><div style="font-size:12px;color:rgba(255,255,255,.65);margin-bottom:10px">${s.desc}</div>${s.cta?`<button class="btn-g" style="padding:7px 14px;border-radius:9px;font-size:12px">${s.cta}</button>`:''}</div></div></div>`).join('');
-  dt.innerHTML=pSlides.map((_,i)=>`<div class="dot${i===0?' active':''}" onclick="goSlide(${i})"></div>`).join('');
-  clearInterval(pTimer);pTimer=setInterval(()=>goSlide((pIdx+1)%pSlides.length),4000);
-  let sx=0;tr.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;},{passive:true});
-  tr.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-sx;if(dx<-40)goSlide((pIdx+1)%pSlides.length);else if(dx>40)goSlide((pIdx-1+pSlides.length)%pSlides.length);});
+function buildPromo(){
+  const track=document.getElementById('promoTrack');
+  const dots=document.getElementById('promoDots');
+  if(!track)return;
+  track.innerHTML=promoSlides.map(s=>`
+    <div class="promo-slide" style="background:${s.bgColor||'#1a2340'};">
+      <div style="font-size:44px;">${s.emoji||'💰'}</div>
+      <div style="flex:1;"><p style="font-size:17px;font-weight:700;color:#fff;margin-bottom:4px;">${s.title}</p><p style="font-size:12px;color:rgba(255,255,255,0.65);margin-bottom:10px;">${s.description}</p>${s.cta?`<button style="padding:6px 14px;border-radius:20px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3);color:#fff;font-size:12px;font-weight:600;cursor:pointer;">${s.cta}</button>`:''}</div>
+    </div>`).join('');
+  dots.innerHTML=promoSlides.map((_,i)=>`<div class="card-dot${i===0?' active':''}" onclick="gotoSlide(${i})"></div>`).join('');
+  if(promoTimer)clearInterval(promoTimer);
+  promoTimer=setInterval(()=>{promoIdx=(promoIdx+1)%promoSlides.length;gotoSlide(promoIdx);},4500);
 }
-function goSlide(i){pIdx=i;document.getElementById('promoTrack').style.transform=`translateX(-${i*100}%)`;document.querySelectorAll('.dot').forEach((d,j)=>d.classList.toggle('active',j===i));clearInterval(pTimer);pTimer=setInterval(()=>goSlide((pIdx+1)%pSlides.length),4000);}
+function gotoSlide(i){
+  promoIdx=i;
+  const t=document.getElementById('promoTrack');
+  if(t)t.style.transform=`translateX(-${i*100}%)`;
+  document.querySelectorAll('.card-dot').forEach((d,idx)=>d.className='card-dot'+(idx===i?' active':''));
+}
+
+// ===== NAVIGATION =====
+function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function showSection(sec){
+  ['home','services','history','rewards','profile','admin','faq'].forEach(s=>{
+    const el=document.getElementById(s+'Section');if(el)el.style.display=s===sec?'block':'none';
+  });
+  ['home','services','history','rewards','profile','admin'].forEach(s=>{
+    const n=document.getElementById('nav-'+s);
+    if(n){n.classList.toggle('active',s===sec);}
+  });
+  if(sec==='admin')loadAdminData();
+  if(sec==='history')loadTx();
+  if(sec==='profile')loadUserData();
+  if(sec==='faq')buildFAQ();
+  window.scrollTo(0,0);
+}
+
+// ===== MODALS =====
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
 
 // ===== SERVICES =====
+const NETS=['MTN','Airtel','Glo','9mobile'];
+const DBUNDLES={MTN:['500MB — ₦150|150','1GB — ₦280|280','2GB — ₦500|500','5GB — ₦1,200|1200','10GB — ₦2,200|2200'],Airtel:['500MB — ₦200|200','1GB — ₦350|350','2GB — ₦600|600','5GB — ₦1,400|1400','10GB — ₦2,500|2500'],Glo:['1GB — ₦200|200','2GB — ₦400|400','5GB — ₦1,000|1000','10GB — ₦2,000|2000'],'9mobile':['500MB — ₦150|150','1GB — ₦300|300','2GB — ₦500|500']};
+const DISCOS=['EKEDC (Eko)','IKEDC (Ikeja)','AEDC (Abuja)','PHEDC (Port Harcourt)','EEDC (Enugu)','KEDCO (Kano)','BEDC (Benin)','IBEDC (Ibadan)'];
+const RESULT_TYPES=['WAEC Result Checker PIN','NECO Result Checker PIN','NABTEB Result Checker PIN','GCE Result Checker PIN'];
+const EDU_TYPES=['JAMB PIN','Post-UTME Form','School Acceptance Fee','School Fees Payment'];
+
 function openSvc(type){
-  if(!CU){goPg('pg-login');return;}
-  const titles={airtime:'Buy Airtime 📱',data:'Buy Data 🌐',cable:'Cable TV 📺',electricity:'Electricity 💡'};
-  document.getElementById('svc-title').textContent=titles[type]||type;
-  document.getElementById('svc-body').innerHTML=svcForm(type);
-  openM('m-svc');
+  let html='';
+  const hdr=(t)=>`<div class="modal-handle"></div><p class="modal-title">${t}</p>`;
+  const netGrid=(hidId)=>`<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;">${NETS.map(n=>`<div onclick="pickN(this,'${n}','${hidId}')" style="padding:10px 4px;border:1.5px solid #e0e0e0;border-radius:10px;text-align:center;cursor:pointer;font-size:12px;font-weight:600;transition:all 0.2s;">${n}</div>`).join('')}</div><input type="hidden" id="${hidId}"/>`;
+  const phoneField=(id,lbl='Phone Number')=>`<div class="form-group"><label class="form-label">${lbl}</label><input type="tel" id="${id}" class="form-input" placeholder="08012345678"/></div>`;
+
+  if(type==='airtime'){
+    html=hdr('Buy Airtime')+`
+    <p style="font-size:13px;color:#888;margin-bottom:14px;">Select network</p>
+    ${netGrid('aNet')}
+    ${phoneField('aPhone')}
+    <div class="form-group"><label class="form-label">Quick Amounts</label><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;">${[100,200,500,1000,2000,5000].map(a=>`<button onclick="document.getElementById('aAmt').value=${a};this.closest('[style*=grid]').querySelectorAll('button').forEach(b=>{b.style.background='';b.style.color='';});this.style.background='#C9A84C';this.style.color='#fff';" style="padding:10px;border:1.5px solid #e0e0e0;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;background:#fff;transition:all 0.2s;">₦${a.toLocaleString()}</button>`).join('')}</div></div>
+    <div class="form-group"><label class="form-label">Or Enter Amount</label><input type="number" id="aAmt" class="form-input" placeholder="Amount in ₦"/></div>
+    <button class="btn-primary" onclick="doAirtime()">Buy Airtime</button>`;
+  }else if(type==='data'){
+    html=hdr('Buy Data Bundle')+`
+    <p style="font-size:13px;color:#888;margin-bottom:14px;">Select network</p>
+    ${netGrid('dNet')}
+    ${phoneField('dPhone')}
+    <div class="form-group"><label class="form-label">Select Bundle</label><select id="dBundle" class="form-input"><option value="">— Select network first —</option></select></div>
+    <button class="btn-primary" onclick="doData()">Buy Data</button>`;
+  }else if(type==='cable'){
+    html=hdr('Cable TV Subscription')+`
+    <div class="form-group"><label class="form-label">Provider</label><select id="cProv" class="form-input"><option>DStv</option><option>GOtv</option><option>Startimes</option><option>ShowMax</option></select></div>
+    <div class="form-group"><label class="form-label">Smart Card / IUC Number</label><input type="text" id="cCard" class="form-input" placeholder="Smart card number"/></div>
+    <div class="form-group"><label class="form-label">Package</label><select id="cPlan" class="form-input"><option value="3600">DStv Compact — ₦3,600/mo</option><option value="8300">DStv Compact Plus — ₦8,300/mo</option><option value="15700">DStv Premium — ₦15,700/mo</option><option value="2900">GOtv Max — ₦2,900/mo</option><option value="1900">GOtv Jolli — ₦1,900/mo</option><option value="900">GOtv Lite — ₦900/mo</option><option value="1100">Startimes Nova — ₦1,100/mo</option><option value="1900">Startimes Basic — ₦1,900/mo</option></select></div>
+    <button class="btn-primary" onclick="doCable()">Subscribe Now</button>`;
+  }else if(type==='electricity'){
+    html=hdr('Electricity Bill')+`
+    <div class="form-group"><label class="form-label">DisCo</label><select id="eDisco" class="form-input">${DISCOS.map(d=>`<option>${d}</option>`).join('')}</select></div>
+    <div class="form-group"><label class="form-label">Meter Type</label><div style="display:flex;gap:10px;"><label style="flex:1;display:flex;align-items:center;gap:8px;padding:12px;border:1.5px solid #e0e0e0;border-radius:9px;cursor:pointer;font-size:13px;font-weight:500;"><input type="radio" name="mType" value="prepaid" checked style="accent-color:#C9A84C;"/> Prepaid</label><label style="flex:1;display:flex;align-items:center;gap:8px;padding:12px;border:1.5px solid #e0e0e0;border-radius:9px;cursor:pointer;font-size:13px;font-weight:500;"><input type="radio" name="mType" value="postpaid" style="accent-color:#C9A84C;"/> Postpaid</label></div></div>
+    <div class="form-group"><label class="form-label">Meter Number</label><input type="text" id="eMeter" class="form-input" placeholder="Meter number"/></div>
+    <div class="form-group"><label class="form-label">Amount (₦) — Min ₦500</label><input type="number" id="eAmt" class="form-input" placeholder="500"/></div>
+    <button class="btn-primary" onclick="doElec()">Pay Bill</button>`;
+  }else if(type==='loan'){
+    html=hdr('Quick Loans')+`
+    <div style="background:#fff8e8;border-radius:12px;padding:16px;margin-bottom:16px;border:1px solid #ffe8a0;">
+      <p style="font-size:14px;font-weight:600;color:#C9A84C;margin-bottom:4px;">⚡ Quick Instant Loans</p>
+      <p style="font-size:13px;color:#888;">Get instant access to funds. No paperwork, no collateral. Repay at convenient rates.</p>
+    </div>
+    <div class="form-group"><label class="form-label">Loan Amount (₦)</label><input type="number" id="lAmt" class="form-input" placeholder="Min ₦1,000 — Max ₦50,000"/></div>
+    <div class="form-group"><label class="form-label">Repayment Period</label><select id="lPeriod" class="form-input"><option value="7">7 days (5% interest)</option><option value="14">14 days (8% interest)</option><option value="30">30 days (12% interest)</option></select></div>
+    <div class="form-group"><label class="form-label">Purpose</label><select id="lPurpose" class="form-input"><option>Personal</option><option>Business</option><option>Education</option><option>Emergency</option><option>Other</option></select></div>
+    <div style="background:#f5f5f5;border-radius:10px;padding:12px;margin-bottom:16px;"><p style="font-size:12px;color:#888;">Loans are subject to admin approval and wallet history review. You will be notified within 24 hours.</p></div>
+    <button class="btn-primary" onclick="doLoan()">Apply for Loan</button>`;
+  }else if(type==='result'){
+    html=hdr('Result Checker PIN')+`
+    <div style="background:#f0f9ff;border-radius:12px;padding:14px;margin-bottom:16px;border:1px solid #bae6fd;">
+      <p style="font-size:13px;color:#0369a1;">Purchase scratch card PINs for checking exam results.</p>
+    </div>
+    <div class="form-group"><label class="form-label">Exam Type</label><select id="rType" class="form-input">${RESULT_TYPES.map(r=>`<option>${r}</option>`).join('')}</select></div>
+    <div class="form-group"><label class="form-label">Quantity</label><select id="rQty" class="form-input" onchange="updateResultPrice()"><option value="1">1 PIN — ₦800</option><option value="2">2 PINs — ₦1,500</option><option value="3">3 PINs — ₦2,200</option><option value="5">5 PINs — ₦3,500</option></select></div>
+    <div style="background:#f5f5f5;border-radius:10px;padding:12px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;"><span style="font-size:13px;color:#888;">Total Amount:</span><span id="resultPrice" style="font-size:17px;font-weight:700;">₦800</span></div>
+    <button class="btn-primary" onclick="doResult()">Purchase PIN(s)</button>`;
+  }else if(type==='education'){
+    html=hdr('Education Payment')+`
+    <div class="form-group"><label class="form-label">Service Type</label><select id="eduType" class="form-input">${EDU_TYPES.map(e=>`<option>${e}</option>`).join('')}</select></div>
+    ${phoneField('eduPhone','Phone / Registration Number')}
+    <div class="form-group"><label class="form-label">Amount (₦)</label><input type="number" id="eduAmt" class="form-input" placeholder="Enter amount"/></div>
+    <div class="form-group"><label class="form-label">Reference / Matric Number (optional)</label><input type="text" id="eduRef" class="form-input" placeholder="e.g. 2024/12345"/></div>
+    <button class="btn-primary" onclick="doEdu()">Pay Now</button>`;
+  }
+  document.getElementById('svcModalBody').innerHTML=html;
+  openModal('svcModal');
 }
-function svcForm(t){
-  const nets=['MTN','Airtel','Glo','9mobile'];
-  const nBtns=`<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:13px">${nets.map(n=>`<button onclick="selNet(this)" style="padding:9px 4px;border:2px solid var(--g200);border-radius:9px;background:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">${n}</button>`).join('')}</div>`;
-  const qAmt=(amts)=>`<div style="display:flex;gap:6px;margin-top:7px">${amts.map(a=>`<button onclick="document.getElementById('s-amt').value=${a}" style="flex:1;padding:7px 2px;border:1px solid var(--g200);border-radius:8px;background:#fff;font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">₦${a>=1000?a/1000+'K':a}</button>`).join('')}</div>`;
-  if(t==='airtime')return`${nBtns}<div style="margin-bottom:13px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:7px;display:block">Phone Number</label><input class="inp" id="s-phone" type="tel" placeholder="080XXXXXXXX"/></div><div style="margin-bottom:20px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:7px;display:block">Amount (₦)</label><input class="inp" id="s-amt" type="number" placeholder="100"/>${qAmt([100,200,500,1000])}</div><button onclick="procSvc('airtime')" class="btn-g" style="width:100%;padding:14px;border-radius:13px;font-size:15px">Buy Airtime</button>`;
-  if(t==='data')return`${nBtns}<div style="margin-bottom:13px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:7px;display:block">Phone Number</label><input class="inp" id="s-phone" type="tel" placeholder="080XXXXXXXX"/></div><div style="margin-bottom:20px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:7px;display:block">Data Plan</label><select class="inp" id="s-amt"><option value="100">500MB — ₦100</option><option value="200">1GB — ₦200</option><option value="350">2GB — ₦350</option><option value="500">5GB — ₦500</option><option value="1000">10GB — ₦1,000</option><option value="2000">20GB — ₦2,000</option></select></div><button onclick="procSvc('data')" class="btn-g" style="width:100%;padding:14px;border-radius:13px;font-size:15px">Buy Data</button>`;
-  if(t==='cable')return`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:13px">${['DSTV','GOTV','StarTimes'].map(p=>`<button onclick="selNet(this)" style="padding:9px 4px;border:2px solid var(--g200);border-radius:9px;background:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">${p}</button>`).join('')}</div><div style="margin-bottom:13px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:7px;display:block">Smart Card Number</label><input class="inp" id="s-phone" placeholder="Card number"/></div><div style="margin-bottom:20px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:7px;display:block">Package</label><select class="inp" id="s-amt"><option value="2150">DStv Padi — ₦2,150</option><option value="4000">DStv Yanga — ₦4,000</option><option value="7900">DStv Compact — ₦7,900</option><option value="14250">DStv Compact+ — ₦14,250</option><option value="21000">DStv Premium — ₦21,000</option><option value="1900">GOtv Lite — ₦1,900</option><option value="3000">GOtv Value — ₦3,000</option><option value="4850">GOtv Plus — ₦4,850</option></select></div><button onclick="procSvc('cable')" class="btn-g" style="width:100%;padding:14px;border-radius:13px;font-size:15px">Pay Subscription</button>`;
-  if(t==='electricity')return`<div style="margin-bottom:13px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:7px;display:block">Distribution Company</label><select class="inp" id="s-phone"><option>EKEDC — Eko Electric</option><option>IKEDC — Ikeja Electric</option><option>AEDC — Abuja Electric</option><option>IBEDC — Ibadan Electric</option><option>PHEDC — Port Harcourt Electric</option><option>EEDC — Enugu Electric</option><option>KEDC — Kano Electric</option><option>JED — Jos Electric</option></select></div><div style="margin-bottom:13px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:7px;display:block">Meter Number</label><input class="inp" id="s-meter" placeholder="Meter number"/></div><div style="margin-bottom:20px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:7px;display:block">Amount (₦)</label><input class="inp" id="s-amt" type="number" placeholder="1000"/>${qAmt([1000,2000,5000,10000])}</div><button onclick="procSvc('electricity')" class="btn-g" style="width:100%;padding:14px;border-radius:13px;font-size:15px">Pay Electricity</button>`;
+
+function pickN(el,name,hid){
+  el.closest('[style*="grid"]').querySelectorAll('div').forEach(d=>{d.style.borderColor='#e0e0e0';d.style.background='';d.style.color='';});
+  el.style.borderColor='#C9A84C';el.style.background='#fff8e8';
+  document.getElementById(hid).value=name;
+  if(hid==='dNet'){
+    const b=(DBUNDLES[name]||[]);
+    document.getElementById('dBundle').innerHTML=b.map(x=>{const[l,v]=x.split('|');return`<option value="${v}">${l}</option>`;}).join('');
+  }
 }
-function selNet(btn){btn.closest('div').querySelectorAll('button').forEach(b=>{b.style.borderColor='var(--g200)';b.style.background='#fff';});btn.style.borderColor='#FFD700';btn.style.background='rgba(255,215,0,.08)';}
-function procSvc(type){
-  const amt=parseFloat(document.getElementById('s-amt')?.value||'0');
-  if(!amt||amt<=0){toast('Enter a valid amount');return;}
-  if(!UD?.pin){toast('Please set a transaction PIN in Profile first');closeM('m-svc');goPg('pg-profile');return;}
-  pendSvc={type,amt};closeM('m-svc');
-  ['vp1','vp2','vp3','vp4'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  openM('m-pin');document.getElementById('vp1').focus();
+
+function doAirtime(){
+  const net=document.getElementById('aNet').value;
+  const ph=document.getElementById('aPhone').value.trim();
+  const amt=parseFloat(document.getElementById('aAmt').value);
+  if(!net){toast2('Select a network');return;}
+  if(!ph||ph.length<11){toast2('Enter valid phone number');return;}
+  if(!amt||amt<50){toast2('Minimum ₦50');return;}
+  needPin(()=>execTx('airtime',amt,`${net} Airtime → ${ph}`,{network:net,phone:ph}));
 }
-async function verPin(){
-  const pin=[1,2,3,4].map(i=>document.getElementById('vp'+i).value).join('');
-  if(pin.length!==4){toast('Enter 4-digit PIN');return;}
-  if(hPin(pin)!==UD?.pin){toast('❌ Incorrect PIN');return;}
-  closeM('m-pin');if(pendSvc)await execSvc(pendSvc);
+function doData(){
+  const net=document.getElementById('dNet').value;
+  const ph=document.getElementById('dPhone').value.trim();
+  const sel=document.getElementById('dBundle');
+  const amt=parseFloat(sel.value)||0;
+  const plan=sel.options[sel.selectedIndex]?.text||'';
+  if(!net){toast2('Select a network');return;}
+  if(!ph||ph.length<11){toast2('Enter valid phone number');return;}
+  if(!amt){toast2('Select a bundle');return;}
+  needPin(()=>execTx('data',amt,`${net} ${plan.split('—')[0].trim()} → ${ph}`,{network:net,phone:ph,plan}));
 }
-async function execSvc({type,amt}){
-  if(!CU)return;
-  const s=await db.collection('users').doc(CU.uid).get();
-  const bal=s.data().balance||0;
-  if(bal<amt){toast('Insufficient wallet balance');return;}
-  const descs={airtime:'Airtime Purchase',data:'Data Subscription',cable:'Cable TV Subscription',electricity:'Electricity Payment'};
+function doCable(){
+  const prov=document.getElementById('cProv').value;
+  const card=document.getElementById('cCard').value.trim();
+  const sel=document.getElementById('cPlan');
+  const amt=parseFloat(sel.value);
+  const plan=sel.options[sel.selectedIndex].text;
+  if(!card){toast2('Enter smart card number');return;}
+  needPin(()=>execTx('cable',amt,`${prov}: ${plan.split('—')[0].trim()} → ${card}`,{provider:prov,card,plan}));
+}
+function doElec(){
+  const disco=document.getElementById('eDisco').value;
+  const meter=document.getElementById('eMeter').value.trim();
+  const amt=parseFloat(document.getElementById('eAmt').value);
+  const mt=document.querySelector('input[name="mType"]:checked')?.value||'prepaid';
+  if(!meter){toast2('Enter meter number');return;}
+  if(!amt||amt<500){toast2('Minimum ₦500');return;}
+  needPin(()=>execTx('electricity',amt,`${disco} (${mt}) → ${meter}`,{disco,meter,mt}));
+}
+function doLoan(){
+  const amt=parseFloat(document.getElementById('lAmt').value);
+  const period=document.getElementById('lPeriod').value;
+  const purpose=document.getElementById('lPurpose').value;
+  if(!amt||amt<1000){toast2('Minimum loan is ₦1,000');return;}
+  if(amt>50000){toast2('Maximum loan is ₦50,000');return;}
+  db.collection('loanRequests').add({userId:CU.uid,email:CU.email,name:(UP?.firstName||'')+' '+(UP?.lastName||''),amount:amt,period,purpose,status:'pending',requestedAt:firebase.firestore.FieldValue.serverTimestamp()})
+  .then(()=>{closeModal('svcModal');toast2('Loan application submitted! You\'ll hear back within 24hrs.');})
+  .catch(()=>toast2('Failed to submit. Try again.'));
+}
+function updateResultPrice(){
+  const sel=document.getElementById('rQty');
+  const prices={1:800,2:1500,3:2200,5:3500};
+  document.getElementById('resultPrice').textContent=fmt(prices[sel.value]||800);
+}
+function doResult(){
+  const rtype=document.getElementById('rType').value;
+  const sel=document.getElementById('rQty');
+  const prices={1:800,2:1500,3:2200,5:3500};
+  const qty=parseInt(sel.value);
+  const amt=prices[qty]||800;
+  needPin(()=>execTx('result',amt,`${rtype} x${qty}`,{type:rtype,qty}));
+}
+function doEdu(){
+  const etype=document.getElementById('eduType').value;
+  const ph=document.getElementById('eduPhone').value.trim();
+  const amt=parseFloat(document.getElementById('eduAmt').value);
+  const ref=document.getElementById('eduRef').value.trim();
+  if(!ph){toast2('Enter phone/registration number');return;}
+  if(!amt||amt<100){toast2('Enter valid amount');return;}
+  needPin(()=>execTx('education',amt,`${etype} → ${ph}`,{etype,phone:ph,ref}));
+}
+
+async function execTx(type,amount,description,meta){
+  closeModal('svcModal');closeModal('pinModal');
+  if(!UP){toast2('User data not loaded');return;}
+  const bal=UP.walletBalance||0;
+  if(bal<amount){toast2(`Insufficient balance. Need ${fmt(amount)}, have ${fmt(bal)}`);return;}
   try{
-    await db.collection('users').doc(CU.uid).update({balance:firebase.firestore.FieldValue.increment(-amt)});
-    await db.collection('transactions').add({userId:CU.uid,type,amount:amt,description:descs[type]||type,status:'success',createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-    await addNotif(CU.uid,'✅ Transaction Successful',`${descs[type]} of ₦${fmt(amt)} was successful.`);
-    toast('✅ Transaction successful!');loadDash();pendSvc=null;
-  }catch(er){toast('Transaction failed: '+er.message);}
+    const ref=await db.collection('transactions').add({userId:CU.uid,type,amount,description,meta,status:'success',createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    await db.collection('users').doc(CU.uid).update({walletBalance:firebase.firestore.FieldValue.increment(-amount)});
+    UP.walletBalance-=amount;updateBal();
+    await db.collection('users').doc(CU.uid).update({notifications:firebase.firestore.FieldValue.arrayUnion({id:ref.id,title:'Transaction Successful ✅',message:`${description} — ${fmt(amount)}`,time:new Date().toISOString(),read:false})});
+    toast2('✅ Transaction successful!');
+    loadTx();loadNotifs();
+  }catch(e){toast2('Transaction failed: '+e.message);}
 }
 
-// ===== HISTORY =====
-async function loadHist(){
-  if(!CU)return;
-  const s=await db.collection('transactions').where('userId','==',CU.uid).orderBy('createdAt','desc').get();
-  allTx=s.docs.map(d=>({id:d.id,...d.data()}));renderHist(allTx);
+// ===== PIN =====
+function needPin(cb){pinCB=cb;clrPin('tp',4);openModal('pinModal');setTimeout(()=>document.getElementById('tp1').focus(),300);}
+async function verifyPin(){
+  const pin=[1,2,3,4].map(i=>document.getElementById('tp'+i).value).join('');
+  if(pin.length<4){toast2('Enter complete PIN');return;}
+  if(btoa(pin+SALT)===UP?.pin){closeModal('pinModal');clrPin('tp',4);if(pinCB){pinCB();pinCB=null;}}
+  else{toast2('Incorrect PIN');clrPin('tp',4);document.getElementById('tp1').focus();}
 }
-function renderHist(txs){
-  const el=document.getElementById('hist-list');
-  if(!txs.length){el.innerHTML='<div style="padding:36px;text-align:center;color:var(--g400)"><div style="font-size:36px;margin-bottom:8px">📋</div><p style="font-size:13px">No transactions found</p></div>';return;}
-  el.innerHTML=txs.map(tx=>txRow(tx)).join('');
-}
-function fltTx(type,btn){
-  document.querySelectorAll('#pg-history .chip').forEach(b=>{b.className='chip';b.style.background='var(--g100)';b.style.color='var(--g600)';});
-  btn.className='chip chip-warn';
-  renderHist(type==='all'?allTx:allTx.filter(t=>t.type===type));
-}
-
-// ===== NOTIFICATIONS =====
-async function addNotif(uid,title,body){await db.collection('notifications').add({userId:uid,title,body,read:false,createdAt:firebase.firestore.FieldValue.serverTimestamp()});}
-async function loadNBadge(){
-  const s=await db.collection('notifications').where('userId','==',CU.uid).where('read','==',false).get();
-  const b=document.getElementById('nbadge');if(s.size>0){b.style.display='flex';b.textContent=s.size;}else b.style.display='none';
-}
-async function loadNotifs(){
-  if(!CU)return;
-  const s=await db.collection('notifications').where('userId','==',CU.uid).orderBy('createdAt','desc').limit(30).get();
-  const el=document.getElementById('notif-list');
-  if(s.empty){el.innerHTML='<div style="text-align:center;padding:60px 20px;color:var(--g400)"><div style="font-size:44px;margin-bottom:10px">🔔</div><p style="font-size:14px">No notifications yet</p></div>';return;}
-  el.innerHTML=s.docs.map(d=>{const n=d.data();return`<div class="notif-row${n.read?'':' unread'}" onclick="this.classList.remove('unread')"><div style="font-weight:700;font-size:14px;margin-bottom:4px">${n.title}</div><div style="font-size:13px;color:var(--g600);line-height:1.5">${n.body}</div><div style="font-size:11px;color:var(--g400);margin-top:5px">${fmtDate(n.createdAt)}</div></div>`;}).join('');
-  s.docs.forEach(d=>d.ref.update({read:true}));
-}
-
-// ===== PIN MANAGEMENT =====
-async function doChgPin(){
+async function doChangePin(){
   const cur=[1,2,3,4].map(i=>document.getElementById('cp'+i).value).join('');
   const nw=[1,2,3,4].map(i=>document.getElementById('np'+i).value).join('');
-  if(cur.length!==4||nw.length!==4){toast('Enter 4-digit PINs');return;}
-  if(hPin(cur)!==UD?.pin){toast('Current PIN is incorrect');return;}
-  await db.collection('users').doc(CU.uid).update({pin:hPin(nw)});
-  UD.pin=hPin(nw);closeM('m-chgpin');toast('✅ PIN changed successfully!');
+  if(cur.length<4||nw.length<4){toast2('Fill all PIN fields');return;}
+  if(btoa(cur+SALT)!==UP?.pin){toast2('Current PIN incorrect');return;}
+  const nh=btoa(nw+SALT);
+  await db.collection('users').doc(CU.uid).update({pin:nh});
+  UP.pin=nh;closeModal('changePinModal');toast2('PIN updated!');
 }
 async function reqPinReset(){
-  await db.collection('pinRequests').add({userId:CU.uid,email:CU.email,name:UD?.name,status:'pending',createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-  closeM('m-forgotpin');toast('Reset request sent. Admin will review within 24 hours.');
+  await db.collection('pinRequests').add({userId:CU.uid,email:CU.email,name:(UP?.firstName||'')+' '+(UP?.lastName||''),status:'pending',requestedAt:firebase.firestore.FieldValue.serverTimestamp()});
+  closeModal('forgotPinModal');toast2('Reset request sent! Admin will review.');
 }
+function pf(p,c,m){if(document.getElementById(p+c).value&&c<m)document.getElementById(p+(c+1)).focus();}
+function pb(e,p,c){if(e.key==='Backspace'&&!document.getElementById(p+c).value&&c>1)document.getElementById(p+(c-1)).focus();}
+function clrPin(p,n){for(let i=1;i<=n;i++){const el=document.getElementById(p+i);if(el)el.value='';}}
 
-// ===== WALLET COPY =====
-function cpAcc(num){
-  navigator.clipboard?.writeText(num).then(()=>toast('✅ Copied: '+num)).catch(()=>{const t=document.createElement('textarea');t.value=num;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove();toast('✅ Copied!');});
+// ===== NOTIFS =====
+async function loadNotifs(){
+  if(!CU)return;
+  try{
+    const d=await db.collection('users').doc(CU.uid).get();
+    const ns=[...(d.data()?.notifications||[])].reverse();
+    const unread=ns.filter(n=>!n.read).length;
+    const dot=document.getElementById('notifDot');if(dot)dot.style.display=unread?'block':'none';
+    document.getElementById('notifList').innerHTML=ns.length?ns.map(n=>`
+      <div style="padding:12px 0;border-bottom:1px solid #f0f0f0;display:flex;gap:10px;">
+        <div style="width:36px;height:36px;border-radius:50%;background:${n.read?'#f5f5f5':'#fff8e8'};display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">${n.read?'📫':'🔔'}</div>
+        <div><p style="font-size:13px;font-weight:600;">${n.title}</p><p style="font-size:12px;color:#888;margin-top:2px;">${n.message}</p><p style="font-size:11px;color:#bbb;margin-top:3px;">${new Date(n.time).toLocaleString('en-NG')}</p></div>
+      </div>`).join(''):`<p style="text-align:center;color:#aaa;font-size:13px;padding:24px;">No notifications yet</p>`;
+  }catch(e){}
 }
-
-// ===== HELPERS =====
-function pNext(cur,nxt){const el=document.getElementById(cur);if(el?.value&&nxt){const n=document.getElementById(nxt);if(n)n.focus();}}
-function tPass(id,btn){const el=document.getElementById(id);el.type=el.type==='password'?'text':'password';}
-
-// ===== LIVE FEED =====
-const liveSamples=[
-  {n:'Ade***',a:'bought MTN Airtime',amt:'₦500'},{n:'Chi***',a:'paid EKEDC electricity',amt:'₦3,000'},
-  {n:'Ola***',a:'subscribed DSTV Compact',amt:'₦7,900'},{n:'Fat***',a:'bought 2GB data',amt:'₦350'},
-  {n:'Emu***',a:'funded wallet',amt:'₦5,000'},{n:'Bim***',a:'paid IKEDC electricity',amt:'₦2,000'},
-  {n:'Kef***',a:'bought Airtel Airtime',amt:'₦200'},{n:'Tun***',a:'bought GOtv Max',amt:'₦4,850'},
-];
-function animLive(){
-  const el=document.getElementById('liveFeed');if(!el)return;
-  const s=liveSamples[Math.floor(Math.random()*liveSamples.length)];
-  const it=document.createElement('div');it.className='live-row';
-  const ago=Math.floor(Math.random()*59)+1;
-  it.innerHTML=`<div class="pulse-dot"></div><span style="flex:1;color:var(--g600)"><b>${s.n}</b> ${s.a}</span><span style="color:var(--ok);font-weight:700;font-size:13px">${s.amt}</span><span style="color:var(--g400);font-size:11px;margin-left:6px">${ago}s ago</span>`;
-  el.insertBefore(it,el.firstChild);if(el.children.length>5)el.removeChild(el.lastChild);
-}
-setInterval(animLive,3000);animLive();
 
 // ===== FAQ =====
-const faqs=[
-  {q:'How do I fund my wallet?',a:'Go to Fund Wallet, transfer to our Moniepoint or Zenith Bank account, then send proof via WhatsApp. Your wallet will be credited within 30 minutes.'},
-  {q:'What is a transaction PIN?',a:'A 4-digit security PIN required before every transaction. Set it during registration or update it in Profile → Change PIN.'},
-  {q:'How do I change my PIN?',a:'Go to Profile → Change PIN. Enter your current PIN, then set a new one. Keep it confidential.'},
-  {q:'What if I forgot my PIN?',a:'Go to Profile → Forgot PIN. Submit a reset request. Admin will verify and reset within 24 hours.'},
-  {q:'Are transactions instant?',a:'Yes! Airtime, data, cable, and electricity payments are processed instantly after successful deduction.'},
-  {q:'How do I contact support?',a:'WhatsApp or call 08068886569, or email zmonieservice@gmail.com. Support is available 8am–8pm daily.'},
+const FAQS=[
+  {q:'How do I fund my wallet?',a:'Go to Home → Add Money. Copy either account number (Moniepoint or Zenith Bank), transfer the amount, then tap "Send Payment Proof" to notify us via WhatsApp. Wallet is credited within 5 minutes.'},
+  {q:'What is a Transaction PIN?',a:'A 4-digit PIN set during signup. Required before every transaction for security. Go to Profile → Change PIN to update it.'},
+  {q:'How do I apply for a loan?',a:'Go to Services → Loans. Fill the application form. Loans are reviewed within 24 hours. Funds are deposited directly into your ZMONIE wallet.'},
+  {q:'How do I buy a Result Checker PIN?',a:'Go to Services → Result Checker. Select exam type (WAEC, NECO, NABTEB, GCE), choose quantity, and complete with your transaction PIN. PINs are delivered instantly.'},
+  {q:'I forgot my PIN. What do I do?',a:'Go to Profile → Forgot PIN. Submit a reset request. Admin reviews and approves — you\'ll get a notification to set a new PIN after login.'},
+  {q:'Is ZMONIE registered?',a:'Yes! ZMONIE is CAC registered (No: 9576761). Office: No. 1 Ibijoke Street, Oregun, Ikeja, Lagos State.'},
 ];
-(()=>{const el=document.getElementById('faqWrap');if(!el)return;el.innerHTML=faqs.map((f,i)=>`<div class="faq-item"><div class="faq-q" onclick="tFaq(${i})"><span>${f.q}</span><span id="fi${i}">+</span></div><div class="faq-a" id="fa${i}">${f.a}</div></div>`).join('');})();
-function tFaq(i){const a=document.getElementById('fa'+i),ic=document.getElementById('fi'+i);const op=a.classList.toggle('open');ic.textContent=op?'−':'+';}
+function buildFAQ(){
+  document.getElementById('faqList').innerHTML=FAQS.map((f,i)=>`
+    <div class="faq-item"><div class="faq-q" onclick="toggleFaq(${i})">${f.q}<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#aaa" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="faq-a" id="faq${i}">${f.a}</div></div>`).join('');
+}
+function toggleFaq(i){const el=document.getElementById('faq'+i);const open=el.style.display==='block';document.querySelectorAll('.faq-a').forEach(e=>e.style.display='none');el.style.display=open?'none':'block';}
 
 // ===== ADMIN =====
-let AD={users:[],txs:[],funds:[],pins:[]};
-async function loadAdmin(){
-  const [us,tx,fn,pn]=await Promise.all([
-    db.collection('users').get(),
-    db.collection('transactions').orderBy('createdAt','desc').limit(100).get(),
-    db.collection('fundings').orderBy('createdAt','desc').get(),
-    db.collection('pinRequests').where('status','==','pending').get()
-  ]);
-  AD.users=us.docs.map(d=>({id:d.id,...d.data()}));
-  AD.txs=tx.docs.map(d=>({id:d.id,...d.data()}));
-  AD.funds=fn.docs.map(d=>({id:d.id,...d.data()}));
-  AD.pins=pn.docs.map(d=>({id:d.id,...d.data()}));
-  aTab('overview');
+async function loadAdminData(){
+  try{
+    const [us,ts]=await Promise.all([db.collection('users').get(),db.collection('transactions').orderBy('createdAt','desc').get()]);
+    window._AU=us.docs.map(d=>({id:d.id,...d.data()}));
+    window._AT=ts.docs.map(d=>({id:d.id,...d.data()}));
+    const rev=window._AT.filter(t=>t.status==='success'&&t.type!=='wallet').reduce((s,t)=>s+(t.amount||0),0);
+    document.getElementById('adminStats').innerHTML=`
+      <div class="admin-stat-card"><p style="font-size:12px;color:#888;">Total Users</p><p class="admin-stat-val">${us.size}</p></div>
+      <div class="admin-stat-card"><p style="font-size:12px;color:#888;">Transactions</p><p class="admin-stat-val">${window._AT.length}</p></div>
+      <div class="admin-stat-card" style="background:linear-gradient(135deg,#1a2340,#1e2a4a);"><p style="font-size:12px;color:rgba(255,255,255,0.6);">Revenue</p><p style="font-size:20px;font-weight:800;color:#E8C97A;margin-top:4px;">${fmt(rev)}</p></div>
+      <div class="admin-stat-card"><p style="font-size:12px;color:#888;">Avg/Tx</p><p class="admin-stat-val" style="font-size:18px;">${window._AT.length?fmt(rev/window._AT.length):'₦0'}</p></div>`;
+    const tabs=[['users','Users'],['tx','Transactions'],['funding','Funding'],['pin','PIN Reqs'],['loans','Loans'],['slides','Slides'],['broadcast','Broadcast']];
+    document.getElementById('adminTabRow').innerHTML=tabs.map(([k,l],i)=>`<button class="admin-tab-btn${i===0?' active':''}" id="atb-${k}" onclick="showAdminTab('${k}')">${l}</button>`).join('');
+    showAdminTab('users');
+  }catch(e){console.error(e);}
 }
-function aTab(tab){
-  document.querySelectorAll('.a-nav').forEach(n=>n.classList.remove('active'));
-  document.querySelectorAll('.a-nav').forEach(n=>{if(n.textContent.toLowerCase().includes(tab.slice(0,4).toLowerCase()))n.classList.add('active');});
-  const titles={overview:'Overview',users:'Users',transactions:'Transactions',funding:'Funding Requests',pins:'PIN Requests',promos:'Promo Slides',broadcast:'Broadcast',wallet:'Wallet Operations'};
-  document.getElementById('a-title').textContent=titles[tab]||tab;
-  const el=document.getElementById('a-content');
-  const rev=AD.txs.reduce((s,t)=>s+(t.amount||0),0);
-  if(tab==='overview')el.innerHTML=`
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:20px">
-      <div class="stat-c" style="background:linear-gradient(135deg,#1a1a2e,#16213e)"><div style="font-size:26px;margin-bottom:4px">👥</div><div style="font-family:'Playfair Display',serif;font-size:28px;font-weight:800">${AD.users.length}</div><div style="opacity:.65;font-size:13px">Total Users</div></div>
-      <div class="stat-c" style="background:linear-gradient(135deg,#003300,#005500)"><div style="font-size:26px;margin-bottom:4px">💳</div><div style="font-family:'Playfair Display',serif;font-size:28px;font-weight:800">${AD.txs.length}</div><div style="opacity:.65;font-size:13px">Transactions</div></div>
-      <div class="stat-c" style="background:linear-gradient(135deg,#2d1b00,#5a3700)"><div style="font-size:26px;margin-bottom:4px">💰</div><div style="font-family:'Playfair Display',serif;font-size:28px;font-weight:800">₦${fmt(rev)}</div><div style="opacity:.65;font-size:13px">Revenue</div></div>
-      <div class="stat-c" style="background:linear-gradient(135deg,#1a0030,#3a0060)"><div style="font-size:26px;margin-bottom:4px">🔒</div><div style="font-family:'Playfair Display',serif;font-size:28px;font-weight:800">${AD.pins.length}</div><div style="opacity:.65;font-size:13px">PIN Requests</div></div>
-    </div>
-    <div class="card" style="overflow:hidden"><div style="padding:16px;border-bottom:1px solid var(--g100);font-weight:700;font-size:14px">Recent Transactions</div>${AD.txs.slice(0,10).map(t=>`<div class="tx-row"><div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13px">${t.description||t.type}</div><div style="font-size:11px;color:var(--g400)">${t.userId?.slice(0,8)}... · ${fmtDate(t.createdAt)}</div></div><div style="color:var(--err);font-weight:700;font-size:13px">₦${fmt(t.amount)}</div></div>`).join('')}</div>`;
-  if(tab==='users')el.innerHTML=`<div class="card" style="overflow:hidden"><div style="padding:14px 16px;border-bottom:1px solid var(--g100);font-weight:700;font-size:14px">${AD.users.length} Registered Users</div>${AD.users.map(u=>`<div class="tx-row"><div style="width:36px;height:36px;background:linear-gradient(135deg,#FFD700,#FFA500);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;flex-shrink:0">${(u.name||'U')[0]}</div><div style="flex:1;min-width:0;margin-left:10px"><div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${u.name||'—'}</div><div style="font-size:11px;color:var(--g400)">${u.email}</div></div><div style="text-align:right"><div style="font-weight:700;color:#B8860B;font-size:13px">₦${fmt(u.balance)}</div><div class="chip ${u.role==='admin'?'chip-warn':'chip-ok'}" style="margin-top:2px">${u.role||'user'}</div></div></div>`).join('')}</div>`;
-  if(tab==='transactions')el.innerHTML=`<div class="card" style="overflow:hidden">${AD.txs.map(t=>`<div class="tx-row"><div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13px">${t.description||t.type}</div><div style="font-size:11px;color:var(--g400)">${fmtDate(t.createdAt)}</div></div><div style="text-align:right"><div style="color:var(--err);font-weight:700;font-size:13px">₦${fmt(t.amount)}</div><div class="chip chip-ok" style="margin-top:2px">${t.status||'success'}</div></div></div>`).join('')}</div>`;
-  if(tab==='funding')el.innerHTML=`<div class="card" style="overflow:hidden">${AD.funds.length?AD.funds.map(f=>`<div class="tx-row"><div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13px">${f.email||f.userId}</div><div style="font-size:11px;color:var(--g400)">₦${fmt(f.amount)} · ${fmtDate(f.createdAt)}</div></div><div style="display:flex;gap:6px"><button onclick="appFund('${f.id}','${f.userId}',${f.amount})" style="padding:5px 10px;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);color:var(--ok);border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">Approve</button><button onclick="rejFund('${f.id}')" style="padding:5px 10px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:var(--err);border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">Reject</button></div></div>`).join(''):'<div style="padding:40px;text-align:center;color:var(--g400)">No pending funding requests</div>'}</div>`;
-  if(tab==='pins')el.innerHTML=`<div class="card" style="overflow:hidden">${AD.pins.length?AD.pins.map(r=>`<div class="tx-row"><div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13px">${r.name||r.email}</div><div style="font-size:11px;color:var(--g400)">${r.email} · ${fmtDate(r.createdAt)}</div></div><div style="display:flex;gap:6px"><button onclick="appPin('${r.id}','${r.userId}')" style="padding:5px 10px;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);color:var(--ok);border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">Approve</button><button onclick="rejPin('${r.id}')" style="padding:5px 10px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:var(--err);border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">Reject</button></div></div>`).join(''):'<div style="padding:40px;text-align:center;color:var(--g400)">No pending PIN requests</div>'}</div>`;
-  if(tab==='promos')loadAdminPromos(el);
-  if(tab==='broadcast')el.innerHTML=`<div class="card" style="padding:20px;max-width:560px"><h3 style="font-weight:700;margin-bottom:16px;font-size:15px">Send Broadcast Notification</h3><div style="margin-bottom:13px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:7px;display:block">Title</label><input class="inp" id="bc-t" placeholder="Announcement title"/></div><div style="margin-bottom:20px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:7px;display:block">Message</label><textarea class="inp" id="bc-m" rows="4" placeholder="Your message..." style="resize:vertical"></textarea></div><button onclick="doBroadcast()" class="btn-g" style="padding:13px 28px;border-radius:12px;font-size:14px">Send to All Users</button></div>`;
-  if(tab==='wallet')el.innerHTML=`<div class="card" style="padding:20px;max-width:480px"><h3 style="font-weight:700;margin-bottom:16px;font-size:15px">Credit / Debit Wallet</h3><div style="margin-bottom:13px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:7px;display:block">User Email</label><input class="inp" id="aw-email" placeholder="user@example.com"/></div><div style="margin-bottom:13px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:7px;display:block">Amount (₦)</label><input class="inp" type="number" id="aw-amt" placeholder="1000"/></div><div style="margin-bottom:13px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:7px;display:block">Operation</label><select class="inp" id="aw-op"><option value="credit">Credit (Add funds)</option><option value="debit">Debit (Remove funds)</option></select></div><div style="margin-bottom:20px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:7px;display:block">Note</label><input class="inp" id="aw-note" placeholder="Reason for operation"/></div><button onclick="doWalletOp()" class="btn-g" style="width:100%;padding:14px;border-radius:12px;font-size:15px">Process</button></div>`;
+function showAdminTab(tab){
+  document.querySelectorAll('.admin-tab-btn').forEach(b=>b.classList.remove('active'));
+  const ab=document.getElementById('atb-'+tab);if(ab)ab.classList.add('active');
+  const cont=document.getElementById('adminTabContent');if(!cont)return;
+  if(tab==='users'){
+    cont.innerHTML=(window._AU||[]).map(u=>`<div style="background:#fff;border-radius:12px;padding:14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;"><div style="flex:1;min-width:0;"><p style="font-size:14px;font-weight:600;">${u.firstName||''} ${u.lastName||''}</p><p style="font-size:12px;color:#aaa;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${u.email}</p><p style="font-size:11px;color:#ccc;">${u.phone||'—'}</p></div><div style="text-align:right;flex-shrink:0;margin-left:10px;"><p style="font-size:15px;font-weight:700;color:#C9A84C;">${fmt(u.walletBalance||0)}</p><button onclick="openAdminCredit('${u.id}')" style="padding:5px 12px;border-radius:8px;background:#C9A84C;border:none;color:#fff;font-size:11px;font-weight:600;cursor:pointer;margin-top:4px;">Manage</button></div></div>`).join('');
+  }else if(tab==='tx'){
+    cont.innerHTML=(window._AT||[]).slice(0,50).map(tx=>{
+      const cls=tx.status==='success'?'chip-ok':tx.status==='pending'?'chip-pend':'chip-fail';
+      const dt=tx.createdAt?.toDate?tx.createdAt.toDate().toLocaleString('en-NG'):'—';
+      return`<div style="background:#fff;border-radius:12px;padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;"><div style="flex:1;min-width:0;"><p style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${tx.description||tx.type}</p><p style="font-size:11px;color:#aaa;">${dt}</p></div><div style="text-align:right;flex-shrink:0;margin-left:10px;"><p style="font-size:14px;font-weight:700;">${fmt(tx.amount||0)}</p><span class="status-chip ${cls}">${tx.status}</span></div></div>`;}).join('');
+  }else if(tab==='funding'){
+    cont.innerHTML=`<div style="background:#fff;border-radius:12px;padding:16px;margin-bottom:12px;"><p style="font-weight:600;margin-bottom:6px;">Manual Funding Process</p><p style="font-size:13px;color:#888;">Users send payment proof via WhatsApp. Use Users tab to credit wallets after confirming transfer.</p></div><a href="https://wa.me/2348068886569" target="_blank" style="display:block;text-align:center;padding:14px;background:#25D366;border-radius:10px;font-weight:700;text-decoration:none;color:#fff;margin-bottom:8px;">Open WhatsApp</a>`;
+  }else if(tab==='pin'){
+    db.collection('pinRequests').where('status','==','pending').get().then(snap=>{
+      const rs=snap.docs.map(d=>({id:d.id,...d.data()}));
+      cont.innerHTML=rs.length?rs.map(r=>`<div style="background:#fff;border-radius:12px;padding:14px;margin-bottom:8px;"><p style="font-weight:600;">${r.name}</p><p style="font-size:12px;color:#aaa;margin-bottom:10px;">${r.email}</p><div style="display:flex;gap:8px;"><button onclick="approvePIN('${r.id}','${r.userId}')" style="flex:1;padding:8px;border-radius:8px;background:#C9A84C;border:none;color:#fff;font-weight:600;cursor:pointer;font-size:12px;">Approve</button><button onclick="rejectPIN('${r.id}')" style="flex:1;padding:8px;border-radius:8px;background:#fff0f0;border:none;color:#ef4444;font-weight:600;cursor:pointer;font-size:12px;">Reject</button></div></div>`).join(''):`<p style="text-align:center;color:#aaa;padding:30px;">No pending PIN requests ✅</p>`;
+    });
+  }else if(tab==='loans'){
+    db.collection('loanRequests').where('status','==','pending').get().then(snap=>{
+      const ls=snap.docs.map(d=>({id:d.id,...d.data()}));
+      cont.innerHTML=ls.length?ls.map(l=>`<div style="background:#fff;border-radius:12px;padding:14px;margin-bottom:8px;"><div style="display:flex;justify-content:space-between;margin-bottom:6px;"><p style="font-weight:600;">${l.name}</p><p style="font-weight:700;color:#C9A84C;">${fmt(l.amount)}</p></div><p style="font-size:12px;color:#aaa;margin-bottom:4px;">${l.email}</p><p style="font-size:12px;color:#888;margin-bottom:10px;">Period: ${l.period} days · Purpose: ${l.purpose}</p><div style="display:flex;gap:8px;"><button onclick="approveLoan('${l.id}','${l.userId}',${l.amount})" style="flex:1;padding:8px;border-radius:8px;background:#C9A84C;border:none;color:#fff;font-weight:600;cursor:pointer;font-size:12px;">Approve &amp; Credit</button><button onclick="rejectLoan('${l.id}')" style="flex:1;padding:8px;border-radius:8px;background:#fff0f0;border:none;color:#ef4444;font-weight:600;cursor:pointer;font-size:12px;">Reject</button></div></div>`).join(''):`<p style="text-align:center;color:#aaa;padding:30px;">No pending loan requests ✅</p>`;
+    });
+  }else if(tab==='slides'){
+    db.collection('promoSlides').orderBy('order','asc').get().then(snap=>{
+      const sl=snap.docs.map(d=>({id:d.id,...d.data()}));
+      const show=sl.length?sl:DEF_SLIDES;
+      cont.innerHTML=`<button onclick="openAddSlide()" style="width:100%;padding:12px;border-radius:10px;background:#C9A84C;border:none;color:#fff;font-family:'Inter',sans-serif;font-weight:700;cursor:pointer;margin-bottom:12px;">+ Add New Slide</button>`+show.map(s=>`<div style="background:${s.bgColor||'#1a2340'};border-radius:12px;padding:14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;"><div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;"><span style="font-size:22px;">${s.emoji||'💰'}</span><div><p style="font-size:13px;font-weight:600;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${s.title}</p><p style="font-size:11px;color:rgba(255,255,255,0.6);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${s.description}</p></div></div><div style="display:flex;gap:6px;flex-shrink:0;"><button onclick="editSlide('${s.id}')" style="padding:5px 10px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);border-radius:7px;color:#fff;font-size:11px;cursor:pointer;font-weight:600;">Edit</button><button onclick="deleteSlide('${s.id}')" style="padding:5px 10px;background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.3);border-radius:7px;color:#fca5a5;font-size:11px;cursor:pointer;font-weight:600;">Del</button></div></div>`).join('');
+    }).catch(()=>{cont.innerHTML=`<button onclick="openAddSlide()" style="width:100%;padding:12px;border-radius:10px;background:#C9A84C;border:none;color:#fff;font-family:'Inter',sans-serif;font-weight:700;cursor:pointer;">+ Add New Slide</button>`;});
+  }else if(tab==='broadcast'){
+    cont.innerHTML=`<p style="font-size:13px;color:#888;margin-bottom:12px;">Send an instant announcement to all users.</p><textarea id="bcastMsg" style="width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:14px;font-family:'Inter',sans-serif;font-size:14px;min-height:120px;outline:none;resize:none;" placeholder="Type your message..." onfocus="this.style.borderColor='#C9A84C'" onblur="this.style.borderColor='#e0e0e0'"></textarea><button onclick="doBroadcast()" style="width:100%;padding:14px;border-radius:10px;background:#C9A84C;border:none;color:#fff;font-family:'Inter',sans-serif;font-weight:700;cursor:pointer;margin-top:10px;">Send to All Users</button>`;
+  }
 }
-async function loadAdminPromos(el){
-  const s=await db.collection('promos').orderBy('order').get();
-  const slides=s.docs.map(d=>({id:d.id,...d.data()}));
-  el.innerHTML=`<div style="display:flex;justify-content:flex-end;margin-bottom:14px"><button onclick="openM('m-addpromo')" class="btn-g" style="padding:11px 22px;border-radius:11px;font-size:13px">+ Add Slide</button></div><div style="display:grid;gap:10px">${slides.map(s=>`<div class="card" style="padding:14px;display:flex;align-items:center;gap:12px"><div style="width:44px;height:44px;background:${s.bg||'#111'};border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">${s.icon||'⭐'}</div><div style="flex:1;min-width:0"><div style="font-weight:700;font-size:13px">${s.title}</div><div style="font-size:11px;color:var(--g400);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.desc}</div></div><div style="display:flex;align-items:center;gap:8px"><div class="toggle-sw${s.active?' on':''}" onclick="togPromo('${s.id}',${!!s.active})"></div><button onclick="delPromo('${s.id}')" style="background:rgba(239,68,68,.08);border:none;color:var(--err);padding:5px 10px;border-radius:7px;cursor:pointer;font-size:11px;font-weight:700">Del</button></div></div>`).join('')}${!slides.length?'<div class="card" style="padding:40px;text-align:center;color:var(--g400)">No slides yet. Add one above.</div>':''}</div>`;
+function openAdminCredit(uid){document.getElementById('creditUID').value=uid;document.getElementById('creditAmt').value='';document.getElementById('creditNote').value='';openModal('adminCreditModal');}
+async function adminWallet(action){
+  const uid=document.getElementById('creditUID').value;
+  const amt=parseFloat(document.getElementById('creditAmt').value);
+  const note=document.getElementById('creditNote').value.trim();
+  if(!amt||amt<=0){toast2('Enter valid amount');return;}
+  if(!note){toast2('Enter a note');return;}
+  try{
+    await db.collection('users').doc(uid).update({walletBalance:firebase.firestore.FieldValue.increment(action==='credit'?amt:-amt)});
+    await db.collection('transactions').add({userId:uid,type:'wallet',amount:amt,description:note,meta:{action,by:CU.email},status:'success',createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    await db.collection('users').doc(uid).update({notifications:firebase.firestore.FieldValue.arrayUnion({id:Date.now().toString(),title:`Wallet ${action==='credit'?'Credited 💰':'Debited'}`,message:`${action==='credit'?'+':'-'}${fmt(amt)} — ${note}`,time:new Date().toISOString(),read:false})});
+    closeModal('adminCreditModal');toast2(`Wallet ${action}ed!`);loadAdminData();
+  }catch(e){toast2('Failed: '+e.message);}
 }
-async function savePromo(){
-  const t=document.getElementById('pm-title').value.trim(),d=document.getElementById('pm-desc').value.trim();
-  const ic=document.getElementById('pm-icon').value||'⭐',cta=document.getElementById('pm-cta').value.trim();
-  const bg=document.getElementById('pm-bg').value;
-  if(!t||!d){toast('Title and description required');return;}
-  const s=await db.collection('promos').get();
-  await db.collection('promos').add({title:t,desc:d,icon:ic,cta,bg,active:true,order:s.size,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-  closeM('m-addpromo');toast('✅ Slide added!');aTab('promos');
-}
-async function togPromo(id,cur){await db.collection('promos').doc(id).update({active:!cur});aTab('promos');}
-async function delPromo(id){if(!confirm('Delete this slide?'))return;await db.collection('promos').doc(id).delete();toast('Slide deleted.');aTab('promos');}
-async function doBroadcast(){
-  const t=document.getElementById('bc-t').value.trim(),m=document.getElementById('bc-m').value.trim();
-  if(!t||!m){toast('Fill all fields');return;}
-  const batch=db.batch();
-  AD.users.forEach(u=>{const r=db.collection('notifications').doc();batch.set(r,{userId:u.id,title:t,body:m,read:false,createdAt:firebase.firestore.FieldValue.serverTimestamp()});});
-  await batch.commit();toast(`✅ Sent to ${AD.users.length} users!`);document.getElementById('bc-t').value='';document.getElementById('bc-m').value='';
-}
-async function doWalletOp(){
-  const em=document.getElementById('aw-email').value.trim(),amt=parseFloat(document.getElementById('aw-amt').value),op=document.getElementById('aw-op').value,note=document.getElementById('aw-note').value;
-  if(!em||!amt){toast('Fill all fields');return;}
-  const s=await db.collection('users').where('email','==',em).get();
-  if(s.empty){toast('User not found');return;}
-  const uid=s.docs[0].id;const ch=op==='credit'?amt:-amt;
-  await db.collection('users').doc(uid).update({balance:firebase.firestore.FieldValue.increment(ch)});
-  await db.collection('transactions').add({userId:uid,type:op,amount:amt,description:note||`Admin ${op}`,status:'success',createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-  await addNotif(uid,op==='credit'?'✅ Wallet Credited':'⚠️ Wallet Debited',`₦${fmt(amt)} ${op}ed. Note: ${note}`);
-  toast(`✅ Wallet ${op}ed!`);loadAdmin();
-}
-async function appFund(fid,uid,amt){
-  await db.collection('users').doc(uid).update({balance:firebase.firestore.FieldValue.increment(amt)});
-  await db.collection('fundings').doc(fid).update({status:'approved'});
-  await addNotif(uid,'✅ Wallet Funded',`₦${fmt(amt)} has been credited to your wallet.`);
-  toast('✅ Wallet credited!');loadAdmin();
-}
-async function rejFund(fid){await db.collection('fundings').doc(fid).update({status:'rejected'});toast('Funding rejected.');loadAdmin();}
-async function appPin(rid,uid){
-  await db.collection('users').doc(uid).update({pin:''});
+async function approvePIN(rid,uid){
+  await db.collection('users').doc(uid).update({pin:null});
   await db.collection('pinRequests').doc(rid).update({status:'approved'});
-  await addNotif(uid,'🔒 PIN Reset Approved','Your PIN has been cleared. Please set a new PIN in Profile settings.');
-  toast('PIN reset approved.');loadAdmin();
+  await db.collection('users').doc(uid).update({notifications:firebase.firestore.FieldValue.arrayUnion({id:rid,title:'PIN Reset Approved ✅',message:'Your PIN has been reset. Log out and sign back in to set a new PIN.',time:new Date().toISOString(),read:false})});
+  toast2('PIN reset approved!');showAdminTab('pin');
 }
-async function rejPin(rid){await db.collection('pinRequests').doc(rid).update({status:'rejected'});toast('PIN request rejected.');loadAdmin();}
+async function rejectPIN(rid){await db.collection('pinRequests').doc(rid).update({status:'rejected'});toast2('Request rejected');showAdminTab('pin');}
+async function approveLoan(lid,uid,amt){
+  await db.collection('users').doc(uid).update({walletBalance:firebase.firestore.FieldValue.increment(amt)});
+  await db.collection('transactions').add({userId:uid,type:'wallet',amount:amt,description:`Loan disbursement approved`,meta:{type:'loan'},status:'success',createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+  await db.collection('loanRequests').doc(lid).update({status:'approved'});
+  await db.collection('users').doc(uid).update({notifications:firebase.firestore.FieldValue.arrayUnion({id:lid,title:'Loan Approved! 🎉',message:`${fmt(amt)} has been credited to your ZMONIE wallet.`,time:new Date().toISOString(),read:false})});
+  toast2('Loan approved & credited!');showAdminTab('loans');
+}
+async function rejectLoan(lid){await db.collection('loanRequests').doc(lid).update({status:'rejected'});toast2('Loan rejected');showAdminTab('loans');}
+function openAddSlide(){document.getElementById('slideEID').value='';document.getElementById('slideModalT').textContent='Add Promo Slide';['slideT','slideD','slideCTA'].forEach(i=>document.getElementById(i).value='');document.getElementById('slideBG').value='#1a2340';document.getElementById('slideEM').value='💰';document.getElementById('slideActive').checked=true;openModal('adminSlideModal');}
+async function editSlide(id){try{const d=await db.collection('promoSlides').doc(id).get();if(!d.exists)return;const s={id:d.id,...d.data()};document.getElementById('slideEID').value=id;document.getElementById('slideModalT').textContent='Edit Slide';document.getElementById('slideT').value=s.title||'';document.getElementById('slideD').value=s.description||'';document.getElementById('slideCTA').value=s.cta||'';document.getElementById('slideBG').value=s.bgColor||'#1a2340';document.getElementById('slideEM').value=s.emoji||'💰';document.getElementById('slideActive').checked=s.active!==false;openModal('adminSlideModal');}catch(e){toast2('Load failed');}}
+async function doSaveSlide(){const eid=document.getElementById('slideEID').value;const data={title:document.getElementById('slideT').value.trim(),description:document.getElementById('slideD').value.trim(),cta:document.getElementById('slideCTA').value.trim(),bgColor:document.getElementById('slideBG').value.trim(),emoji:document.getElementById('slideEM').value.trim(),active:document.getElementById('slideActive').checked,order:Date.now()};if(!data.title||!data.description){toast2('Title and description required');return;}try{if(eid)await db.collection('promoSlides').doc(eid).update(data);else await db.collection('promoSlides').add(data);closeModal('adminSlideModal');toast2('Slide saved!');showAdminTab('slides');loadPromoSlides();}catch(e){toast2('Save failed');}}
+async function deleteSlide(id){if(!confirm('Delete this slide?'))return;try{await db.collection('promoSlides').doc(id).delete();toast2('Deleted');showAdminTab('slides');loadPromoSlides();}catch(e){toast2('Failed');}}
+async function doBroadcast(){const msg=document.getElementById('bcastMsg').value.trim();if(!msg){toast2('Enter message');return;}try{const s=await db.collection('users').get();const b=db.batch();s.docs.forEach(d=>{b.update(d.ref,{notifications:firebase.firestore.FieldValue.arrayUnion({id:Date.now().toString(),title:'📢 Announcement',message:msg,time:new Date().toISOString(),read:false})});});await b.commit();document.getElementById('bcastMsg').value='';toast2(`Broadcast sent to ${s.size} users!`);}catch(e){toast2('Failed: '+e.message);}}
+
+// ===== UTILS =====
+function doCopy(text,btn){
+  navigator.clipboard.writeText(text).then(()=>{
+    if(btn){const o=btn.textContent;btn.textContent='Copied ✓';btn.style.background='#22c55e';setTimeout(()=>{btn.textContent=o;btn.style.background='';},2000);}
+    else toast2('Copied!');
+  }).catch(()=>toast2('Copy failed'));
+}
+function sendProofWA(){
+  const nm=(UP?.firstName||'')+' '+(UP?.lastName||'');
+  const msg=encodeURIComponent(`Hello ZMONIE,\n\nI've made a transfer and want to fund my wallet.\n\nName: ${nm}\nEmail: ${CU?.email||''}\n\n[Attach payment screenshot here]\n\nKindly credit my wallet. Thank you!`);
+  window.open(`https://wa.me/2348068886569?text=${msg}`,'_blank');
+}
+
+document.addEventListener('DOMContentLoaded',()=>{showSection('home');});
 </script>
 </body>
 </html>
