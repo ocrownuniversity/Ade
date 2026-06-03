@@ -8,7 +8,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -327,7 +326,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--black);over
     <!-- Header: profile + icons -->
     <div style="background:#fff;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #eef0f3">
       <div style="display:flex;align-items:center;gap:10px">
-        <div style="width:40px;height:40px;background:linear-gradient(135deg,#16a34a,#22c55e);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;color:#fff;flex-shrink:0" id="d-avatar">U</div>
+        <div style="width:40px;height:40px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid #dcfce7;cursor:pointer" id="d-avatar-wrap" onclick="goPg('pg-profile')"><img id="d-avatar-img" src="" alt="" style="width:100%;height:100%;object-fit:cover;display:none"/><div id="d-avatar-letter" style="width:100%;height:100%;background:linear-gradient(135deg,#16a34a,#22c55e);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;color:#fff">U</div></div>
         <div>
           <div style="font-size:11px;color:var(--g400);font-weight:500">Welcome back</div>
           <div style="font-size:15px;font-weight:700;letter-spacing:-.01em" id="d-name">Loading...</div>
@@ -624,7 +623,16 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--black);over
     </div>
     <div style="padding:16px 14px">
       <div style="text-align:center;padding:18px 0 22px">
-        <div style="width:70px;height:70px;background:linear-gradient(135deg,#16a34a,#22c55e);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:26px;font-weight:800;color:#fff" id="pr-av">U</div>
+        <div style="position:relative;width:80px;height:80px;margin:0 auto 10px">
+  <div style="width:80px;height:80px;border-radius:50%;overflow:hidden;border:3px solid #dcfce7;background:linear-gradient(135deg,#16a34a,#22c55e);display:flex;align-items:center;justify-content:center" id="pr-av">
+    <img id="pr-av-img" src="" alt="" style="width:100%;height:100%;object-fit:cover;display:none"/>
+    <span id="pr-av-letter" style="font-size:28px;font-weight:800;color:#fff">U</span>
+  </div>
+  <label for="pr-photo-input" style="position:absolute;bottom:0;right:0;width:26px;height:26px;background:var(--green);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid #fff;box-sizing:border-box">
+    <svg width="12" height="12" fill="none" stroke="#fff" stroke-width="2.5" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+  </label>
+  <input type="file" id="pr-photo-input" accept="image/*" style="display:none" onchange="uploadProfilePhoto(event)"/>
+</div>
         <div style="font-size:18px;font-weight:700" id="pr-name">—</div>
         <div style="color:var(--g400);font-size:13px;margin-top:3px" id="pr-em">—</div>
         <div id="pin-banner" style="display:none;margin-top:12px"></div>
@@ -1098,16 +1106,9 @@ function svcForm(t){
   if(t==='loan')return`<div class="info-box"><p style="font-size:13px;color:var(--green-d);line-height:1.6">Quick loans reviewed within 24 hours. Amount credited to wallet on approval.</p></div><div style="margin-bottom:13px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px;display:block">Loan Amount</label><select class="inp" id="s-amt"><option value="5000">NGN 5,000</option><option value="10000">NGN 10,000</option><option value="20000">NGN 20,000</option><option value="50000">NGN 50,000</option><option value="100000">NGN 100,000</option><option value="200000">NGN 200,000</option><option value="500000">NGN 500,000</option></select></div><div style="margin-bottom:13px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px;display:block">Purpose</label><input class="inp" id="s-phone" placeholder="Brief purpose of loan"/></div><div style="margin-bottom:20px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px;display:block">Repayment Period</label><select class="inp" id="s-meter"><option>7 days</option><option>14 days</option><option>30 days</option></select></div><button onclick="procLoan()" class="btn-g" style="width:100%;padding:13px;border-radius:11px;font-size:15px">Apply for Loan</button>`;
   if(t==='result')return`<div class="info-box"><p style="font-size:13px;color:var(--green-d);line-height:1.6">Check WAEC, NECO, JAMB, NABTEB results. Scratch card PIN delivered instantly.</p></div><div style="margin-bottom:13px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px;display:block">Exam Type</label><select class="inp" id="s-phone"><option>WAEC - West African Examinations Council</option><option>NECO - National Examinations Council</option><option>JAMB - Joint Admissions Board</option><option>NABTEB - National Business and Technical Board</option></select></div><div style="margin-bottom:13px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px;display:block">Year</label><select class="inp" id="s-meter"><option>2025</option><option>2024</option><option>2023</option><option>2022</option></select></div><div style="margin-bottom:20px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px;display:block">Result Checker</label><select class="inp" id="s-amt"><option value="800">WAEC Scratch Card - NGN 800</option><option value="700">NECO Scratch Card - NGN 700</option><option value="500">JAMB Profile Code - NGN 500</option><option value="750">NABTEB Scratch Card - NGN 750</option></select></div><button onclick="procSvc('result')" class="btn-g" style="width:100%;padding:13px;border-radius:11px;font-size:15px">Buy Result Checker</button>`;
 }
-// dup_selNet(btn){btn.closest('div').querySelectorAll('button').forEach(b=>{b.style.borderColor='var(--g200)';b.style.background='#fff';});btn.style.borderColor='var(--green)';btn.style.background='var(--green-xl)';}
+function selNet(btn){btn.closest('div').querySelectorAll('button').forEach(b=>{b.style.borderColor='var(--g200)';b.style.background='#fff';});btn.style.borderColor='var(--green)';btn.style.background='var(--green-xl)';}
 
-async function procLoan(){
-  const amt=parseFloat(document.getElementById('s-amt')?.value||'0');
-  const purpose=document.getElementById('s-phone')?.value||'';
-  if(!amt){toast('Select a loan amount');return;}
-  await db.collection('loanRequests').add({userId:CU.uid,email:CU.email,name:UD?.name,amount:amt,purpose,status:'pending',createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-  await addNotif(CU.uid,'Loan Request Submitted','Your loan of NGN '+fmt(amt)+' has been submitted. Admin will review within 24 hours.');
-  closeM('m-svc');toast('Loan request submitted successfully!');
-}
+async function procLoan(){closeM('m-svc');openM('m-loan-apply');}
 
 function procSvc(type){
   const amtEl=document.getElementById('s-amt');
@@ -1464,7 +1465,7 @@ async function loadAdmin(){
 function aTab(tab){
   document.querySelectorAll('.anav').forEach(n=>n.classList.remove('on'));
   document.querySelectorAll('.anav').forEach(n=>{if(n.textContent.trim().toLowerCase().includes(tab.slice(0,4)))n.classList.add('on');});
-  document.getElementById('a-title').textContent={overview:'Overview',users:'Users',txs:'Transactions',funding:'Funding Requests',pins:'PIN Requests',promos:'Promo Slides',broadcast:'Broadcast',wallet:'Wallet Operations'}[tab]||tab;
+  document.getElementById('a-title').textContent={overview:'Overview',users:'Users',txs:'Transactions',funding:'Funding Requests',pins:'PIN Requests',promos:'Promo Slides',broadcast:'Broadcast',wallet:'Wallet Operations',vtpass:'VTPass API',recovery:'Loan Recovery',['fin-nok']:'Next of Kin Verification'}[tab]||tab;
   const el=document.getElementById('a-content');
   const rev=AD.txs.reduce((s,t)=>s+(t.amount||0),0);
   if(tab==='overview')el.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:11px;margin-bottom:16px"><div class="statc" style="background:linear-gradient(135deg,#15803d,#16a34a)"><div style="font-size:22px;margin-bottom:3px">👥</div><div style="font-size:26px;font-weight:800">${AD.users.length}</div><div style="opacity:.65;font-size:12px;margin-top:1px">Total Users</div></div><div class="statc" style="background:linear-gradient(135deg,#1e3a5f,#2563eb)"><div style="font-size:22px;margin-bottom:3px">💳</div><div style="font-size:26px;font-weight:800">${AD.txs.length}</div><div style="opacity:.65;font-size:12px;margin-top:1px">Transactions</div></div><div class="statc" style="background:linear-gradient(135deg,#b45309,#d97706)"><div style="font-size:22px;margin-bottom:3px">💰</div><div style="font-size:20px;font-weight:800">NGN ${fmt(rev)}</div><div style="opacity:.65;font-size:12px;margin-top:1px">Revenue</div></div><div class="statc" style="background:linear-gradient(135deg,#7c3aed,#6d28d9)"><div style="font-size:22px;margin-bottom:3px">🔒</div><div style="font-size:26px;font-weight:800">${AD.pins.length}</div><div style="opacity:.65;font-size:12px;margin-top:1px">PIN Requests</div></div></div><div class="card" style="overflow:hidden"><div style="padding:13px 16px;border-bottom:1px solid #f8fafc;font-weight:700;font-size:14px">Recent Transactions</div>${AD.txs.slice(0,10).map(t=>`<div class="txr"><div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13px">${t.description||t.type}</div><div style="font-size:11px;color:var(--g400)">${fdate(t.createdAt)}</div></div><div style="color:var(--err);font-weight:700;font-size:13px">NGN ${fmt(t.amount)}</div></div>`).join('')||'<div style="padding:22px;text-align:center;color:var(--g400);font-size:13px">No transactions yet</div>'}</div>`;
@@ -1491,6 +1492,57 @@ function aTab(tab){
   if(tab==='broadcast')el.innerHTML=`<div class="card" style="padding:18px;max-width:520px"><h3 style="font-weight:700;margin-bottom:13px;font-size:15px">Send Broadcast</h3><div style="margin-bottom:11px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Title</label><input class="inp" id="bc-t" placeholder="Announcement title"/></div><div style="margin-bottom:16px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Message</label><textarea class="inp" id="bc-m" rows="4" placeholder="Message to all users..." style="resize:vertical"></textarea></div><button onclick="doBc()" class="btn-g" style="padding:12px 24px;border-radius:10px;font-size:14px">Send to All ${AD.users.length} Users</button></div>`;
   if(tab==='wallet')el.innerHTML=`<div class="card" style="padding:18px;max-width:440px"><h3 style="font-weight:700;margin-bottom:13px;font-size:15px">Credit or Debit Wallet</h3><div style="margin-bottom:11px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">User Email</label><input class="inp" id="aw-e" placeholder="user@example.com"/></div><div style="margin-bottom:11px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Amount (NGN)</label><input class="inp" type="number" id="aw-a" placeholder="1000"/></div><div style="margin-bottom:11px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Operation</label><select class="inp" id="aw-o"><option value="credit">Credit (Add funds)</option><option value="debit">Debit (Remove funds)</option></select></div><div style="margin-bottom:16px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Note (shown to user)</label><input class="inp" id="aw-n" placeholder="Payment confirmed"/></div><button onclick="doWop()" class="btn-g" style="width:100%;padding:12px;border-radius:10px;font-size:14px">Process</button></div>`;
   // ── VTPass Settings tab ──
+  if(tab==='recovery'){
+    el.innerHTML='<div style="padding:20px;text-align:center;color:var(--g400)">Loading...</div>';
+    db.collection('recoveryLog').orderBy('createdAt','desc').get().then(snap=>{
+      if(snap.empty){el.innerHTML='<div class="card" style="padding:28px;text-align:center;color:var(--g400)"><div style="font-size:32px;margin-bottom:8px">✅</div><p>No recovery cases</p></div>';return;}
+      let html='<div style="font-weight:700;font-size:14px;color:#dc2626;margin-bottom:12px">Recovery Cases ('+snap.size+')</div>';
+      snap.docs.forEach(d=>{
+        const r=d.data();
+        const g1=r.guarantor1||{};const g2=r.guarantor2||{};
+        html+=`<div class="card" style="padding:14px;margin-bottom:10px;border-left:4px solid #dc2626">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+            <div><div style="font-weight:700;font-size:14px">${r.userName||'Unknown'}</div><div style="font-size:22px;font-weight:800;color:#dc2626">NGN ${fmt(r.amount||0)}</div></div>
+            <span class="status-badge" style="background:#fee2e2;color:#dc2626">${r.status||'initiated'}</span>
+          </div>
+          <div style="background:#fef2f2;border-radius:9px;padding:10px;margin-bottom:10px">
+            <div style="font-size:11px;font-weight:700;color:#dc2626;margin-bottom:6px">GUARANTORS TO CONTACT</div>
+            <div style="font-size:12px;color:var(--g700);line-height:2">${g1.name||'—'}: ${g1.phone||'—'}<br/>${g2.name||'—'}: ${g2.phone||'—'}</div>
+          </div>
+          <div style="display:flex;gap:6px">
+            <a href="tel:${g1.phone||''}" style="flex:1;padding:8px;background:#dcfce7;border:1px solid #86efac;color:#15803d;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;text-decoration:none;text-align:center">Call G1</a>
+            <a href="tel:${g2.phone||''}" style="flex:1;padding:8px;background:#dbeafe;border:1px solid #93c5fd;color:#1d4ed8;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;text-decoration:none;text-align:center">Call G2</a>
+            <button onclick="db.collection('recoveryLog').doc('${d.id}').update({status:'resolved',resolvedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(()=>{toast('Marked resolved');aTab('recovery')})" style="flex:1;padding:8px;background:#fef3c7;border:1px solid #fde047;color:#92400e;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">Resolve</button>
+          </div>
+        </div>`;
+      });
+      el.innerHTML=html;
+    }).catch(e=>{el.innerHTML='<div class="card" style="padding:16px;color:#dc2626">Error: '+e.message+'</div>';});
+    return;
+  }
+  if(tab==='fin-nok'){
+    el.innerHTML='<div style="padding:20px;text-align:center;color:var(--g400)">Loading NOK data...</div>';
+    db.collection('investments').where('status','in',['pending','active']).get().then(snap=>{
+      if(snap.empty){el.innerHTML='<div class="card" style="padding:28px;text-align:center;color:var(--g400)"><p>No investments with NOK data</p></div>';return;}
+      let html='<div style="font-weight:700;font-size:14px;margin-bottom:12px">Next of Kin Records ('+snap.size+')</div>';
+      snap.docs.forEach(d=>{
+        const inv=d.data();const nok=inv.nextOfKin||{};
+        html+=`<div class="card" style="padding:14px;margin-bottom:10px">
+          <div style="font-weight:700;font-size:13px;margin-bottom:4px">${inv.userName||inv.userEmail}</div>
+          <div style="font-size:11px;color:var(--g400);margin-bottom:10px">Investment: NGN ${fmt(inv.amount||0)}</div>
+          <div style="background:#f8fafc;border-radius:9px;padding:10px;margin-bottom:10px">
+            <div style="font-size:11px;font-weight:700;color:var(--g700);margin-bottom:6px">NEXT OF KIN</div>
+            ${nok.photoUrl?`<img src="${nok.photoUrl}" style="width:52px;height:52px;border-radius:50%;object-fit:cover;margin-bottom:8px;border:2px solid #e2e8f0"/><br/>`:''}
+            <div style="font-size:12px;color:var(--g700);line-height:2">${nok.name||'—'} (${nok.relationship||'—'})<br/>${nok.phone||'—'} &bull; Age: ${nok.age||'—'}<br/>${nok.address||'—'}</div>
+            ${nok.verified?'<div style="margin-top:6px;font-size:11px;font-weight:700;color:#15803d">✅ Verified</div>':'<div style="margin-top:6px;font-size:11px;font-weight:700;color:#d97706">⏳ Unverified - Code: '+nok.verifyCode+'</div>'}
+          </div>
+          ${!nok.verified?`<button onclick="db.collection('investments').doc('${d.id}').update({'nextOfKin.verified':true}).then(()=>{toast('NOK verified');aTab('fin-nok')})" style="width:100%;padding:8px;background:#dcfce7;border:1px solid #86efac;color:#15803d;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">Mark NOK as Verified</button>`:''}
+        </div>`;
+      });
+      el.innerHTML=html;
+    }).catch(e=>{el.innerHTML='<div class="card" style="padding:16px;color:#dc2626">Error: '+e.message+'</div>';});
+    return;
+  }
   if(tab==='vtpass'){
     loadVtpassConfig();
     el.innerHTML=`<div class="card" style="padding:20px;max-width:480px">
@@ -1512,69 +1564,81 @@ function aTab(tab){
 
   // ── Finance Admin Tabs ──
   if(tab==='fin-loans'){
-    el.innerHTML='<div style="padding:20px;text-align:center;color:var(--g400)"><div style="font-size:24px">⏳</div><p>Loading loans...</p></div>';
+    el.innerHTML='<div style="padding:20px;text-align:center;color:var(--g400)"><div style="font-size:24px">⏳</div><p style="font-size:13px">Loading loans...</p></div>';
     db.collection('loans').orderBy('createdAt','desc').get().then(snap=>{
       AD.loans=snap.docs.map(d=>({id:d.id,...d.data()}));
       const pending=AD.loans.filter(l=>l.status==='pending');
-      const approved=AD.loans.filter(l=>l.status==='approved');
-      const active=AD.loans.filter(l=>l.status==='active');
-      const defaulted=AD.loans.filter(l=>l.status==='defaulted');
-      const closed=AD.loans.filter(l=>['repaid','rejected'].includes(l.status));
-      const today=new Date();
-
-      const renderLoanCard=(ln,showActions=false,showDefault=false)=>{
-        const g1=ln.guarantor1||ln.guarantor||{};const g2=ln.guarantor2||{};
-        const pct=ln.totalRepayment>0?Math.min(100,Math.round((ln.paidSoFar||0)/ln.totalRepayment*100)):0;
-        const isOverdue=ln.dueDate&&today>ln.dueDate.toDate()&&ln.status==='active';
-        return `<div class="card" style="padding:16px;margin-bottom:12px;border-left:4px solid ${ln.status==='pending'?'#d97706':ln.status==='active'?'#2563eb':ln.status==='approved'?'#16a34a':ln.status==='defaulted'?'#dc2626':'#94a3b8'}">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
-            <div><div style="font-weight:700;font-size:15px">${ln.userName||ln.userEmail||'—'}</div><div style="font-size:11px;color:var(--g400)">${ln.userEmail||''} · ${fdate(ln.createdAt)}</div></div>
-            <span class="status-badge sb-${isOverdue?'rejected':ln.status}">${isOverdue?'OVERDUE':ln.status.toUpperCase()}</span>
-          </div>
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:12px">
-            <div style="background:#f8fafc;border-radius:9px;padding:9px;text-align:center"><div style="font-size:9px;color:var(--g400)">REQUESTED</div><div style="font-size:13px;font-weight:800">NGN ${fmt(ln.amount)}</div></div>
-            <div style="background:#f8fafc;border-radius:9px;padding:9px;text-align:center"><div style="font-size:9px;color:var(--g400)">TOTAL (24%)</div><div style="font-size:13px;font-weight:800;color:#dc2626">NGN ${fmt(ln.totalRepayment||ln.amount*1.24)}</div></div>
-            <div style="background:#f8fafc;border-radius:9px;padding:9px;text-align:center"><div style="font-size:9px;color:var(--g400)">DAILY</div><div style="font-size:13px;font-weight:800;color:#2563eb">NGN ${fmt(ln.dailyRepayment||((ln.amount*1.24)/30))}</div></div>
-          </div>
-          ${ln.status==='active'?`<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--g500);margin-bottom:3px"><span>Repayment</span><span>${pct}% (NGN ${fmt(ln.paidSoFar||0)} / NGN ${fmt(ln.totalRepayment||0)})</span></div><div style="background:#e2e8f0;border-radius:50px;height:7px"><div style="background:${pct>=100?'#16a34a':isOverdue?'#dc2626':'#2563eb'};height:100%;width:${pct}%;border-radius:50px"></div></div></div>`:''}
-          <div style="font-size:12px;color:var(--g600);margin-bottom:4px"><strong>Purpose:</strong> ${ln.purpose||'—'}</div>
-          <div style="font-size:12px;color:var(--g600);margin-bottom:4px"><strong>Address:</strong> ${ln.address||'—'}</div>
-          <div style="font-size:12px;color:var(--g600);margin-bottom:8px"><strong>Employment:</strong> ${ln.employment||'—'}</div>
-          ${ln.socialMedia?`<div style="font-size:12px;color:var(--g600);margin-bottom:8px"><strong>Social:</strong> ${ln.socialMedia.platform||''} — ${ln.socialMedia.url||'—'}</div>`:''}
-          <div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:10px">
-            ${ln.passportUrl?`<div style="text-align:center"><img src="${ln.passportUrl}" style="width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid #e2e8f0;cursor:pointer" onclick="viewImg('${ln.passportUrl}')"/><div style="font-size:10px;color:var(--g500);margin-top:3px">Passport</div></div>`:'<div style="width:56px;height:56px;border-radius:50%;background:#fef2f2;display:flex;align-items:center;justify-content:center;font-size:11px;color:#dc2626;text-align:center;font-weight:600">No Photo</div>'}
-            ${ln.idUrl?`<div style="text-align:center"><img src="${ln.idUrl}" style="width:80px;height:54px;border-radius:9px;object-fit:cover;border:2px solid #e2e8f0;cursor:pointer" onclick="viewImg('${ln.idUrl}')"/><div style="font-size:10px;color:var(--g500);margin-top:3px">${ln.idType||'ID'}</div></div>`:''}
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:${showActions?'12px':'0'}">
-            <div style="background:#faf5ff;border:1px solid #c4b5fd;border-radius:9px;padding:10px"><div style="font-size:10px;font-weight:700;color:#5b21b6;margin-bottom:6px">Guarantor 1</div><div style="font-size:11px;color:var(--g700);line-height:1.7">${g1.name||'—'}<br/>${g1.phone||'—'}<br/>${g1.relationship||'—'}</div></div>
-            <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:9px;padding:10px"><div style="font-size:10px;font-weight:700;color:#c2410c;margin-bottom:6px">Guarantor 2</div><div style="font-size:11px;color:var(--g700);line-height:1.7">${g2.name||'—'}<br/>${g2.phone||'—'}<br/>${g2.relationship||'—'}</div></div>
-          </div>
-          ${showActions?`
-          <div style="margin-top:10px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Approved Amount (NGN)</label><input class="inp" id="la-amt-${ln.id}" value="${ln.amount}" type="number" style="font-size:14px;font-weight:700;margin-bottom:8px"/></div>
-          <div><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Admin Note</label><input class="inp" id="la-note-${ln.id}" placeholder="Reason or instructions..."/></div>
-          <div style="display:flex;gap:8px;margin-top:10px">
-            <button onclick="approveLoan('${ln.id}','${ln.userId}')" style="flex:1;padding:11px;background:#dcfce7;border:1.5px solid #86efac;color:#15803d;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">✅ Approve</button>
-            <button onclick="rejectLoan('${ln.id}','${ln.userId}')" style="flex:1;padding:11px;background:#fee2e2;border:1.5px solid #fca5a5;color:#dc2626;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">❌ Reject</button>
-          </div>`:''}
-          ${showDefault?`<div style="display:flex;gap:8px;margin-top:10px">
-            <button onclick="markRepayment('${ln.id}','${ln.userId}',${ln.dailyRepayment||0})" style="flex:1;padding:10px;background:#dbeafe;border:1px solid #93c5fd;color:#1d4ed8;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">💳 Record Daily Payment</button>
-            <button onclick="markLoanRepaid('${ln.id}','${ln.userId}',${ln.totalRepayment||ln.amount})" style="flex:1;padding:10px;background:#dcfce7;border:1px solid #86efac;color:#15803d;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">✅ Mark Fully Repaid</button>
-            ${isOverdue?`<button onclick="markDefaulted('${ln.id}','${ln.userId}')" style="padding:10px 12px;background:#fee2e2;border:1px solid #fca5a5;color:#dc2626;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">⚠ Default</button>`:''}
-          </div>`:''}
-        </div>`;
-      };
-
+      const active=AD.loans.filter(l=>l.status==='active'||l.status==='approved');
+      const closed=AD.loans.filter(l=>l.status==='repaid'||l.status==='rejected');
       let html='';
-      if(pending.length){html+=`<div style="display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;color:#d97706;margin-bottom:10px"><span style="background:#fef3c7;border-radius:50%;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-size:12px">${pending.length}</span>Pending Applications</div>`;pending.forEach(ln=>{html+=renderLoanCard(ln,true,false);});}
-      if(approved.length){html+=`<div style="display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;color:#16a34a;margin:14px 0 10px"><span style="background:#dcfce7;border-radius:50%;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-size:12px">${approved.length}</span>Approved — Awaiting Doc Fee</div>`;approved.forEach(ln=>{html+=renderLoanCard(ln,false,false)+`<div style="margin:-8px 0 12px;padding:10px;background:#fef3c7;border-radius:0 0 10px 10px;border:1px solid #fcd34d;border-top:none"><div style="font-size:12px;color:#92400e;font-weight:600">Doc Fee Paid: ${ln.docFeePaid?'✅ Yes':'⏳ Waiting'}</div><button onclick="markDocFeePaid('${ln.id}','${ln.userId}')" style="margin-top:6px;padding:7px 14px;background:#16a34a;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">✅ Confirm Doc Fee Paid → Disburse</button></div>`;});}
-      if(active.length){html+=`<div style="display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;color:#2563eb;margin:14px 0 10px"><span style="background:#dbeafe;border-radius:50%;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-size:12px">${active.length}</span>Active Loans</div>`;active.forEach(ln=>{html+=renderLoanCard(ln,false,true);});}
-      if(defaulted.length){html+=`<div style="display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;color:#dc2626;margin:14px 0 10px"><span style="background:#fee2e2;border-radius:50%;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-size:12px">${defaulted.length}</span>Defaulted Loans</div>`;defaulted.forEach(ln=>{html+=renderLoanCard(ln,false,false);});}
-      if(closed.length){html+=`<div style="font-weight:700;font-size:13px;color:var(--g500);margin:14px 0 8px">History (${closed.length})</div>`;closed.forEach(ln=>{html+=`<div class="card" style="padding:12px;margin-bottom:6px;opacity:.75"><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:600;font-size:13px">${ln.userName||ln.userEmail}</div><div style="font-size:12px;color:var(--g500)">NGN ${fmt(ln.approvedAmount||ln.amount)} · ${fdateShort(ln.createdAt)}</div></div><span class="status-badge sb-${ln.status}">${ln.status}</span></div></div>`;});}
+
+      if(pending.length){
+        html+=`<div style="font-weight:700;font-size:14px;color:#d97706;margin-bottom:10px;display:flex;align-items:center;gap:6px"><span style="background:#fef3c7;border-radius:50%;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-size:12px">${pending.length}</span> Pending Loans</div>`;
+        pending.forEach(ln=>{
+          const g1=ln.guarantor1||ln.guarantor||{};
+          const g2=ln.guarantor2||{};
+          html+=`<div class="card" style="padding:16px;margin-bottom:12px;border-left:4px solid #d97706">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+              <div><div style="font-weight:700;font-size:15px">${ln.userName||ln.userEmail||'Unknown'}</div><div style="font-size:11px;color:var(--g400)">${ln.userEmail||''} · ${fdate(ln.createdAt)}</div></div>
+              <span class="status-badge sb-pending">PENDING</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+              <div style="background:#f8fafc;border-radius:9px;padding:10px"><div style="font-size:10px;color:var(--g400);margin-bottom:2px">AMOUNT</div><div style="font-size:18px;font-weight:800;color:var(--black)">NGN ${fmt(ln.amount)}</div></div>
+              <div style="background:#f8fafc;border-radius:9px;padding:10px"><div style="font-size:10px;color:var(--g400);margin-bottom:2px">DURATION</div><div style="font-size:14px;font-weight:700">${ln.duration||'N/A'}</div></div>
+            </div>
+            <div style="font-size:12px;color:var(--g600);margin-bottom:4px"><strong>Purpose:</strong> ${ln.purpose||'—'}</div>
+            <div style="font-size:12px;color:var(--g600);margin-bottom:4px"><strong>Address:</strong> ${ln.address||'—'}</div>
+            <div style="font-size:12px;color:var(--g600);margin-bottom:12px"><strong>Employment:</strong> ${ln.employment||'—'}</div>
+            ${ln.passportUrl?`<div style="margin-bottom:12px"><div style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px">📸 Passport Photo</div><div style="display:flex;gap:8px;align-items:center"><img src="${ln.passportUrl}" style="width:64px;height:64px;border-radius:10px;object-fit:cover;border:1px solid #e2e8f0;cursor:pointer" onclick="viewImg('${ln.passportUrl}')"/><a href="${ln.passportUrl}" download style="font-size:12px;color:var(--green-d);font-weight:600;text-decoration:none">⬇ Download</a></div></div>`:'<div style="margin-bottom:12px;padding:10px;background:#fef2f2;border-radius:9px;font-size:12px;color:#dc2626">⚠ No passport photo uploaded</div>'}
+            ${ln.idUrl?`<div style="margin-bottom:12px"><div style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px">🪪 ID: ${ln.idType||'Document'}</div><div style="display:flex;gap:8px;align-items:center"><img src="${ln.idUrl}" style="width:80px;height:52px;border-radius:9px;object-fit:cover;border:1px solid #e2e8f0;cursor:pointer" onclick="viewImg('${ln.idUrl}')"/><a href="${ln.idUrl}" download style="font-size:12px;color:var(--green-d);font-weight:600;text-decoration:none">⬇ Download</a></div></div>`:'<div style="margin-bottom:12px;padding:10px;background:#fef2f2;border-radius:9px;font-size:12px;color:#dc2626">⚠ No ID document uploaded</div>'}
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+              <div style="background:#faf5ff;border:1px solid #c4b5fd;border-radius:10px;padding:11px"><div style="font-size:11px;font-weight:700;color:#5b21b6;margin-bottom:7px">Guarantor 1</div><div style="font-size:12px;color:var(--g700);line-height:1.7">${g1.name||'—'}<br/>${g1.phone||'—'}<br/>${g1.relationship||'—'}<br/><span style="font-size:11px;color:var(--g400)">${g1.address||''}</span></div></div>
+              <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:11px"><div style="font-size:11px;font-weight:700;color:#c2410c;margin-bottom:7px">Guarantor 2</div><div style="font-size:12px;color:var(--g700);line-height:1.7">${g2.name||'—'}<br/>${g2.phone||'—'}<br/>${g2.relationship||'—'}<br/><span style="font-size:11px;color:var(--g400)">${g2.address||''}</span></div></div>
+            </div>
+            <div style="margin-bottom:10px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Approved Amount (NGN)</label><input class="inp" id="la-amt-${ln.id}" value="${ln.amount}" type="number" style="font-size:14px;font-weight:700"/></div>
+            <div style="margin-bottom:12px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Admin Note / Reason</label><input class="inp" id="la-note-${ln.id}" placeholder="Optional note for user..."/></div>
+            <div style="display:flex;gap:8px">
+              <button onclick="approveLoan('${ln.id}','${ln.userId}')" style="flex:1;padding:12px;background:#dcfce7;border:1.5px solid #86efac;color:#15803d;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">✅ Approve & Credit Wallet</button>
+              <button onclick="rejectLoan('${ln.id}','${ln.userId}')" style="flex:1;padding:12px;background:#fee2e2;border:1.5px solid #fca5a5;color:#dc2626;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">❌ Reject</button>
+            </div>
+          </div>`;
+        });
+      }
+
+      if(active.length){
+        html+=`<div style="font-weight:700;font-size:14px;color:#2563eb;margin:16px 0 10px;display:flex;align-items:center;gap:6px"><span style="background:#dbeafe;border-radius:50%;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-size:12px">${active.length}</span> Active Loans</div>`;
+        active.forEach(ln=>{
+          const amt = ln.approvedAmount||ln.amount;
+          const totalR = ln.totalRepayable||(amt*1.24);
+          const daily = ln.dailyRepayment||(totalR/30);
+          const paid = ln.repaymentSchedule?ln.repaymentSchedule.filter(s=>s.paid).length:0;
+          html+=`<div class="card" style="padding:14px;margin-bottom:8px;border-left:4px solid var(--blue)">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+              <div><div style="font-weight:600;font-size:13px">${ln.userName||ln.userEmail}</div><div style="font-size:20px;font-weight:800;color:var(--black)">NGN ${fmt(amt)}</div><div style="font-size:11px;color:var(--g500)">Total repay: NGN ${fmt(totalR)} &bull; Daily: NGN ${fmt(daily)}</div></div>
+              <div style="text-align:right"><span class="status-badge sb-${ln.status}">${ln.status}</span>${ln.dueDate?`<div style="font-size:10px;color:var(--g400);margin-top:4px">Due: ${fdateShort(ln.dueDate)}</div>`:''}</div>
+            </div>
+            ${ln.repaymentSchedule?`<div style="background:#f1f5f9;border-radius:8px;padding:8px 10px;margin-bottom:10px;font-size:12px"><span style="color:#15803d;font-weight:700">${paid}/30</span> days paid &bull; <span style="color:#2563eb;font-weight:700">NGN ${fmt(paid*daily)}</span> collected</div>`:''}
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              ${ln.status==='approved'?`<button onclick="activateLoan('${ln.id}','${ln.userId}',${amt})" style="flex:1;padding:7px 10px;background:#dcfce7;border:1px solid #86efac;color:#15803d;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;min-width:80px">Disburse Wallet</button>`:''}
+              <button onclick="markLoanRepaid('${ln.id}','${ln.userId}',${amt})" style="flex:1;padding:7px 10px;background:#dbeafe;border:1px solid #93c5fd;color:#1d4ed8;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;min-width:80px">Mark Repaid</button>
+              <button onclick="markLoanDefaulted('${ln.id}','${ln.userId}',${amt})" style="flex:1;padding:7px 10px;background:#fee2e2;border:1px solid #fca5a5;color:#dc2626;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;min-width:80px">Default</button>
+              ${ln.repaymentSchedule?`<button onclick="showAdminSchedule('${ln.id}')" style="flex:1;padding:7px 10px;background:#ede9fe;border:1px solid #c4b5fd;color:#5b21b6;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;min-width:80px">Schedule</button>`:''}
+            </div>
+          </div>`;
+        });
+      }
+
+      if(closed.length){
+        html+=`<div style="font-weight:700;font-size:14px;color:var(--g500);margin:16px 0 10px">History (${closed.length})</div>`;
+        closed.forEach(ln=>{
+          html+=`<div class="card" style="padding:12px;margin-bottom:6px;opacity:.8"><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:600;font-size:13px">${ln.userName||ln.userEmail}</div><div style="font-size:12px;color:var(--g500)">NGN ${fmt(ln.approvedAmount||ln.amount)} · ${fdateShort(ln.createdAt)}</div></div><span class="status-badge sb-${ln.status}">${ln.status}</span></div></div>`;
+        });
+      }
+
       if(!html) html='<div class="card" style="padding:32px;text-align:center;color:var(--g400)"><div style="font-size:36px;margin-bottom:10px">🏦</div><p>No loan applications yet</p></div>';
       el.innerHTML=html;
-    }).catch(e=>{el.innerHTML='<div class="card" style="padding:16px;color:#dc2626">Error: '+e.message+'</div>';});
+    }).catch(e=>{el.innerHTML='<div class="card" style="padding:20px;color:#dc2626">Error loading loans: '+e.message+'</div>';});
   }
-
 
   if(tab==='fin-investments'){
     el.innerHTML='<div style="padding:20px;text-align:center;color:var(--g400)"><div style="font-size:24px">⏳</div><p style="font-size:13px">Loading investments...</p></div>';
@@ -1610,10 +1674,16 @@ function aTab(tab){
       if(active.length){
         html+=`<div style="font-weight:700;font-size:14px;color:#6d28d9;margin:14px 0 10px">📈 Active / Matured (${active.length})</div>`;
         active.forEach(inv=>{
+          const returnAmt = inv.expectedReturn||inv.amount;
           html+=`<div class="card" style="padding:14px;margin-bottom:8px;border-left:4px solid #7c3aed">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start">
-              <div><div style="font-weight:600;font-size:13px">${inv.userName||inv.userEmail}</div><div style="font-size:20px;font-weight:800;color:var(--black)">NGN ${fmt(inv.amount)}</div><div style="font-size:12px;color:var(--g600)">Rate: ${inv.interestRate||'—'}% · Return: ${inv.expectedReturn?'NGN '+fmt(inv.expectedReturn):'—'}</div>${inv.maturityDate?`<div style="font-size:11px;color:var(--g400)">Matures: ${fdateShort(inv.maturityDate)}</div>`:''}</div>
-              <div style="text-align:right"><span class="status-badge sb-${inv.status}">${inv.status}</span>${inv.status==='matured'?`<div style="margin-top:8px"><button onclick="markInvestmentPaid('${inv.id}','${inv.userId}',${inv.expectedReturn||inv.amount})" style="padding:7px 12px;background:#ede9fe;border:1px solid #c4b5fd;color:#5b21b6;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">Pay Out</button></div>`:''}</div>
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+              <div><div style="font-weight:600;font-size:13px">${inv.userName||inv.userEmail}</div><div style="font-size:20px;font-weight:800;color:var(--black)">NGN ${fmt(inv.amount)}</div><div style="font-size:12px;color:var(--g600)">5% monthly &bull; ${inv.months||'—'} months &bull; Return: NGN ${fmt(returnAmt)}</div>${inv.maturityDate?`<div style="font-size:11px;color:var(--g400)">Matures: ${fdateShort(inv.maturityDate)}</div>`:''}</div>
+              <div style="text-align:right"><span class="status-badge sb-${inv.status}">${inv.status}</span>${inv.capitalLocked?`<div style="font-size:10px;color:#dc2626;margin-top:3px;font-weight:600">CAPITAL LOCKED</div>`:''}</div>
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              ${inv.status==='matured'?`<button onclick="markInvestmentPaid('${inv.id}','${inv.userId}',${returnAmt})" style="flex:1;padding:7px 10px;background:#ede9fe;border:1px solid #c4b5fd;color:#5b21b6;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">Pay Out NGN ${fmt(returnAmt)}</button>`:''}
+              <button onclick="extendInvestment('${inv.id}','${inv.userId}',3)" style="flex:1;padding:7px 10px;background:#f0fdf4;border:1px solid #86efac;color:#15803d;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">Extend 3 Months</button>
+              <button onclick="overrideEarlyWithdrawal('${inv.id}','${inv.userId}',${inv.amount})" style="flex:1;padding:7px 10px;background:#fef3c7;border:1px solid #fde047;color:#92400e;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">Allow Early Withdrawal</button>
             </div>
           </div>`;
         });
@@ -1771,107 +1841,85 @@ async function loadFinTab(tab){
   const tabMap={loans:0,investments:1,active:2,history:3,analytics:4};
   const tabs=document.querySelectorAll('#fin-tabs .chip');
   if(tabs[tabMap[tab]]){tabs[tabMap[tab]].className='chip c-purple';tabs[tabMap[tab]].style.padding='7px 14px';tabs[tabMap[tab]].style.border='none';}
-  el.innerHTML='<div style="padding:24px;text-align:center;color:var(--g400)"><div style="font-size:22px;margin-bottom:7px">⏳</div><p style="font-size:13px">Loading...</p></div>';
-
-  const today=new Date();
+  el.innerHTML='<div style="padding:28px;text-align:center;color:var(--g400)"><div style="font-size:24px;margin-bottom:8px">⏳</div><p style="font-size:13px">Loading...</p></div>';
 
   if(tab==='loans'){
     const s=await db.collection('loans').where('userId','==',CU.uid).orderBy('createdAt','desc').get();
     if(s.empty){el.innerHTML=`<div class="card" style="padding:32px;text-align:center;color:var(--g400)"><div style="font-size:36px;margin-bottom:10px">🏦</div><p style="font-size:14px;margin-bottom:14px">No loan applications yet</p><button onclick="openM('m-loan-apply')" class="btn-g" style="padding:11px 22px;border-radius:10px;font-size:14px">Apply for Loan</button></div>`;return;}
-    let html='';
-    s.docs.forEach(d=>{
-      const ln=d.data();
-      const totalPaid=ln.paidSoFar||0;
-      const totalDue=ln.totalRepayment||0;
-      const pct=totalDue>0?Math.min(100,Math.round(totalPaid/totalDue*100)):0;
-      const isOverdue=ln.dueDate&&today>ln.dueDate.toDate()&&ln.status==='active';
-      const color=isOverdue?'#dc2626':'#2563eb';
-      html+=`<div class="fin-entry" style="border-left:3px solid ${ln.status==='pending'?'#d97706':ln.status==='active'?color:ln.status==='rejected'?'#dc2626':'#16a34a'}">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
-          <div><div style="font-size:18px;font-weight:800;color:var(--black)">NGN ${fmt(ln.approvedAmount||ln.amount)}</div><div style="font-size:11px;color:var(--g400)">Applied: ${fdateShort(ln.createdAt)}</div></div>
-          <span class="status-badge sb-${isOverdue?'rejected':ln.status}">${isOverdue?'OVERDUE':ln.status.toUpperCase()}</span>
-        </div>
-        <div style="font-size:12px;color:var(--g600);margin-bottom:6px">Purpose: ${ln.purpose||'—'}</div>
-        ${ln.totalRepayment?`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px">
-          <div style="background:#f8fafc;border-radius:8px;padding:8px;text-align:center"><div style="font-size:9px;color:var(--g400);margin-bottom:2px">TOTAL DUE</div><div style="font-size:12px;font-weight:700">NGN ${fmt(ln.totalRepayment)}</div></div>
-          <div style="background:#f8fafc;border-radius:8px;padding:8px;text-align:center"><div style="font-size:9px;color:var(--g400);margin-bottom:2px">DAILY</div><div style="font-size:12px;font-weight:700;color:#2563eb">NGN ${fmt(ln.dailyRepayment)}</div></div>
-          <div style="background:#f8fafc;border-radius:8px;padding:8px;text-align:center"><div style="font-size:9px;color:var(--g400);margin-bottom:2px">DUE DATE</div><div style="font-size:11px;font-weight:700">${ln.dueDate?fdateShort(ln.dueDate):'-'}</div></div>
-        </div>`:''}
-        ${ln.status==='active'?`<div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--g500);margin-bottom:4px"><span>Repayment Progress</span><span>${pct}% (NGN ${fmt(totalPaid)} / NGN ${fmt(totalDue)})</span></div><div style="background:#e2e8f0;border-radius:50px;height:8px;overflow:hidden"><div style="background:${pct>=100?'#16a34a':'#2563eb'};height:100%;width:${pct}%;border-radius:50px;transition:width .4s"></div></div></div>`:''}
-        ${ln.status==='approved'&&!ln.docFeePaid?`<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:9px;padding:10px;margin-bottom:8px"><div style="font-size:12px;font-weight:700;color:#92400e">⚠ Awaiting ₦5,000 Documentation Fee</div><div style="font-size:11px;color:#78350f;margin-top:3px">Pay via WhatsApp to 08068886569 to trigger disbursement within 48 hours.</div><a href="https://wa.me/2348068886569?text=Hello%20ZMONIE%2C%20I%20want%20to%20pay%20my%20%E2%82%A65%2C000%20documentation%20fee%20for%20my%20loan%20application." target="_blank" style="display:inline-block;margin-top:8px;background:#25D366;color:#fff;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none">💬 Pay Now via WhatsApp</a></div>`:''}
-        ${ln.adminNote?`<div style="background:var(--green-xl);border-radius:8px;padding:9px;font-size:12px;color:var(--green-d)"><strong>Admin:</strong> ${ln.adminNote}</div>`:''}
-      </div>`;
-    });
-    el.innerHTML=html+`<div style="text-align:center;padding:14px 0"><button onclick="openM('m-loan-apply')" style="padding:10px 22px;border-radius:10px;font-size:13px;font-weight:600;background:#f0fdf4;border:1.5px solid #86efac;color:#15803d;cursor:pointer;font-family:'Inter',sans-serif">+ Apply for New Loan</button></div>`;
+    el.innerHTML=s.docs.map(d=>{const ln=d.data();return`<div class="fin-entry"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><div style="font-size:18px">🏦</div><span class="status-badge sb-${ln.status}">${ln.status}</span></div><div style="font-size:18px;font-weight:800;color:var(--black);margin-bottom:3px">NGN ${fmt(ln.approvedAmount||ln.amount)}</div>${ln.approvedAmount&&ln.approvedAmount!=ln.amount?`<div style="font-size:11px;color:var(--g400)">Requested: NGN ${fmt(ln.amount)} · Approved: NGN ${fmt(ln.approvedAmount)}</div>`:`<div style="font-size:11px;color:var(--g400)">Requested: NGN ${fmt(ln.amount)}</div>`}<div style="font-size:12px;color:var(--g600);margin-top:5px">Purpose: ${ln.purpose}</div><div style="font-size:11px;color:var(--g400);margin-top:3px">Guarantor: ${ln.guarantor?.name||'—'} · ${ln.guarantor?.relationship||'—'}</div><div style="font-size:11px;color:var(--g400)">Applied: ${fdateShort(ln.createdAt)}</div>${ln.adminNote?`<div style="background:var(--green-xl);border-radius:8px;padding:8px 10px;margin-top:8px;font-size:12px;color:var(--green-d)">Admin: ${ln.adminNote}</div>`:''}</div>`;}).join('');
   }
-
   else if(tab==='investments'){
     const s=await db.collection('investments').where('userId','==',CU.uid).orderBy('createdAt','desc').get();
     if(s.empty){el.innerHTML=`<div class="card" style="padding:32px;text-align:center;color:var(--g400)"><div style="font-size:36px;margin-bottom:10px">📈</div><p style="font-size:14px;margin-bottom:14px">No investments yet</p><button onclick="openM('m-invest-apply')" style="padding:11px 22px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;background:linear-gradient(135deg,#6d28d9,#7c3aed);color:#fff;border:none">Start Investing</button></div>`;return;}
-    let html='';
-    s.docs.forEach(d=>{
-      const inv=d.data();
-      const matured=inv.maturityDate&&today>=inv.maturityDate.toDate()&&inv.status==='active';
-      const daysLeft=inv.maturityDate?Math.max(0,Math.ceil((inv.maturityDate.toDate()-today)/(1000*60*60*24))):null;
-      const monthlyProfit=inv.amount*(inv.monthlyRate||5)/100;
-      html+=`<div class="fin-entry" style="border-left:3px solid ${inv.status==='pending'?'#d97706':matured?'#6d28d9':inv.status==='active'?'#2563eb':'#16a34a'}">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
-          <div><div style="font-size:18px;font-weight:800;color:var(--black)">NGN ${fmt(inv.amount)}</div><div style="font-size:11px;color:var(--g400)">Invested: ${fdateShort(inv.createdAt)}</div></div>
-          <span class="status-badge sb-${matured?'matured':inv.status}">${matured?'MATURED':inv.status.toUpperCase()}</span>
-        </div>
-        ${inv.status==='active'||inv.status==='paid'?`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px">
-          <div style="background:#f8fafc;border-radius:8px;padding:8px;text-align:center"><div style="font-size:9px;color:var(--g400);margin-bottom:2px">RATE</div><div style="font-size:13px;font-weight:800;color:#6d28d9">${inv.monthlyRate||inv.interestRate||5}%/mo</div></div>
-          <div style="background:#f8fafc;border-radius:8px;padding:8px;text-align:center"><div style="font-size:9px;color:var(--g400);margin-bottom:2px">MONTHLY PROFIT</div><div style="font-size:12px;font-weight:700;color:var(--ok)">NGN ${fmt(monthlyProfit)}</div></div>
-          <div style="background:#f8fafc;border-radius:8px;padding:8px;text-align:center"><div style="font-size:9px;color:var(--g400);margin-bottom:2px">TOTAL RETURN</div><div style="font-size:12px;font-weight:700;color:var(--ok)">NGN ${fmt(inv.expectedReturn||0)}</div></div>
-        </div>
-        <div style="background:#f8fafc;border-radius:9px;padding:10px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
-          <div><div style="font-size:10px;color:var(--g400)">Maturity Date</div><div style="font-size:13px;font-weight:700">${inv.maturityDate?fdateShort(inv.maturityDate):'—'}</div></div>
-          <div style="text-align:right"><div style="font-size:10px;color:var(--g400)">Days Remaining</div><div style="font-size:13px;font-weight:700;color:${daysLeft===0?'#dc2626':daysLeft&&daysLeft<30?'#d97706':'#2563eb'}">${daysLeft===null?'—':daysLeft===0?'TODAY':daysLeft+' days'}</div></div>
-        </div>
-        ${inv.capitalLocked?'<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:8px;font-size:12px;color:#dc2626;margin-bottom:8px">🔒 Capital locked until maturity. Early withdrawal not allowed.</div>':''}
-        `:''}
-        ${matured?`<div style="background:#ede9fe;border:1px solid #c4b5fd;border-radius:9px;padding:10px;margin-bottom:8px"><div style="font-size:12px;font-weight:700;color:#6d28d9;margin-bottom:4px">🎉 Investment Matured!</div><div style="font-size:12px;color:var(--g600)">Your capital + returns (NGN ${fmt(inv.expectedReturn||0)}) are ready for payout. Admin will credit your wallet.</div></div>`:''}
-        ${inv.status==='pending'?'<div style="font-size:12px;color:var(--g400)">Admin is reviewing your application and will set the interest rate and maturity date.</div>':''}
-        ${inv.nextOfKin?`<div style="background:#f8fafc;border-radius:9px;padding:9px;margin-top:8px"><div style="font-size:11px;font-weight:700;color:var(--g600);margin-bottom:4px">👪 Next of Kin</div><div style="font-size:12px;color:var(--g700)">${inv.nextOfKin.name} · ${inv.nextOfKin.phone} · ${inv.nextOfKin.relationship}</div></div>`:''}
-      </div>`;
-    });
-    el.innerHTML=html+`<div style="text-align:center;padding:14px 0"><button onclick="openM('m-invest-apply')" style="padding:10px 22px;border-radius:10px;font-size:13px;font-weight:600;background:#faf5ff;border:1.5px solid #c4b5fd;color:#6d28d9;cursor:pointer;font-family:'Inter',sans-serif">+ New Investment</button></div>`;
+    el.innerHTML=s.docs.map(d=>{const inv=d.data();return`<div class="fin-entry"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><div style="font-size:18px">📈</div><span class="status-badge sb-${inv.status}">${inv.status}</span></div><div style="font-size:18px;font-weight:800;color:var(--black);margin-bottom:3px">NGN ${fmt(inv.amount)}</div><div style="display:flex;gap:14px;margin-top:5px"><div><div style="font-size:10px;color:var(--g400)">Duration</div><div style="font-size:12px;font-weight:600">${inv.duration}</div></div><div><div style="font-size:10px;color:var(--g400)">Rate</div><div style="font-size:12px;font-weight:600;color:#6d28d9">${inv.interestRate?inv.interestRate+'%':'TBD'}</div></div><div><div style="font-size:10px;color:var(--g400)">Return</div><div style="font-size:12px;font-weight:600;color:var(--ok)">${inv.expectedReturn?'NGN '+fmt(inv.expectedReturn):'TBD'}</div></div></div>${inv.maturityDate?`<div style="font-size:11px;color:var(--g400);margin-top:5px">Matures: ${fdateShort(inv.maturityDate)}</div>`:''}<div style="font-size:11px;color:var(--g400)">Invested: ${fdateShort(inv.createdAt)}</div></div>`;}).join('');
   }
-
   else if(tab==='active'){
     const [ls,ivs]=await Promise.all([
       db.collection('loans').where('userId','==',CU.uid).where('status','in',['active','approved']).get(),
-      db.collection('investments').where('userId','==',CU.uid).where('status','in',['active']).get()
+      db.collection('investments').where('userId','==',CU.uid).where('status','in',['active','matured']).get()
     ]);
-    let html='';
-    ls.docs.forEach(d=>{const ln=d.data();const pct=ln.totalRepayment>0?Math.min(100,Math.round((ln.paidSoFar||0)/ln.totalRepayment*100)):0;html+=`<div class="fin-entry" style="border-left:3px solid var(--err)"><div style="display:flex;justify-content:space-between"><div style="font-size:13px;font-weight:700">🏦 Active Loan</div><span class="chip c-info">${ln.status}</span></div><div style="font-size:18px;font-weight:800;margin:5px 0">NGN ${fmt(ln.approvedAmount||ln.amount)}</div><div style="font-size:12px;color:var(--g600)">Daily: NGN ${fmt(ln.dailyRepayment||0)} · Due: ${ln.dueDate?fdateShort(ln.dueDate):'—'}</div><div style="margin-top:8px;background:#e2e8f0;border-radius:50px;height:6px"><div style="background:#2563eb;height:100%;width:${pct}%;border-radius:50px"></div></div><div style="font-size:10px;color:var(--g400);margin-top:3px">${pct}% repaid</div></div>`;});
-    ivs.docs.forEach(d=>{const inv=d.data();const daysLeft=inv.maturityDate?Math.max(0,Math.ceil((inv.maturityDate.toDate()-today)/(1000*60*60*24))):null;html+=`<div class="fin-entry" style="border-left:3px solid #7c3aed"><div style="display:flex;justify-content:space-between"><div style="font-size:13px;font-weight:700">📈 Active Investment</div><span class="chip c-purple">active</span></div><div style="font-size:18px;font-weight:800;margin:5px 0">NGN ${fmt(inv.amount)}</div><div style="font-size:12px;color:var(--g600)">Return: NGN ${fmt(inv.expectedReturn||0)} · ${daysLeft!==null?daysLeft+' days left':'—'}</div></div>`;});
-    el.innerHTML=html||`<div class="card" style="padding:32px;text-align:center;color:var(--g400)"><div style="font-size:36px;margin-bottom:10px">⚡</div><p>No active items</p></div>`;
+    let html2='';
+    ls.docs.forEach(d=>{
+      const ln=d.data();
+      const totalR=ln.totalRepayable||(( ln.approvedAmount||ln.amount)*1.24);
+      const paidDays=ln.repaymentSchedule?ln.repaymentSchedule.filter(s=>s.paid).length:0;
+      html2+=`<div class="fin-entry" style="border-left:3px solid var(--err)">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="font-size:13px;font-weight:700">🏦 Active Loan</div>
+          <span class="chip c-info">${ln.status}</span>
+        </div>
+        <div style="font-size:18px;font-weight:800;color:var(--black);margin:6px 0">NGN ${fmt(ln.approvedAmount||ln.amount)}</div>
+        <div style="font-size:12px;color:var(--g600);margin-bottom:4px">${ln.purpose||''}</div>
+        <div style="font-size:12px;color:var(--g600)">Total repayable: <strong>NGN ${fmt(totalR)}</strong></div>
+        <div style="font-size:12px;color:var(--g600)">Daily payment: <strong>NGN ${fmt(totalR/30)}</strong></div>
+        ${ln.dueDate?`<div style="font-size:11px;color:#dc2626;margin-top:3px;font-weight:600">Due: ${ln.dueDate?.toDate?ln.dueDate.toDate().toLocaleDateString():'—'}</div>`:''}
+        ${ln.repaymentSchedule?`<div style="background:#f1f5f9;border-radius:7px;padding:7px 10px;margin-top:8px;font-size:12px"><span style="color:#15803d;font-weight:700">${paidDays}/30</span> days paid</div>`:''}
+        <button onclick="showRepaymentSchedule('${d.id}')" style="width:100%;margin-top:8px;padding:8px;background:#dbeafe;border:1px solid #93c5fd;color:#1d4ed8;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif">View Repayment Schedule</button>
+      </div>`;
+    });
+    ivs.docs.forEach(d=>{const inv=d.data();html2+=`<div class="fin-entry" style="border-left:3px solid #7c3aed"><div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:13px;font-weight:700">📈 ${inv.status==='matured'?'Matured':'Active'} Investment</div><span class="chip ${inv.status==='matured'?'c-purple':'c-info'}">${inv.status}</span></div><div style="font-size:18px;font-weight:800;color:var(--black);margin:6px 0">NGN ${fmt(inv.amount)}</div><div style="font-size:12px;color:var(--g600)">Return: ${inv.expectedReturn?'NGN '+fmt(inv.expectedReturn):inv.interestRate?inv.interestRate+'% interest':'TBD'}</div>${inv.maturityDate?`<div style="font-size:11px;color:var(--g400);margin-top:3px">Matures: ${fdateShort(inv.maturityDate)}</div>`:''}</div>`;});
+    el.innerHTML=html2||`<div class="card" style="padding:32px;text-align:center;color:var(--g400)"><div style="font-size:36px;margin-bottom:10px">⚡</div><p style="font-size:14px">No active loans or investments</p></div>`;
   }
-
   else if(tab==='history'){
     const [ls,ivs]=await Promise.all([
-      db.collection('loans').where('userId','==',CU.uid).where('status','in',['repaid','rejected','defaulted']).orderBy('createdAt','desc').get(),
+      db.collection('loans').where('userId','==',CU.uid).where('status','in',['repaid','rejected']).orderBy('createdAt','desc').get(),
       db.collection('investments').where('userId','==',CU.uid).where('status','in',['paid','rejected']).orderBy('createdAt','desc').get()
     ]);
-    let html='';
-    ls.docs.forEach(d=>{const ln=d.data();html+=`<div class="fin-entry"><div style="display:flex;justify-content:space-between"><span style="font-size:13px;font-weight:700">🏦 Loan</span><span class="status-badge sb-${ln.status}">${ln.status}</span></div><div style="font-size:16px;font-weight:800;margin:5px 0">NGN ${fmt(ln.approvedAmount||ln.amount)}</div><div style="font-size:11px;color:var(--g400)">${fdateShort(ln.createdAt)} · 24% interest</div></div>`;});
-    ivs.docs.forEach(d=>{const inv=d.data();html+=`<div class="fin-entry"><div style="display:flex;justify-content:space-between"><span style="font-size:13px;font-weight:700">📈 Investment</span><span class="status-badge sb-${inv.status}">${inv.status}</span></div><div style="font-size:16px;font-weight:800;margin:5px 0">NGN ${fmt(inv.amount)}</div>${inv.totalInterest?`<div style="font-size:12px;color:var(--ok)">Interest earned: NGN ${fmt(inv.totalInterest)}</div>`:''}<div style="font-size:11px;color:var(--g400)">${fdateShort(inv.createdAt)}</div></div>`;});
-    el.innerHTML=html||`<div class="card" style="padding:32px;text-align:center;color:var(--g400)"><div style="font-size:36px;margin-bottom:10px">📋</div><p>No finance history yet</p></div>`;
+    let html2='';
+    ls.docs.forEach(d=>{const ln=d.data();html2+=`<div class="fin-entry"><div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:13px;font-weight:700">🏦 Loan</div><span class="status-badge sb-${ln.status}">${ln.status}</span></div><div style="font-size:16px;font-weight:800;color:var(--black);margin:5px 0">NGN ${fmt(ln.approvedAmount||ln.amount)}</div><div style="font-size:11px;color:var(--g400)">${fdateShort(ln.createdAt)}</div></div>`;});
+    ivs.docs.forEach(d=>{const inv=d.data();html2+=`<div class="fin-entry"><div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:13px;font-weight:700">📈 Investment</div><span class="status-badge sb-${inv.status}">${inv.status}</span></div><div style="font-size:16px;font-weight:800;color:var(--black);margin:5px 0">NGN ${fmt(inv.amount)}</div>${inv.expectedReturn?`<div style="font-size:12px;color:var(--ok)">Earned: NGN ${fmt(inv.expectedReturn)}</div>`:''}<div style="font-size:11px;color:var(--g400)">${fdateShort(inv.createdAt)}</div></div>`;});
+    el.innerHTML=html2||`<div class="card" style="padding:32px;text-align:center;color:var(--g400)"><div style="font-size:36px;margin-bottom:10px">📋</div><p style="font-size:14px">No finance history yet</p></div>`;
   }
-
   else if(tab==='analytics'){
     const [allL,allI]=await Promise.all([db.collection('loans').where('userId','==',CU.uid).get(),db.collection('investments').where('userId','==',CU.uid).get()]);
-    let tL=0,aL=0,tI=0,tE=0;
+    let tL=0,aL=0,tI=0,aI=0,tE=0;
     allL.docs.forEach(d=>{const ln=d.data();tL+=ln.approvedAmount||0;if(ln.status==='active'||ln.status==='approved')aL++;});
-    allI.docs.forEach(d=>{const inv=d.data();tI+=inv.amount||0;if(inv.status==='paid')tE+=inv.totalInterest||0;});
-    el.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
-      <div class="fin-stat" style="background:linear-gradient(135deg,#1e1b4b,#312e81);color:#fff"><div style="font-size:10px;opacity:.6;margin-bottom:5px;position:relative;z-index:1">TOTAL BORROWED</div><div style="font-size:18px;font-weight:800;position:relative;z-index:1">NGN ${fmt(tL)}</div></div>
-      <div class="fin-stat" style="background:linear-gradient(135deg,#6d28d9,#7c3aed);color:#fff"><div style="font-size:10px;opacity:.6;margin-bottom:5px;position:relative;z-index:1">TOTAL INVESTED</div><div style="font-size:18px;font-weight:800;position:relative;z-index:1">NGN ${fmt(tI)}</div></div>
-      <div class="fin-stat" style="background:linear-gradient(135deg,#15803d,#16a34a);color:#fff"><div style="font-size:10px;opacity:.6;margin-bottom:5px;position:relative;z-index:1">INTEREST EARNED</div><div style="font-size:18px;font-weight:800;position:relative;z-index:1">NGN ${fmt(tE)}</div></div>
-      <div class="fin-stat" style="background:linear-gradient(135deg,#92400e,#d97706);color:#fff"><div style="font-size:10px;opacity:.6;margin-bottom:5px;position:relative;z-index:1">ACTIVE LOANS</div><div style="font-size:22px;font-weight:800;position:relative;z-index:1">${aL}</div></div>
-    </div>`;
+    allI.docs.forEach(d=>{const inv=d.data();tI+=inv.amount||0;if(inv.status==='paid')tE+=inv.expectedReturn||0;if(inv.status==='active'||inv.status==='approved')aI++;});
+    el.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px"><div class="fin-stat" style="background:linear-gradient(135deg,#1e1b4b,#312e81);color:#fff"><div style="font-size:10px;color:rgba(167,139,250,.6);margin-bottom:5px;position:relative;z-index:1">TOTAL BORROWED</div><div style="font-size:18px;font-weight:800;position:relative;z-index:1">NGN ${fmt(tL)}</div></div><div class="fin-stat" style="background:linear-gradient(135deg,#6d28d9,#7c3aed);color:#fff"><div style="font-size:10px;color:rgba(167,139,250,.6);margin-bottom:5px;position:relative;z-index:1">TOTAL INVESTED</div><div style="font-size:18px;font-weight:800;position:relative;z-index:1">NGN ${fmt(tI)}</div></div><div class="fin-stat" style="background:linear-gradient(135deg,#15803d,#16a34a);color:#fff"><div style="font-size:10px;color:rgba(167,239,134,.6);margin-bottom:5px;position:relative;z-index:1">TOTAL EARNED</div><div style="font-size:18px;font-weight:800;position:relative;z-index:1">NGN ${fmt(tE)}</div></div><div class="fin-stat" style="background:linear-gradient(135deg,#92400e,#d97706);color:#fff"><div style="font-size:10px;color:rgba(255,237,153,.6);margin-bottom:5px;position:relative;z-index:1">TOTAL LOANS</div><div style="font-size:18px;font-weight:800;position:relative;z-index:1">${allL.size}</div></div></div><div class="card" style="padding:14px"><div style="font-weight:700;font-size:13px;margin-bottom:12px">Summary</div><div style="display:flex;flex-direction:column;gap:8px;font-size:13px"><div style="display:flex;justify-content:space-between"><span style="color:var(--g500)">Total loan applications</span><strong>${allL.size}</strong></div><div style="display:flex;justify-content:space-between"><span style="color:var(--g500)">Active loans</span><strong style="color:var(--blue)">${aL}</strong></div><div style="display:flex;justify-content:space-between"><span style="color:var(--g500)">Total investments</span><strong>${allI.size}</strong></div><div style="display:flex;justify-content:space-between"><span style="color:var(--g500)">Active investments</span><strong style="color:#6d28d9">${aI}</strong></div><div style="display:flex;justify-content:space-between"><span style="color:var(--g500)">Total returns earned</span><strong style="color:var(--ok)">NGN ${fmt(tE)}</strong></div></div></div>`;
   }
+}
+
+function previewImg(inputId,previewId,dropId){
+  const file=document.getElementById(inputId)?.files[0];
+  if(!file)return;
+  if(file.size>2*1024*1024){toast('File too large. Max 2MB.');return;}
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const prev=document.getElementById(previewId);
+    const drop=document.getElementById(dropId);
+    if(prev)prev.innerHTML=`<img src="${e.target.result}" style="width:80px;height:80px;border-radius:10px;object-fit:cover;margin:0 auto;display:block"/><div style="font-size:11px;color:var(--ok);font-weight:600;margin-top:6px;text-align:center">✅ ${file.name}</div>`;
+    if(drop)drop.style.borderColor='#86efac';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function uploadToImgbb(file){
+  const IMGBB_KEY='4b8c2d67a1e34f5b9c2d67a1e34f5b9c'; // Replace with your imgbb key
+  const fd=new FormData();fd.append('image',file);
+  const r=await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`,{method:'POST',body:fd});
+  const data=await r.json();
+  if(data.success)return data.data.url;
+  throw new Error('Image upload failed: '+(data.error?.message||'Unknown error'));
 }
 
 async function submitLoan(){
@@ -1879,70 +1927,45 @@ async function submitLoan(){
   const purpose=(document.getElementById('ln-purpose')?.value||'').trim();
   const address=(document.getElementById('ln-address')?.value||'').trim();
   const employment=(document.getElementById('ln-employment')?.value||'').trim();
-  const smPlatform=document.getElementById('ln-sm-platform')?.value||'';
-  const smUrl=(document.getElementById('ln-sm-url')?.value||'').trim();
+  const duration=document.getElementById('ln-duration')?.value||'';
   const idType=document.getElementById('ln-idtype')?.value||'';
   const passportFile=document.getElementById('ln-passport')?.files[0];
   const idFile=document.getElementById('ln-idimg')?.files[0];
   const g1={name:(document.getElementById('ln-g1name')?.value||'').trim(),phone:(document.getElementById('ln-g1phone')?.value||'').trim(),relationship:document.getElementById('ln-g1rel')?.value||'',address:(document.getElementById('ln-g1addr')?.value||'').trim()};
   const g2={name:(document.getElementById('ln-g2name')?.value||'').trim(),phone:(document.getElementById('ln-g2phone')?.value||'').trim(),relationship:document.getElementById('ln-g2rel')?.value||'',address:(document.getElementById('ln-g2addr')?.value||'').trim()};
-
-  // Validations
-  if(!amt||amt<10000){toast('Minimum loan amount is NGN 10,000');return;}
+  if(!amt||amt<1000){toast('Minimum loan amount is NGN 1,000');return;}
   if(!purpose){toast('Enter the purpose of loan');return;}
   if(!address){toast('Enter your home address');return;}
   if(!employment){toast('Enter your employment/business details');return;}
-  if(!smPlatform||!smUrl){toast('Social media account required for verification');return;}
-  if(!passportFile){toast('Upload your passport photograph');return;}
+  if(!passportFile){toast('Please upload your passport photograph');return;}
   if(!idType){toast('Select your ID type');return;}
-  if(!idFile){toast('Upload your means of identification');return;}
-  if(!g1.name||!g1.phone||!g1.relationship||!g1.address){toast('Complete all Guarantor 1 details');return;}
-  if(!g2.name||!g2.phone||!g2.relationship||!g2.address){toast('Complete all Guarantor 2 details');return;}
-
-  // Check 5% wallet balance requirement
-  const minBal=amt*0.05;
-  if((UD?.balance||0)<minBal){toast(`Insufficient balance. You need at least NGN ${fmt(minBal)} in your wallet (5% of loan amount).`);return;}
-
-  // Calculate loan financials
-  const interest=amt*0.24;
-  const totalRepay=amt+interest;
-  const dailyRepay=totalRepay/30;
-  const now=new Date();
-  const dueDate=new Date(now.getTime()+30*24*60*60*1000);
-  const graceEnd=new Date(dueDate.getTime()+5*24*60*60*1000);
-
-  const btn=document.getElementById('ln-submit-btn');
-  if(btn){btn.textContent='Uploading...';btn.disabled=true;}
+  if(!idFile){toast('Please upload your means of identification');return;}
+  if(!g1.name||!g1.phone||!g1.relationship){toast('Complete all Guarantor 1 details');return;}
+  if(!g2.name||!g2.phone||!g2.relationship){toast('Complete all Guarantor 2 details');return;}
+  const btn=document.querySelector('#m-loan-apply .btn-g');
+  if(btn){btn.textContent='Uploading documents...';btn.disabled=true;}
   try{
-    const toB64=file=>new Promise(res=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.readAsDataURL(file);});
-    const [passportUrl,idUrl]=await Promise.all([toB64(passportFile),toB64(idFile)]);
+    let passportUrl='',idUrl='';
+    // Convert files to base64 data URLs (works without imgbb key)
+    passportUrl=await new Promise(res=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.readAsDataURL(passportFile);});
+    idUrl=await new Promise(res=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.readAsDataURL(idFile);});
     if(btn)btn.textContent='Submitting...';
     await db.collection('loans').add({
-      userId:CU.uid,userEmail:CU.email,userName:UD?.name||'',userPhone:UD?.phone||'',
-      amount:amt,purpose,address,employment,
-      socialMedia:{platform:smPlatform,url:smUrl},
+      userId:CU.uid,userEmail:CU.email,userName:UD?.name||'',
+      amount:amt,purpose,address,employment,duration:duration||'Not specified',
       idType,passportUrl,idUrl,
       guarantor1:g1,guarantor2:g2,
-      // Financial calculations
-      interestRate:24,interest,totalRepayment:totalRepay,dailyRepayment:parseFloat(dailyRepay.toFixed(2)),
-      duration:30,
-      dueDate:firebase.firestore.Timestamp.fromDate(dueDate),
-      gracePeriodEnd:firebase.firestore.Timestamp.fromDate(graceEnd),
-      paidSoFar:0,daysRepaid:0,
-      docFeePaid:false,disbursed:false,
-      status:'pending',
-      createdAt:firebase.firestore.FieldValue.serverTimestamp()
+      status:'pending',createdAt:firebase.firestore.FieldValue.serverTimestamp()
     });
-    await addFinanceNotif(CU.uid,'Loan Application Received','Your loan request of NGN '+fmt(amt)+' has been submitted. Total repayment: NGN '+fmt(totalRepay)+' over 30 days (NGN '+fmt(dailyRepay)+'/day). Admin will review within 24-48 hours. You will be notified to pay the ₦5,000 documentation fee.');
+    await addFinanceNotif(CU.uid,'Loan Application Submitted','Your loan request of NGN '+fmt(amt)+' has been submitted with 2 guarantors. Admin will review and respond within 24 hours.');
     closeM('m-loan-apply');
-    toast('Application submitted! Watch for documentation fee instructions.');
+    toast('Loan application submitted successfully!');
     if(document.getElementById('pg-finance')?.classList.contains('active'))loadFinanceDash();
   }catch(er){
-    toast('Failed: '+er.message);
+    toast('Submission failed: '+er.message);
     if(btn){btn.textContent='Submit Loan Application';btn.disabled=false;}
   }
 }
-
 
 async function submitInvestment(){
   const amt=parseFloat(document.getElementById('inv-amt')?.value||0);
@@ -1956,119 +1979,842 @@ async function submitInvestment(){
   const nokPhotoFile=document.getElementById('inv-nok-photo')?.files[0];
 
   if(!amt||amt<10000){toast('Minimum investment is NGN 10,000');return;}
-  if(!duration){toast('Select investment duration');return;}
-  if(!passportFile){toast('Upload your passport photo');return;}
-  if(!nokName||!nokPhone||!nokRel||!nokAddr){toast('Complete all Next of Kin details');return;}
-  if(!nokPhotoFile){toast('Upload Next of Kin photo');return;}
-
-  // Auto-determine plan & maturity
-  let planMonths = amt < 600000 ? 6 : 12;
-  if(duration.includes('1 Year')) planMonths = 12;
-  const monthlyRate = 0.05;
-  const totalReturn = amt * monthlyRate * planMonths;
-  const matDate = new Date();
-  matDate.setMonth(matDate.getMonth() + planMonths);
-  const expectedTotal = amt + totalReturn;
+  if(!duration){toast('Please select investment duration');return;}
+  if(!passportFile){toast('Please upload your passport photo');return;}
+  if(!nokName||!nokPhone||!nokRel||!nokAddr){toast('Please complete all Next of Kin details');return;}
+  if(!nokPhotoFile){toast('Please upload Next of Kin photo');return;}
 
   const btn=document.getElementById('inv-submit-btn');
-  if(btn){btn.textContent='Uploading...';btn.disabled=true;}
+  if(btn){btn.textContent='Uploading photos...';btn.disabled=true;}
   try{
-    const toB64=file=>new Promise(res=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.readAsDataURL(file);});
-    const [passportUrl,nokPhotoUrl]=await Promise.all([toB64(passportFile),toB64(nokPhotoFile)]);
+    // Convert images to base64
+    const toBase64=file=>new Promise(res=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.readAsDataURL(file);});
+    const [passportUrl,nokPhotoUrl]=await Promise.all([toBase64(passportFile),toBase64(nokPhotoFile)]);
     if(btn)btn.textContent='Submitting...';
     await db.collection('investments').add({
-      userId:CU.uid,userEmail:CU.email,userName:UD?.name||'',userPhone:UD?.phone||'',
+      userId:CU.uid,userEmail:CU.email,userName:UD?.name||'',
       amount:amt,duration,note,passportUrl,
-      planMonths,monthlyRate:5,totalInterest:totalReturn,
-      expectedReturn:Math.round(expectedTotal),
-      estimatedMaturityDate:firebase.firestore.Timestamp.fromDate(matDate),
-      nextOfKin:{name:nokName,phone:nokPhone,relationship:nokRel,address:nokAddr,photoUrl:nokPhotoUrl,verified:false},
-      capitalLocked:true,extensionRequested:false,
-      status:'pending',
+      nextOfKin:{name:nokName,phone:nokPhone,relationship:nokRel,address:nokAddr,photoUrl:nokPhotoUrl},
+      status:'pending',interestRate:null,expectedReturn:null,maturityDate:null,
       createdAt:firebase.firestore.FieldValue.serverTimestamp()
     });
-    await addFinanceNotif(CU.uid,'Investment Request Submitted',
-      'Investment of NGN '+fmt(amt)+' submitted. '+
-      'Plan: '+planMonths+' months at 5%/month. '+
-      'Estimated return: NGN '+fmt(totalReturn)+' interest + capital. '+
-      'Maturity: '+matDate.toLocaleDateString('en-NG',{day:'numeric',month:'short',year:'numeric'})+'. '+
-      'Capital is locked until maturity. Admin will confirm your application.');
+    await addFinanceNotif(CU.uid,'Investment Request Submitted','Your investment of NGN '+fmt(amt)+' for '+duration+' has been submitted with next of kin details. Admin will set the interest rate and maturity date.');
     closeM('m-invest-apply');
-    toast('Investment submitted! ₦'+fmt(totalReturn)+' estimated interest over '+planMonths+' months.');
+    toast('Investment request submitted successfully!');
     if(document.getElementById('pg-finance')?.classList.contains('active'))loadFinanceDash();
   }catch(er){
-    toast('Failed: '+er.message);
+    toast('Submission failed: '+er.message);
     if(btn){btn.textContent='Submit Investment Request';btn.disabled=false;}
   }
 }
 
-async function approveLoan(loanId,userId){
-  const amt=parseFloat(document.getElementById('la-amt-'+loanId)?.value||document.getElementById('ln-appamt-'+loanId)?.value||0);
-  const note=(document.getElementById('la-note-'+loanId)?.value||document.getElementById('ln-note-'+loanId)?.value||'').trim();
-  if(!amt||amt<=0){toast('Enter approved amount');return;}
-  if(!confirm('Approve loan of NGN '+fmt(amt)+'? Disbursement will happen in 48 hours after doc fee payment. Wallet will be credited then.'))return;
-  // Generate 30-day repayment schedule
-  const interest=amt*0.24;
-  const total=amt+interest;
-  const daily=parseFloat((total/30).toFixed(2));
-  const now=new Date();
-  const disburseDate=new Date(now.getTime()+48*60*60*1000);
-  const startDate=disburseDate;
-  const dueDate=new Date(startDate.getTime()+30*24*60*60*1000);
-  const graceEnd=new Date(dueDate.getTime()+5*24*60*60*1000);
-  // Build repayment schedule
-  const schedule=[];
-  for(let d=1;d<=30;d++){
-    const dd=new Date(startDate.getTime()+d*24*60*60*1000);
-    schedule.push({day:d,dueDate:dd.toISOString().split('T')[0],amount:daily,paid:false,paidAt:null});
-  }
-  await db.collection('loans').doc(loanId).update({
-    status:'approved',approvedAmount:amt,adminNote:note,
-    interest,totalRepayment:total,dailyRepayment:daily,
-    repaymentSchedule:schedule,
-    disburseDate:firebase.firestore.Timestamp.fromDate(disburseDate),
-    startDate:firebase.firestore.Timestamp.fromDate(startDate),
-    dueDate:firebase.firestore.Timestamp.fromDate(dueDate),
-    gracePeriodEnd:firebase.firestore.Timestamp.fromDate(graceEnd),
-    paidSoFar:0,daysRepaid:0,docFeePaid:false,disbursed:false,
-    approvedAt:firebase.firestore.FieldValue.serverTimestamp()
-  });
-  await addFinanceNotif(userId,'Loan Approved ✅',
-    'Your loan of NGN '+fmt(amt)+' has been approved! '+
-    (note?'Note: '+note+'. ':'')+
-    'Pay the ₦5,000 documentation fee to admin via WhatsApp to trigger disbursement within 48 hours. '+
-    'Total repayment: NGN '+fmt(total)+' (NGN '+fmt(daily)+'/day for 30 days). '+
-    'Due date: '+dueDate.toLocaleDateString('en-NG',{day:'numeric',month:'short',year:'numeric'})+'.');
-  toast('Loan approved! User notified about doc fee & disbursement.');
-  loadAdmin();
+
+// approveLoan - replaced with enhanced version above
+async function rejectLoan(loanId,userId){
+  const note=document.getElementById('ln-note-'+loanId)?.value.trim()||'Application did not meet requirements.';
+  if(!confirm('Reject this loan application?'))return;
+  await db.collection('loans').doc(loanId).update({status:'rejected',adminNote:note,rejectedAt:firebase.firestore.FieldValue.serverTimestamp()});
+  await addFinanceNotif(userId,'Loan Application Rejected','Your loan application was not approved. Reason: '+note);
+  toast('Loan rejected.');loadAdmin();
 }
-async function approveInvestment(invId,userId,amount){
-  const rate=parseFloat(document.getElementById('iv-rate-'+invId)?.value||document.getElementById('inv-rate-'+invId)?.value||5);
-  const matDate=document.getElementById('iv-mat-'+invId)?.value||document.getElementById('inv-mat-'+invId)?.value;
-  if(!matDate){toast('Select maturity date');return;}
-  const r=rate||5;
-  const invSnap=await db.collection('investments').doc(invId).get();
-  const invData=invSnap.data()||{};
-  const months=invData.planMonths||6;
-  const totalInterest=amount*(r/100)*months;
-  const expectedReturn=Math.round(amount+totalInterest);
-  const matDateObj=new Date(matDate);
-  if(!confirm('Approve investment of NGN '+fmt(amount)+'? Interest: '+r+'% x '+months+' months = NGN '+fmt(totalInterest)+'. Total payout: NGN '+fmt(expectedReturn)))return;
-  await db.collection('investments').doc(invId).update({
-    status:'active',interestRate:r,planMonths:months,
-    totalInterest,expectedReturn,
-    maturityDate:firebase.firestore.Timestamp.fromDate(matDateObj),
-    capitalLocked:true,
-    approvedAt:firebase.firestore.FieldValue.serverTimestamp()
-  });
-  // Lock capital by updating user (no balance deduction - investment is separate)
-  await addFinanceNotif(userId,'Investment Approved 📈',
-    'Your investment of NGN '+fmt(amount)+' is now ACTIVE. '+
-    'Interest rate: '+r+'% monthly for '+months+' months. '+
-    'Total interest earned: NGN '+fmt(totalInterest)+'. '+
-    'Capital + interest (NGN '+fmt(expectedReturn)+') will be credited at maturity: '+
-    matDateObj.toLocaleDateString('en-NG',{day:'numeric',month:'short',year:'numeric'})+'. '+
-    'Early withdrawal is NOT allowed without admin approval.');
-  toast('Investment approved!');loadAdmin();
+// markLoanRepaid - replaced with enhanced version above
+// approveInvestment - replaced with enhanced version above
+async function rejectInvestment(invId,userId){
+  if(!confirm('Reject this investment?'))return;
+  await db.collection('investments').doc(invId).update({status:'rejected',rejectedAt:firebase.firestore.FieldValue.serverTimestamp()});
+  await addFinanceNotif(userId,'Investment Request Rejected','Your investment request could not be processed at this time. Contact support for details.');
+  toast('Investment rejected.');loadAdmin();
+}
+async function markInvestmentPaid(invId,userId,returnAmt){
+  if(!confirm('Pay out NGN '+fmt(returnAmt)+' to user wallet?'))return;
+  await db.collection('investments').doc(invId).update({status:'paid',paidAt:firebase.firestore.FieldValue.serverTimestamp()});
+  await db.collection('users').doc(userId).update({balance:firebase.firestore.FieldValue.increment(returnAmt)});
+  await db.collection('transactions').add({userId,type:'invest_return',amount:returnAmt,description:'Investment Return Credited',status:'success',createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+  await addFinanceNotif(userId,'Investment Payout! 💰','Your investment return of NGN '+fmt(returnAmt)+' has been credited to your wallet. Thank you for investing with ZMONIE!');
+  toast('Investment paid out!');loadAdmin();
 }
 
+// ── Admin Hamburger Menu ──
+function openAdminMenu(){
+  document.querySelector('.aside')?.classList.add('open');
+  document.getElementById('adminOverlay')?.classList.add('show');
+}
+function closeAdminMenu(){
+  document.querySelector('.aside')?.classList.remove('open');
+  document.getElementById('adminOverlay')?.classList.remove('show');
+}
+
+// ── Image Viewer ──
+function viewImg(url){
+  const ov=document.createElement('div');
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;cursor:pointer';
+  ov.onclick=()=>ov.remove();
+  ov.innerHTML=`<img src="${url}" style="max-width:94vw;max-height:80vh;border-radius:12px;object-fit:contain"/><div style="color:rgba(255,255,255,.6);font-size:13px">Tap anywhere to close</div><a href="${url}" download onclick="event.stopPropagation()" style="background:#16a34a;color:#fff;padding:10px 22px;border-radius:10px;font-size:13px;font-weight:600;text-decoration:none">⬇ Download</a>`;
+  document.body.appendChild(ov);
+}
+
+// ── VTPass Config ──
+async function loadVtpassConfig(){
+  const el=document.getElementById('vt-current');if(!el)return;
+  try{
+    const s=await db.collection('settings').doc('vtpass').get();
+    if(s.exists){
+      const d=s.data();
+      el.innerHTML=`<div style="font-weight:600;margin-bottom:4px">Current Config</div>Mode: <strong>${d.mode||'sandbox'}</strong> · URL: <strong>${d.baseUrl||'—'}</strong><br/>Public Key: <strong>${d.publicKey?d.publicKey.slice(0,4)+'****'+d.publicKey.slice(-4):'Not set'}</strong>`;
+      document.getElementById('vt-mode').value=d.mode||'sandbox';
+      document.getElementById('vt-url').value=d.baseUrl||'';
+    } else {el.textContent='No config saved yet. Using defaults.';}
+  }catch(e){el.textContent='Error loading config.';}
+}
+async function loadVtpassConfig2(){
+  try{
+    const s=await db.collection('settings').doc('vtpass').get();
+    if(s.exists){
+      const d=s.data();
+      const el=document.getElementById('vt-admin-current');
+      if(el)el.innerHTML=`Mode: <strong>${d.mode||'sandbox'}</strong> · URL: <strong>${d.baseUrl||'—'}</strong><br/>Public Key: <strong>${d.publicKey?d.publicKey.slice(0,4)+'****'+d.publicKey.slice(-4):'Not set'}</strong>`;
+      const m=document.getElementById('vt-mode2');if(m)m.value=d.mode||'sandbox';
+      const u=document.getElementById('vt-url2');if(u)u.value=d.baseUrl||'';
+    }
+  }catch(e){}
+}
+async function saveVtpass(){
+  const mode=document.getElementById('vt-mode')?.value;
+  const pub=document.getElementById('vt-pub')?.value.trim();
+  const sec=document.getElementById('vt-sec')?.value.trim();
+  const url=document.getElementById('vt-url')?.value.trim();
+  if(!pub||!sec||!url){toast('All fields required');return;}
+  await db.collection('settings').doc('vtpass').set({mode,publicKey:pub,secretKey:sec,baseUrl:url,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:CU?.email});
+  toast('VTPass config saved!');closeM('m-vtpass');
+}
+async function saveVtpass2(){
+  const mode=document.getElementById('vt-mode2')?.value;
+  const pub=document.getElementById('vt-pub2')?.value.trim();
+  const sec=document.getElementById('vt-sec2')?.value.trim();
+  const url=document.getElementById('vt-url2')?.value.trim();
+  if(!pub||!sec||!url){toast('All fields required');return;}
+  await db.collection('settings').doc('vtpass').set({mode,publicKey:pub,secretKey:sec,baseUrl:url,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:CU?.email});
+  toast('VTPass config saved!');
+  const r=document.getElementById('vt-result2');if(r){r.style.display='block';r.style.background='#dcfce7';r.style.color='#15803d';r.textContent='✅ Configuration saved successfully!';}
+}
+async function testVtpass(){
+  const r=document.getElementById('vt-result');if(r){r.style.display='block';r.style.background='#f1f5f9';r.style.color='var(--g600)';r.textContent='Testing connection...';}
+  try{
+    const s=await db.collection('settings').doc('vtpass').get();
+    const d=s.exists?s.data():{};
+    const base=document.getElementById('vt-url')?.value||d.baseUrl||'https://sandbox.vtpass.com';
+    const resp=await fetch(base+'/api/service-categories',{headers:{'api-key':document.getElementById('vt-pub')?.value||d.publicKey||''}});
+    if(r){r.style.display='block';r.style.background=resp.ok?'#dcfce7':'#fee2e2';r.style.color=resp.ok?'#15803d':'#dc2626';r.textContent=resp.ok?'✅ Connection successful! Status: '+resp.status:'❌ Connection failed. Status: '+resp.status;}
+  }catch(e){if(r){r.style.display='block';r.style.background='#fee2e2';r.style.color='#dc2626';r.textContent='❌ Error: '+e.message;}}
+}
+async function testVtpass2(){
+  const r=document.getElementById('vt-result2');if(r){r.style.display='block';r.style.background='#f1f5f9';r.style.color='var(--g600)';r.textContent='Testing...';}
+  await testVtpass();
+  const r1=document.getElementById('vt-result');if(r&&r1){r.style.display='block';r.style.background=r1.style.background;r.style.color=r1.style.color;r.textContent=r1.textContent;}
+}
+
+// ── Fetch VTPass config before VTU calls ──
+async function getVtpassConfig(){
+  try{
+    const s=await db.collection('settings').doc('vtpass').get();
+    if(s.exists)return s.data();
+  }catch(e){}
+  return {mode:'sandbox',baseUrl:'https://sandbox.vtpass.com',publicKey:'',secretKey:''};
+}
+
+// ── Real-time transaction sync ──
+function startRealtimeSync(){
+  if(!CU)return;
+  db.collection('transactions').where('userId','==',CU.uid).orderBy('createdAt','desc').limit(10).onSnapshot(snap=>{
+    const el=document.getElementById('d-tx');if(!el)return;
+    if(snap.empty){el.innerHTML='<div style="padding:28px;text-align:center;color:var(--g400)"><div style="font-size:28px;margin-bottom:7px">📋</div><p style="font-size:13px">No transactions yet</p></div>';return;}
+    el.innerHTML=snap.docs.map(d=>txRow(d.data())).join('');
+  });
+  db.collection('users').doc(CU.uid).onSnapshot(snap=>{
+    if(!snap.exists)return;
+    UD=snap.data();
+    const balEl=document.getElementById('d-bal');
+    if(balEl)balEl.textContent=bHid?'NGN ****':'NGN '+fmt(UD.balance||0);
+    const cb=document.getElementById('d-cashback');if(cb)cb.textContent='NGN 0.00';
+  });
+}
+
+function previewInvImg(inputId,previewId,dropId){
+  const file=document.getElementById(inputId)?.files[0];
+  if(!file)return;
+  if(file.size>3*1024*1024){toast('File too large. Max 3MB.');return;}
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const prev=document.getElementById(previewId);
+    const drop=document.getElementById(dropId);
+    if(prev)prev.innerHTML=`<img src="${e.target.result}" style="width:90px;height:90px;border-radius:50%;object-fit:cover;margin:0 auto 8px;display:block;border:3px solid #86efac"/><div style="font-size:11px;color:var(--ok);font-weight:600;text-align:center">✅ Photo uploaded</div>`;
+    if(drop){drop.style.borderColor='#86efac';drop.style.background='#f0fdf4';}
+  };
+  reader.readAsDataURL(file);
+}
+
+
+// ============================================================
+//  PROFILE PHOTO UPLOAD
+// ============================================================
+async function uploadProfilePhoto(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  if(file.size > 3*1024*1024){toast('Photo too large. Max 3MB.');return;}
+  const reader = new FileReader();
+  reader.onload = async e => {
+    const dataUrl = e.target.result;
+    try{
+      await db.collection('users').doc(CU.uid).update({photoURL: dataUrl, updatedAt: firebase.firestore.FieldValue.serverTimestamp()});
+      UD.photoURL = dataUrl;
+      updateAvatarUI(dataUrl);
+      toast('Profile photo updated!');
+    }catch(er){toast('Upload failed: '+er.message);}
+  };
+  reader.readAsDataURL(file);
+}
+
+function updateAvatarUI(photoURL){
+  // Dashboard header avatar
+  const img = document.getElementById('d-avatar-img');
+  const letter = document.getElementById('d-avatar-letter');
+  if(img && photoURL){img.src = photoURL; img.style.display='block'; if(letter) letter.style.display='none';}
+  // Profile page avatar
+  const pImg = document.getElementById('pr-av-img');
+  const pLtr = document.getElementById('pr-av-letter');
+  if(pImg && photoURL){pImg.src = photoURL; pImg.style.display='block'; if(pLtr) pLtr.style.display='none';}
+}
+
+// ============================================================
+//  LOAN SYSTEM - FULL IMPLEMENTATION
+// ============================================================
+// Rules: 30 days max, 24% total charge, daily repayment, NGN5000 doc fee,
+//        applicant must have 5% of loan in wallet, social media required,
+//        48hr disbursement after approval, 3-5 day grace, default tracking
+
+function calcLoanDetails(amount){
+  const charge = amount * 0.24;                        // 24% total interest
+  const totalRepay = amount + charge;                   // principal + interest
+  const dailyRepay = totalRepay / 30;                   // 30-day daily collection
+  const docFee = 5000;                                  // documentation fee
+  const minBalance = amount * 0.05;                     // 5% of loan amount
+  return {charge, totalRepay, dailyRepay, docFee, minBalance};
+}
+
+function generateRepaymentSchedule(approvedDate, totalRepay){
+  const schedule = [];
+  const start = new Date(approvedDate);
+  start.setHours(0,0,0,0);
+  const daily = totalRepay / 30;
+  for(let d=1; d<=30; d++){
+    const due = new Date(start);
+    due.setDate(due.getDate() + d);
+    schedule.push({day: d, dueDate: due.toISOString().split('T')[0], amount: Math.round(daily*100)/100, paid: false});
+  }
+  return schedule;
+}
+
+/* OLD DUPLICATE SUBMITLOAN - REMOVED
+async function submitLoan(){
+  if(!CU){toast('Please login first');return;}
+  const amt = parseFloat(document.getElementById('ln-amt')?.value||'0');
+  const purpose = document.getElementById('ln-purpose')?.value.trim();
+  const address = document.getElementById('ln-address')?.value.trim();
+  const employment = document.getElementById('ln-employment')?.value.trim();
+  const duration = document.getElementById('ln-duration')?.value;
+  const social = document.getElementById('ln-social')?.value.trim();
+  const idtype = document.getElementById('ln-idtype')?.value;
+  const g1name = document.getElementById('ln-g1name')?.value.trim();
+  const g1phone = document.getElementById('ln-g1phone')?.value.trim();
+  const g1rel = document.getElementById('ln-g1rel')?.value;
+  const g1addr = document.getElementById('ln-g1addr')?.value.trim();
+  const g2name = document.getElementById('ln-g2name')?.value.trim();
+  const g2phone = document.getElementById('ln-g2phone')?.value.trim();
+  const g2rel = document.getElementById('ln-g2rel')?.value;
+  const g2addr = document.getElementById('ln-g2addr')?.value.trim();
+
+  if(!amt || amt < 1000){toast('Enter a valid loan amount (min NGN 1,000)');return;}
+  if(!purpose){toast('Purpose of loan is required');return;}
+  if(!address){toast('Home address is required');return;}
+  if(!employment){toast('Employment/business details required');return;}
+  if(!social){toast('Social media profile link is required for verification');return;}
+  if(!idtype){toast('Select your ID type');return;}
+  if(!g1name||!g1phone||!g1rel||!g1addr){toast('Guarantor 1 details are incomplete');return;}
+  if(!g2name||!g2phone||!g2rel||!g2addr){toast('Guarantor 2 details are incomplete');return;}
+
+  // Check passport photo uploaded
+  const passportFile = document.getElementById('ln-passport')?.files[0];
+  const idFile = document.getElementById('ln-idimg')?.files[0];
+  if(!passportFile){toast('Passport photograph is required');return;}
+  if(!idFile){toast('ID document photo is required');return;}
+
+  // 5% wallet balance check
+  const minBal = amt * 0.05;
+  if((UD?.balance||0) < minBal){
+    toast(`You need at least NGN ${fmt(minBal)} (5% of loan) in your wallet`);
+    return;
+  }
+
+  // Check for existing active loan
+  const existing = await db.collection('loans').where('userId','==',CU.uid).where('status','in',['pending','approved','active']).get();
+  if(!existing.empty){toast('You already have an active/pending loan. Complete it before applying for another.');return;}
+
+  const btn = document.getElementById('ln-submit-btn');
+  if(btn){btn.disabled=true;btn.textContent='Submitting...';}
+
+  try{
+    // Convert photos to base64
+    const passportB64 = await fileToB64(passportFile);
+    const idB64 = await fileToB64(idFile);
+    const details = calcLoanDetails(amt);
+
+    await db.collection('loans').add({
+      userId: CU.uid, userEmail: CU.email, userName: UD?.name||'',
+      amount: amt, purpose, address, employment, duration: duration||'30 days',
+      socialMedia: social, idType: idtype,
+      passportUrl: passportB64, idUrl: idB64,
+      guarantor1: {name:g1name,phone:g1phone,relationship:g1rel,address:g1addr},
+      guarantor2: {name:g2name,phone:g2phone,relationship:g2rel,address:g2addr},
+      status: 'pending',
+      // Finance rules
+      interestCharge: details.charge, totalRepayable: details.totalRepay,
+      dailyRepayment: Math.round(details.dailyRepay*100)/100,
+      docFee: details.docFee, interestRate: 24,
+      loanTerm: 30,
+      // Timestamps
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      disbursementAfter: '48 hours of approval',
+      gracePeriodDays: 5
+    });
+
+    await addFinanceNotif(CU.uid,'Loan Application Submitted','Your loan application of NGN '+fmt(amt)+' has been submitted. A documentation fee of NGN 5,000 is required before processing. Admin will review within 48 hours.');
+    closeM('m-loan-apply');
+    toast('Application submitted! Pay NGN 5,000 doc fee to continue.');
+
+    // Show doc fee reminder
+    setTimeout(()=>{
+      const d = calcLoanDetails(amt);
+      const msg = `LOAN SUMMARY\n\nAmount: NGN ${fmt(amt)}\nInterest (24%): NGN ${fmt(d.charge)}\nTotal Repayable: NGN ${fmt(d.totalRepay)}\nDaily Collection: NGN ${fmt(d.dailyRepay).replace(/(\.\d{1,2})\d*/,'$1')}\nLoan Term: 30 days\n\nIMPORTANT: Pay NGN 5,000 documentation fee to ZMONIE account before your loan is processed. Chat support on WhatsApp.`;
+      alert(msg);
+    }, 800);
+  }catch(er){
+    toast('Submission failed: '+er.message);
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent='Submit Loan Application';}
+  }
+}
+
+// ============================================================
+//  INVESTMENT MODULE - FULL IMPLEMENTATION
+// ============================================================
+function calcInvestmentReturns(amount, months){
+  const rate = 0.05; // 5% monthly
+  const monthlyInterest = amount * rate;
+  const totalInterest = monthlyInterest * months;
+  const totalReturn = amount + totalInterest;
+  return {monthlyInterest, totalInterest, totalReturn, rate:5};
+}
+
+/* OLD DUPLICATE - REMOVED
+async function submitInvestment(){
+  if(!CU){toast('Please login first');return;}
+  const amt = parseFloat(document.getElementById('inv-amt')?.value||'0');
+  const duration = document.getElementById('inv-duration')?.value;
+  const note = document.getElementById('inv-note')?.value.trim();
+  // Next of kin
+  const nokName = document.getElementById('inv-nok-name')?.value.trim();
+  const nokPhone = document.getElementById('inv-nok-phone')?.value.trim();
+  const nokRel = document.getElementById('inv-nok-rel')?.value;
+  const nokAddr = document.getElementById('inv-nok-addr')?.value.trim();
+  const nokDob = document.getElementById('inv-nok-dob')?.value;
+  const nokSocialMedia = document.getElementById('inv-nok-social')?.value.trim();
+
+  if(!amt || amt < 10000){toast('Minimum investment is NGN 10,000');return;}
+  if(amt > 500000 && !duration.includes('Year')){toast('Investments above NGN 500,000 require minimum 1 year duration');return;}
+  if(!duration){toast('Select investment duration');return;}
+  if(!nokName||!nokPhone||!nokRel||!nokAddr){toast('Next of kin details are required');return;}
+  if(!nokDob){toast('Next of kin date of birth is required');return;}
+
+  // Next of kin 18+ check
+  const dobDate = new Date(nokDob);
+  const today = new Date();
+  const age = Math.floor((today - dobDate)/(365.25*24*3600*1000));
+  if(age < 18){toast('Next of kin must be 18 years or older');return;}
+
+  const passportFile = document.getElementById('inv-passport')?.files[0];
+  const nokPhotoFile = document.getElementById('inv-nok-photo')?.files[0];
+  if(!passportFile){toast('Your passport photo is required');return;}
+  if(!nokPhotoFile){toast('Next of kin photo is required');return;}
+
+  // Determine months
+  const months = duration.includes('6') ? 6 : duration.includes('Year+') ? 18 : 12;
+  const calc = calcInvestmentReturns(amt, months);
+
+  const btn = document.getElementById('inv-submit-btn');
+  if(btn){btn.disabled=true;btn.textContent='Submitting...';}
+
+  try{
+    const passportB64 = await fileToB64(passportFile);
+    const nokPhotoB64 = await fileToB64(nokPhotoFile);
+    // Generate 6-digit NOK verification code
+    const nokVerifyCode = Math.floor(100000 + Math.random()*900000).toString();
+
+    await db.collection('investments').add({
+      userId: CU.uid, userEmail: CU.email, userName: UD?.name||'',
+      amount: amt, duration, note,
+      months,
+      interestRate: 5, // 5% monthly
+      monthlyInterest: calc.monthlyInterest,
+      totalInterest: calc.totalInterest,
+      expectedReturn: calc.totalReturn,
+      passportUrl: passportB64,
+      capitalLocked: true, // cannot withdraw until maturity
+      earlyWithdrawalAllowed: false, // admin override only
+      status: 'pending',
+      nextOfKin: {
+        name: nokName, phone: nokPhone, relationship: nokRel,
+        address: nokAddr, dob: nokDob, socialMedia: nokSocialMedia||'',
+        photoUrl: nokPhotoB64, age, verifyCode: nokVerifyCode,
+        verified: false
+      },
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    await addFinanceNotif(CU.uid,'Investment Application Submitted',
+      `Your investment of NGN ${fmt(amt)} for ${duration} has been submitted. Expected monthly return: NGN ${fmt(calc.monthlyInterest)}. Total return at maturity: NGN ${fmt(calc.totalReturn)}. Awaiting admin approval.`);
+
+    closeM('m-invest-apply');
+    toast('Investment submitted successfully!');
+
+    setTimeout(()=>{
+      const summary = `INVESTMENT SUMMARY\n\nPrincipal: NGN ${fmt(amt)}\nDuration: ${duration}\nMonthly Return (5%): NGN ${fmt(calc.monthlyInterest)}\nTotal Interest: NGN ${fmt(calc.totalInterest)}\nTotal at Maturity: NGN ${fmt(calc.totalReturn)}\n\nNote: Capital is locked until maturity date. Early withdrawal requires admin approval.`;
+      alert(summary);
+    }, 600);
+  }catch(er){
+    toast('Submission failed: '+er.message);
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent='Submit Investment Request';}
+  }
+}
+
+// ============================================================
+//  REPAYMENT SCHEDULE DISPLAY (user side)
+// ============================================================
+async function showRepaymentSchedule(loanId){
+  const snap = await db.collection('loans').doc(loanId).get();
+  if(!snap.exists){toast('Loan not found');return;}
+  const ln = snap.data();
+  const schedule = ln.repaymentSchedule || [];
+  if(!schedule.length){
+    // Generate from approval date
+    if(!ln.approvedAt){toast('Loan not yet approved — no schedule available');return;}
+    const s = generateRepaymentSchedule(ln.approvedAt.toDate(), ln.totalRepayable||ln.amount*1.24);
+    const html = buildScheduleHTML(ln, s);
+    showScheduleModal(html);
+    return;
+  }
+  showScheduleModal(buildScheduleHTML(ln, schedule));
+}
+
+function buildScheduleHTML(ln, schedule){
+  const paid = schedule.filter(s=>s.paid).length;
+  const remaining = 30 - paid;
+  const paidAmt = schedule.filter(s=>s.paid).reduce((s,r)=>s+r.amount,0);
+  return `<div style="padding-bottom:8px;border-bottom:1px solid #f1f5f9;margin-bottom:12px">
+    <div style="font-size:16px;font-weight:800">Repayment Schedule</div>
+    <div style="font-size:12px;color:var(--g400)">NGN ${fmt(ln.totalRepayable||ln.amount*1.24)} over 30 days</div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:12px">
+    <div style="background:#dcfce7;border-radius:9px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:800;color:#15803d">${paid}</div><div style="font-size:10px;color:#15803d">Days Paid</div></div>
+    <div style="background:#fef3c7;border-radius:9px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:800;color:#92400e">${remaining}</div><div style="font-size:10px;color:#92400e">Remaining</div></div>
+    <div style="background:#dbeafe;border-radius:9px;padding:10px;text-align:center"><div style="font-size:14px;font-weight:800;color:#1d4ed8">NGN ${fmt(paidAmt)}</div><div style="font-size:10px;color:#1d4ed8">Paid So Far</div></div>
+  </div>
+  <div style="max-height:300px;overflow-y:auto">
+  ${schedule.map(s=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid #f8fafc">
+    <div style="display:flex;align-items:center;gap:8px">
+      <div style="width:26px;height:26px;border-radius:50%;background:${s.paid?'#dcfce7':'#f1f5f9'};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:${s.paid?'#15803d':'var(--g400)'}">${s.day}</div>
+      <div style="font-size:12px;color:var(--g500)">${s.dueDate}</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div style="font-weight:600;font-size:13px">NGN ${fmt(s.amount)}</div>
+      <span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:50px;background:${s.paid?'#dcfce7':'#fef3c7'};color:${s.paid?'#15803d':'#92400e'}">${s.paid?'PAID':'DUE'}</span>
+    </div>
+  </div>`).join('')}
+  </div>`;
+}
+
+function showScheduleModal(html){
+  const m = document.createElement('div');
+  m.className = 'modal open';
+  m.innerHTML = `<div class="mbox" style="max-height:90vh;overflow-y:auto">${html}<button onclick="this.closest('.modal').remove()" style="width:100%;padding:12px;margin-top:14px;border-radius:10px;background:var(--g100);border:none;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif">Close</button></div>`;
+  document.body.appendChild(m);
+}
+
+// ============================================================
+//  ADMIN - ENHANCED LOAN MANAGEMENT
+// ============================================================
+*/
+async function approveLoan(loanId, userId){
+  const amt = parseFloat(document.getElementById('la-amt-'+loanId)?.value || document.getElementById('ln-appamt-'+loanId)?.value || 0);
+  const note = (document.getElementById('la-note-'+loanId)?.value || document.getElementById('ln-note-'+loanId)?.value||'').trim();
+  if(!amt||amt<=0){toast('Enter approved amount');return;}
+  if(!confirm('Approve loan of NGN '+fmt(amt)+' ? Wallet will be credited 48 hours from now.'))return;
+
+  const now = new Date();
+  const disbursementDate = new Date(now.getTime() + 48*60*60*1000);
+  const dueDate = new Date(disbursementDate.getTime() + 30*24*60*60*1000);
+  const graceDue = new Date(dueDate.getTime() + 5*24*60*60*1000);
+  const totalRepay = amt * 1.24;
+  const schedule = generateRepaymentSchedule(disbursementDate, totalRepay);
+
+  await db.collection('loans').doc(loanId).update({
+    status: 'approved',
+    approvedAmount: amt, approvedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    adminNote: note,
+    disbursementDate: firebase.firestore.Timestamp.fromDate(disbursementDate),
+    dueDate: firebase.firestore.Timestamp.fromDate(dueDate),
+    graceDueDate: firebase.firestore.Timestamp.fromDate(graceDue),
+    totalRepayable: totalRepay,
+    dailyRepayment: Math.round((totalRepay/30)*100)/100,
+    repaymentSchedule: schedule,
+    docFeeRequired: true
+  });
+
+  await addFinanceNotif(userId,'Loan Approved! Pay Documentation Fee',
+    `Your loan of NGN ${fmt(amt)} has been approved! STEP 1: Pay NGN 5,000 documentation fee to complete processing. STEP 2: Funds will be credited to your wallet within 48 hours. Total repayable: NGN ${fmt(totalRepay)} in 30 daily installments of NGN ${fmt(totalRepay/30)}.`+(note?' Note: '+note:''));
+  toast('Loan approved! User will be notified to pay doc fee.');
+  loadAdmin();
+}
+
+async function activateLoan(loanId, userId, amount){
+  const totalRepay = amount * 1.24;
+  await db.collection('loans').doc(loanId).update({
+    status: 'active',
+    activatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    totalRepayable: totalRepay
+  });
+  await db.collection('users').doc(userId).update({balance: firebase.firestore.FieldValue.increment(amount)});
+  await db.collection('transactions').add({userId, type:'loan_disbursement', amount, description:'Loan Disbursed to Wallet', status:'success', createdAt: firebase.firestore.FieldValue.serverTimestamp()});
+  await addFinanceNotif(userId,'Loan Disbursed to Wallet!',`NGN ${fmt(amount)} has been added to your wallet. Daily repayment of NGN ${fmt(totalRepay/30)} starts tomorrow. 30-day repayment period.`);
+  toast('Loan activated and wallet credited!');
+  loadAdmin();
+}
+
+async function markLoanRepaid(loanId, userId, amount){
+  if(!confirm('Mark this loan as fully repaid?'))return;
+  await db.collection('loans').doc(loanId).update({status:'repaid', repaidAt: firebase.firestore.FieldValue.serverTimestamp()});
+  await addFinanceNotif(userId,'Loan Fully Repaid','Your loan of NGN '+fmt(amount)+' has been marked as fully repaid. Thank you!');
+  toast('Loan marked as repaid.');loadAdmin();
+}
+
+async function markLoanDefaulted(loanId, userId, amount){
+  if(!confirm('Mark this loan as DEFAULTED? This will trigger recovery workflow.'))return;
+  const ln = (await db.collection('loans').doc(loanId).get()).data();
+  await db.collection('loans').doc(loanId).update({status:'defaulted', defaultedAt: firebase.firestore.FieldValue.serverTimestamp()});
+  // Notify borrower and guarantors
+  await addFinanceNotif(userId,'URGENT: Loan Default Notice',`Your loan of NGN ${fmt(amount)} has been marked as defaulted. Immediate repayment required to avoid further action. Contact ZMONIE support immediately: 08068886569`);
+  // Log recovery action
+  await db.collection('recoveryLog').add({loanId, userId, userName: ln?.userName||'', amount, guarantor1: ln?.guarantor1||{}, guarantor2: ln?.guarantor2||{}, createdAt: firebase.firestore.FieldValue.serverTimestamp(), status:'initiated', notes:'Auto-logged on default'});
+  toast('Loan defaulted. Recovery workflow initiated.');
+  loadAdmin();
+}
+
+async function recordDailyPayment(loanId, userId, dayIndex){
+  const snap = await db.collection('loans').doc(loanId).get();
+  if(!snap.exists) return;
+  const ln = snap.data();
+  const schedule = ln.repaymentSchedule || [];
+  if(schedule[dayIndex]) schedule[dayIndex].paid = true;
+  const allPaid = schedule.every(s=>s.paid);
+  await db.collection('loans').doc(loanId).update({
+    repaymentSchedule: schedule,
+    status: allPaid ? 'repaid' : 'active'
+  });
+  if(allPaid) await addFinanceNotif(userId,'Loan Fully Repaid!','All 30 daily installments have been recorded. Your loan is now fully repaid. Thank you!');
+  toast('Payment recorded for Day '+(dayIndex+1));
+  loadAdmin();
+}
+
+// ============================================================
+//  ADMIN - ENHANCED INVESTMENT MANAGEMENT
+// ============================================================
+async function approveInvestment(invId, userId, amount){
+  const rate = parseFloat(document.getElementById('iv-rate-'+invId)?.value||'5');
+  const matDate = document.getElementById('iv-mat-'+invId)?.value;
+  if(!matDate){toast('Select maturity date');return;}
+
+  // Calculate from rules: 5% monthly
+  const snap = await db.collection('investments').doc(invId).get();
+  const inv = snap.data();
+  const months = inv.months || 6;
+  const monthlyReturn = amount * 0.05;
+  const totalReturn = amount + (monthlyReturn * months);
+
+  await db.collection('investments').doc(invId).update({
+    status:'active', interestRate: 5, monthlyInterest: monthlyReturn,
+    totalInterest: monthlyReturn * months, expectedReturn: Math.round(totalReturn),
+    maturityDate: firebase.firestore.Timestamp.fromDate(new Date(matDate)),
+    approvedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    capitalLocked: true, earlyWithdrawalAllowed: false
+  });
+
+  await addFinanceNotif(userId,'Investment Approved! Capital Locked',
+    `Your investment of NGN ${fmt(amount)} has been approved and capital locked. Monthly return: NGN ${fmt(monthlyReturn)}. Total at maturity (${months} months): NGN ${fmt(totalReturn)}. Matures: ${matDate}. Capital cannot be withdrawn before maturity.`);
+  toast('Investment approved and capital locked!');
+  loadAdmin();
+}
+
+async function extendInvestment(invId, userId, additionalMonths){
+  const snap = await db.collection('investments').doc(invId).get();
+  const inv = snap.data();
+  const newMonths = (inv.months||6) + additionalMonths;
+  const newReturn = inv.amount + (inv.amount * 0.05 * newMonths);
+  const oldMat = inv.maturityDate?.toDate ? inv.maturityDate.toDate() : new Date(inv.maturityDate);
+  const newMat = new Date(oldMat.getTime() + additionalMonths*30*24*3600*1000);
+
+  await db.collection('investments').doc(invId).update({
+    months: newMonths, expectedReturn: Math.round(newReturn),
+    maturityDate: firebase.firestore.Timestamp.fromDate(newMat),
+    extended: true, extendedAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  await addFinanceNotif(userId,'Investment Extended',`Your investment has been extended by ${additionalMonths} months. New maturity: ${newMat.toLocaleDateString()}. New total return: NGN ${fmt(newReturn)}.`);
+  toast('Investment extended successfully!');
+  loadAdmin();
+}
+
+async function overrideEarlyWithdrawal(invId, userId, amount){
+  if(!confirm('Allow early withdrawal? This overrides the lock and returns capital to user wallet.'))return;
+  await db.collection('investments').doc(invId).update({status:'withdrawn', earlyWithdrawalAllowed:true, withdrawnAt: firebase.firestore.FieldValue.serverTimestamp(), capitalLocked: false});
+  await db.collection('users').doc(userId).update({balance: firebase.firestore.FieldValue.increment(amount)});
+  await db.collection('transactions').add({userId, type:'invest_early_withdraw', amount, description:'Investment Early Withdrawal (Admin Override)', status:'success', createdAt: firebase.firestore.FieldValue.serverTimestamp()});
+  await addFinanceNotif(userId,'Investment Withdrawn','Admin has approved early withdrawal of NGN '+fmt(amount)+'. Funds credited to your wallet.');
+  toast('Early withdrawal approved. Wallet credited.');
+  loadAdmin();
+}
+
+// ============================================================
+//  UTILITY
+// ============================================================
+function fileToB64(file){
+  return new Promise((res,rej)=>{
+    const r = new FileReader();
+    r.onload = e => res(e.target.result);
+    r.onerror = () => rej(new Error('File read failed'));
+    r.readAsDataURL(file);
+  });
+}
+
+function previewImg(inputId, previewId, dropId){
+  const file = document.getElementById(inputId)?.files[0];
+  if(!file) return;
+  if(file.size > 3*1024*1024){toast('File too large. Max 3MB.'); return;}
+  const reader = new FileReader();
+  reader.onload = e => {
+    const prev = document.getElementById(previewId);
+    const drop = document.getElementById(dropId);
+    const ext = file.name.split('.').pop().toLowerCase();
+    if(prev){
+      if(ext==='pdf'){
+        prev.innerHTML = `<div style="font-size:36px;margin-bottom:6px">📄</div><div style="font-size:11px;color:var(--ok);font-weight:600">PDF uploaded: ${file.name}</div>`;
+      } else {
+        prev.innerHTML = `<img src="${e.target.result}" style="width:88px;height:88px;border-radius:50%;object-fit:cover;margin:0 auto 8px;display:block;border:3px solid #86efac"/><div style="font-size:11px;color:var(--ok);font-weight:600;text-align:center">Photo uploaded</div>`;
+      }
+    }
+    if(drop){drop.style.borderColor='#86efac';drop.style.background='#f0fdf4';}
+  };
+  reader.readAsDataURL(file);
+}
+
+
+function updateLoanCalc(){
+  const amt = parseFloat(document.getElementById('ln-amt')?.value||'0');
+  const res = document.getElementById('loan-calc-result');
+  if(!res) return;
+  if(!amt || amt < 1){res.style.display='none';return;}
+  const d = calcLoanDetails(amt);
+  res.style.display='block';
+  document.getElementById('lc-interest').textContent = 'NGN '+fmt(d.charge);
+  document.getElementById('lc-total').textContent = 'NGN '+fmt(d.totalRepay);
+  document.getElementById('lc-daily').textContent = 'NGN '+(d.dailyRepay).toFixed(2);
+  document.getElementById('lc-minbal').textContent = 'NGN '+fmt(d.minBalance);
+}
+
+async function showAdminSchedule(loanId){
+  const snap = await db.collection('loans').doc(loanId).get();
+  const ln = snap.data();
+  const schedule = ln.repaymentSchedule||[];
+  const html = buildScheduleHTML(ln, schedule) + 
+    `<div style="margin-top:14px;font-weight:700;font-size:13px;margin-bottom:8px">Record Payment (click day to mark paid):</div>` +
+    `<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:12px">${schedule.map((s,i)=>`<button onclick="recordDailyPayment('${loanId}','${ln.userId||''}',${i});this.closest('.modal').remove()" style="padding:6px 2px;border-radius:7px;background:${s.paid?'#dcfce7':'#f1f5f9'};border:1px solid ${s.paid?'#86efac':'#e2e8f0'};font-size:10px;font-weight:700;cursor:pointer;color:${s.paid?'#15803d':'var(--g600)'};font-family:'Inter',sans-serif">Day ${s.day}</button>`).join('')}</div>`;
+  showScheduleModal(html);
+}
+</script>
+
+<!-- LOAN APPLICATION MODAL -->
+<div class="modal" id="m-loan-apply"><div class="mbox" style="max-height:92vh;overflow-y:auto">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;position:sticky;top:0;background:#fff;padding-bottom:10px;border-bottom:1px solid #f1f5f9;z-index:1">
+    <div><h3 style="font-size:17px;font-weight:700">Apply for Loan</h3><p style="font-size:11px;color:var(--g400);margin-top:2px">30-day term · 24% flat interest · Daily repayment</p></div>
+    <button onclick="closeM('m-loan-apply')" style="background:var(--g100);border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;color:var(--g600);flex-shrink:0">&#10005;</button>
+  </div>
+
+  <!-- Loan Rules Banner -->
+  <div style="background:#fff7ed;border:1.5px solid #fed7aa;border-radius:11px;padding:13px;margin-bottom:14px">
+    <div style="font-size:11px;font-weight:800;color:#c2410c;margin-bottom:8px;text-transform:uppercase">LOAN TERMS - READ CAREFULLY</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
+      <div style="background:#fff;border-radius:8px;padding:8px;text-align:center"><div style="font-size:16px;font-weight:800;color:#c2410c">24%</div><div style="font-size:10px;color:#92400e">Total Interest</div></div>
+      <div style="background:#fff;border-radius:8px;padding:8px;text-align:center"><div style="font-size:16px;font-weight:800;color:#c2410c">30 Days</div><div style="font-size:10px;color:#92400e">Max Duration</div></div>
+      <div style="background:#fff;border-radius:8px;padding:8px;text-align:center"><div style="font-size:16px;font-weight:800;color:#c2410c">NGN 5,000</div><div style="font-size:10px;color:#92400e">Doc Fee Required</div></div>
+      <div style="background:#fff;border-radius:8px;padding:8px;text-align:center"><div style="font-size:16px;font-weight:800;color:#c2410c">48hrs</div><div style="font-size:10px;color:#92400e">Disbursement</div></div>
+    </div>
+    <div style="font-size:11px;color:#92400e;line-height:1.7">• You must have 5% of loan amount in your wallet<br/>• Documentation fee of NGN 5,000 must be paid before processing<br/>• Daily repayment collection for 30 days<br/>• 3-5 days grace period after due date<br/>• Default triggers guarantor notification and recovery</div>
+  </div>
+
+  <!-- Live Calculator -->
+  <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:11px;padding:13px;margin-bottom:14px">
+    <div style="font-size:12px;font-weight:700;color:#15803d;margin-bottom:8px">LIVE LOAN CALCULATOR</div>
+    <div style="margin-bottom:8px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:4px;display:block">Loan Amount (NGN) *</label><input class="inp" type="number" id="ln-amt" placeholder="e.g. 50000" min="1000" oninput="updateLoanCalc()"/></div>
+    <div id="loan-calc-result" style="display:none;background:#fff;border-radius:9px;padding:11px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div><div style="font-size:10px;color:var(--g400);margin-bottom:2px">INTEREST (24%)</div><div style="font-weight:800;font-size:14px;color:#dc2626" id="lc-interest">—</div></div>
+        <div><div style="font-size:10px;color:var(--g400);margin-bottom:2px">TOTAL REPAY</div><div style="font-weight:800;font-size:14px;color:var(--black)" id="lc-total">—</div></div>
+        <div><div style="font-size:10px;color:var(--g400);margin-bottom:2px">DAILY PAYMENT</div><div style="font-weight:800;font-size:14px;color:#2563eb" id="lc-daily">—</div></div>
+        <div><div style="font-size:10px;color:var(--g400);margin-bottom:2px">MIN BALANCE REQ</div><div style="font-weight:800;font-size:14px;color:#7c3aed" id="lc-minbal">—</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loan Details -->
+  <div style="font-size:13px;font-weight:700;color:var(--g700);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #f1f5f9">📋 Loan Details</div>
+  <div style="margin-bottom:10px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Purpose of Loan *</label><input class="inp" id="ln-purpose" placeholder="e.g. Business capital, Medical emergency..."/></div>
+  <div style="margin-bottom:10px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Home Address *</label><input class="inp" id="ln-address" placeholder="Full home address"/></div>
+  <div style="margin-bottom:10px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Employment / Business *</label><input class="inp" id="ln-employment" placeholder="e.g. Teacher, Self-employed trader..."/></div>
+  <div style="margin-bottom:14px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Social Media Profile Link * <span style="font-weight:400;color:var(--g400)">(Facebook, Instagram, or LinkedIn)</span></label><input class="inp" id="ln-social" placeholder="https://facebook.com/yourname" type="url"/></div>
+  <div style="margin-bottom:14px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Repayment Duration</label><select class="inp" id="ln-duration"><option value="30 days">30 Days (Maximum)</option></select></div>
+
+  <!-- Documents -->
+  <div style="font-size:13px;font-weight:700;color:var(--g700);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #f1f5f9">📸 Documents (Mandatory)</div>
+  <div style="margin-bottom:12px">
+    <label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Passport Photograph *</label>
+    <div style="border:2px dashed #d1d5db;border-radius:11px;padding:14px;text-align:center;cursor:pointer;transition:border-color .2s" id="passport-drop" onclick="document.getElementById('ln-passport').click()">
+      <div id="passport-preview"><div style="font-size:28px;margin-bottom:6px">🤳</div><div style="font-size:12px;color:var(--g400)">Tap to upload passport photo</div><div style="font-size:11px;color:var(--g300);margin-top:3px">JPG, PNG &bull; Max 3MB</div></div>
+    </div>
+    <input type="file" id="ln-passport" accept="image/*" capture="user" style="display:none" onchange="previewImg('ln-passport','passport-preview','passport-drop')"/>
+  </div>
+  <div style="margin-bottom:14px">
+    <label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Means of Identification *</label>
+    <select class="inp" id="ln-idtype" style="margin-bottom:8px"><option value="">Select ID type</option><option>National ID Card</option><option>Voter's Card</option><option>Driver's License</option><option>International Passport</option></select>
+    <div style="border:2px dashed #d1d5db;border-radius:11px;padding:14px;text-align:center;cursor:pointer;transition:border-color .2s" id="id-drop" onclick="document.getElementById('ln-idimg').click()">
+      <div id="id-preview"><div style="font-size:28px;margin-bottom:6px">🪪</div><div style="font-size:12px;color:var(--g400)">Tap to upload ID document</div><div style="font-size:11px;color:var(--g300);margin-top:3px">JPG, PNG, PDF &bull; Max 3MB</div></div>
+    </div>
+    <input type="file" id="ln-idimg" accept="image/*,.pdf" style="display:none" onchange="previewImg('ln-idimg','id-preview','id-drop')"/>
+  </div>
+
+  <!-- Guarantor 1 -->
+  <div style="background:#faf5ff;border:1.5px solid #c4b5fd;border-radius:12px;padding:14px;margin-bottom:12px">
+    <div style="font-size:13px;font-weight:700;color:#5b21b6;margin-bottom:12px">👤 Guarantor 1 (Required)</div>
+    <div style="margin-bottom:9px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:4px;display:block">Full Name *</label><input class="inp" id="ln-g1name" placeholder="Full legal name"/></div>
+    <div style="margin-bottom:9px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:4px;display:block">Phone Number *</label><input class="inp" type="tel" id="ln-g1phone" placeholder="080XXXXXXXX"/></div>
+    <div style="margin-bottom:9px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:4px;display:block">Relationship *</label><select class="inp" id="ln-g1rel"><option value="">Select</option><option>Family Member</option><option>Friend</option><option>Colleague</option><option>Employer</option><option>Business Partner</option><option>Other</option></select></div>
+    <div><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:4px;display:block">Home Address *</label><input class="inp" id="ln-g1addr" placeholder="Home address"/></div>
+  </div>
+
+  <!-- Guarantor 2 -->
+  <div style="background:#fff7ed;border:1.5px solid #fed7aa;border-radius:12px;padding:14px;margin-bottom:16px">
+    <div style="font-size:13px;font-weight:700;color:#c2410c;margin-bottom:12px">👤 Guarantor 2 (Required)</div>
+    <div style="margin-bottom:9px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:4px;display:block">Full Name *</label><input class="inp" id="ln-g2name" placeholder="Full legal name"/></div>
+    <div style="margin-bottom:9px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:4px;display:block">Phone Number *</label><input class="inp" type="tel" id="ln-g2phone" placeholder="080XXXXXXXX"/></div>
+    <div style="margin-bottom:9px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:4px;display:block">Relationship *</label><select class="inp" id="ln-g2rel"><option value="">Select</option><option>Family Member</option><option>Friend</option><option>Colleague</option><option>Employer</option><option>Business Partner</option><option>Other</option></select></div>
+    <div><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:4px;display:block">Home Address *</label><input class="inp" id="ln-g2addr" placeholder="Home address"/></div>
+  </div>
+
+  <button onclick="submitLoan()" id="ln-submit-btn" class="btn-g" style="width:100%;padding:14px;border-radius:11px;font-size:15px;font-weight:700">Submit Loan Application</button>
+  <p style="text-align:center;font-size:11px;color:var(--g400);margin-top:10px">By submitting, you agree to pay NGN 5,000 documentation fee and repay daily for 30 days</p>
+</div></div>
+
+<!-- INVESTMENT MODAL -->
+<div class="modal" id="m-invest-apply"><div class="mbox" style="max-height:92vh;overflow-y:auto">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;position:sticky;top:0;background:#fff;padding-bottom:12px;border-bottom:1px solid #f1f5f9;z-index:1">
+    <div><h3 style="font-size:17px;font-weight:700">Invest &amp; Earn</h3><p style="font-size:11px;color:var(--g400);margin-top:2px">Complete all sections to submit</p></div>
+    <button onclick="closeM('m-invest-apply')" style="background:var(--g100);border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;color:var(--g600);flex-shrink:0">&#10005;</button>
+  </div>
+
+  <!-- Plans info -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
+    <div style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1.5px solid #86efac;border-radius:12px;padding:12px">
+      <div style="font-size:10px;font-weight:800;color:#15803d;margin-bottom:6px;text-transform:uppercase">Plan 1</div>
+      <div style="font-size:11px;color:var(--g700);line-height:1.8">₦10,000–₦500,000<br/><strong>5% monthly</strong><br/>6 months</div>
+    </div>
+    <div style="background:linear-gradient(135deg,#faf5ff,#ede9fe);border:1.5px solid #c4b5fd;border-radius:12px;padding:12px">
+      <div style="font-size:10px;font-weight:800;color:#6d28d9;margin-bottom:6px;text-transform:uppercase">Plan 2</div>
+      <div style="font-size:11px;color:var(--g700);line-height:1.8">₦600,000+<br/><strong>5% monthly</strong><br/>1 year+</div>
+    </div>
+  </div>
+
+  <!-- Section: Investment Details -->
+  <div style="font-size:13px;font-weight:700;color:var(--g700);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #f1f5f9">📋 Investment Details</div>
+  <div style="margin-bottom:10px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Investment Amount (NGN) *</label><input class="inp" type="number" id="inv-amt" placeholder="e.g. 50000" min="10000"/></div>
+  <div style="margin-bottom:14px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Preferred Duration *</label><select class="inp" id="inv-duration"><option value="">Select duration</option><option>6 Months (Plan 1)</option><option>1 Year (Plan 2)</option><option>1 Year+ (by agreement)</option><option>Flexible (Admin decides)</option></select></div>
+  <div style="margin-bottom:14px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Additional Notes (optional)</label><textarea class="inp" id="inv-note" placeholder="Any special instructions..."></textarea></div>
+
+  <!-- Section: Investor Photo -->
+  <div style="font-size:13px;font-weight:700;color:var(--g700);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #f1f5f9">📸 Investor Passport Photo *</div>
+  <div style="margin-bottom:16px">
+    <div style="border:2px dashed #d1d5db;border-radius:12px;padding:18px;text-align:center;cursor:pointer;transition:all .2s;background:#fafafa" id="inv-passport-drop" onclick="document.getElementById('inv-passport').click()">
+      <div id="inv-passport-preview">
+        <div style="font-size:36px;margin-bottom:8px">🤳</div>
+        <div style="font-size:13px;font-weight:600;color:var(--g600)">Tap to upload your photo</div>
+        <div style="font-size:11px;color:var(--g400);margin-top:4px">Clear face photo • JPG, PNG • Max 3MB</div>
+      </div>
+    </div>
+    <input type="file" id="inv-passport" accept="image/*" capture="user" style="display:none" onchange="previewInvImg('inv-passport','inv-passport-preview','inv-passport-drop')"/>
+  </div>
+
+  <!-- Section: Next of Kin -->
+  <div style="font-size:13px;font-weight:700;color:var(--g700);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #f1f5f9">👪 Next of Kin (Required)</div>
+  <div style="background:#fff7ed;border:1.5px solid #fed7aa;border-radius:13px;padding:14px;margin-bottom:16px">
+    <div style="font-size:11px;color:#92400e;background:#fef3c7;border-radius:8px;padding:8px 10px;margin-bottom:12px;line-height:1.6">Per ZMONIE policy, all investors must provide a next of kin aged 18+ who may be contacted in case of emergency or account claim.</div>
+    <div style="margin-bottom:10px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Full Name *</label><input class="inp" id="inv-nok-name" placeholder="Next of kin full name"/></div>
+    <div style="margin-bottom:10px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Phone Number *</label><input class="inp" type="tel" id="inv-nok-phone" placeholder="080XXXXXXXX"/></div>
+    <div style="margin-bottom:10px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Date of Birth * <span style="font-weight:400;color:var(--g400)">(Must be 18+)</span></label><input class="inp" type="date" id="inv-nok-dob" max="2007-01-01"/></div>
+    <div style="margin-bottom:10px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Social Media Profile <span style="font-weight:400;color:var(--g400)">(optional)</span></label><input class="inp" id="inv-nok-social" placeholder="Facebook, Instagram link..."/></div>
+    <div style="margin-bottom:10px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Relationship *</label><select class="inp" id="inv-nok-rel"><option value="">Select relationship</option><option>Spouse</option><option>Parent</option><option>Child</option><option>Sibling</option><option>Friend</option><option>Other</option></select></div>
+    <div style="margin-bottom:12px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Home Address *</label><input class="inp" id="inv-nok-addr" placeholder="Next of kin home address"/></div>
+    <!-- Next of kin photo -->
+    <div>
+      <label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px;display:block">Next of Kin Photo *</label>
+      <div style="border:2px dashed #fed7aa;border-radius:12px;padding:16px;text-align:center;cursor:pointer;transition:all .2s;background:#fffbf5" id="inv-nok-drop" onclick="document.getElementById('inv-nok-photo').click()">
+        <div id="inv-nok-preview">
+          <div style="font-size:32px;margin-bottom:6px">👤</div>
+          <div style="font-size:12px;font-weight:600;color:var(--g600)">Tap to upload next of kin photo</div>
+          <div style="font-size:11px;color:var(--g400);margin-top:3px">Clear face photo • JPG, PNG • Max 3MB</div>
+        </div>
+      </div>
+      <input type="file" id="inv-nok-photo" accept="image/*" capture="user" style="display:none" onchange="previewInvImg('inv-nok-photo','inv-nok-preview','inv-nok-drop')"/>
+    </div>
+  </div>
+
+  <button onclick="submitInvestment()" id="inv-submit-btn" style="width:100%;padding:14px;border-radius:11px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;background:linear-gradient(135deg,#6d28d9,#7c3aed);color:#fff;border:none;box-shadow:0 3px 12px rgba(109,40,217,.3)">Submit Investment Request</button>
+</div></div></div>
+
+
+<!-- VTPASS SETTINGS MODAL -->
+<div class="modal" id="m-vtpass"><div class="mbox">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+    <div><h3 style="font-size:17px;font-weight:700">VTPass API Settings</h3><p style="font-size:11px;color:var(--g400)">Super Admin Only</p></div>
+    <button onclick="closeM('m-vtpass')" style="background:var(--g100);border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;color:var(--g600)">&#10005;</button>
+  </div>
+  <div id="vt-current" style="background:#f1f5f9;border-radius:10px;padding:12px;margin-bottom:14px;font-size:12px;color:var(--g600)">Loading current config...</div>
+  <div style="margin-bottom:10px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Mode</label><select class="inp" id="vt-mode"><option value="sandbox">Sandbox (Testing)</option><option value="live">Live (Production)</option></select></div>
+  <div style="margin-bottom:10px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">API Public Key</label><input class="inp" id="vt-pub" placeholder="Enter public key"/></div>
+  <div style="margin-bottom:10px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">API Secret Key</label><input class="inp" type="password" id="vt-sec" placeholder="Enter secret key"/></div>
+  <div style="margin-bottom:14px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Base URL</label><input class="inp" id="vt-url" placeholder="https://sandbox.vtpass.com or https://vtpass.com"/></div>
+  <div style="display:flex;gap:8px;margin-bottom:10px">
+    <button onclick="testVtpass()" style="flex:1;padding:11px;border-radius:10px;background:#dbeafe;border:1px solid #93c5fd;color:#1d4ed8;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">🔗 Test Connection</button>
+    <button onclick="saveVtpass()" class="btn-g" style="flex:1;padding:11px;border-radius:10px;font-size:13px">💾 Save Config</button>
+  </div>
+  <div id="vt-result" style="display:none;border-radius:10px;padding:11px;font-size:13px;margin-top:4px"></div>
+</div></div>
+
+</body>
+</html>
+*/
