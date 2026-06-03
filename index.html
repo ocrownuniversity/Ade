@@ -7,63 +7,8 @@
 <title>ZMONIE - Smart Money Platform</title>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js">
-// ── Doc Fee + Disbursement ──
-async function markDocFeePaid(loanId,userId){
-  if(!confirm('Confirm ₦5,000 doc fee received? This will disburse the loan to user wallet.'))return;
-  const snap=await db.collection('loans').doc(loanId).get();
-  const ln=snap.data();
-  const amt=ln.approvedAmount||ln.amount;
-  const now=new Date();
-  const startDate=now;
-  const dueDate=new Date(now.getTime()+30*24*60*60*1000);
-  const graceEnd=new Date(dueDate.getTime()+5*24*60*60*1000);
-  await db.collection('loans').doc(loanId).update({
-    docFeePaid:true,disbursed:true,status:'active',
-    startDate:firebase.firestore.Timestamp.fromDate(startDate),
-    dueDate:firebase.firestore.Timestamp.fromDate(dueDate),
-    gracePeriodEnd:firebase.firestore.Timestamp.fromDate(graceEnd),
-    disbursedAt:firebase.firestore.FieldValue.serverTimestamp()
-  });
-  await db.collection('users').doc(userId).update({balance:firebase.firestore.FieldValue.increment(amt)});
-  await db.collection('transactions').add({userId,type:'loan',amount:amt,description:'Loan Disbursed — NGN '+fmt(amt),status:'success',createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-  await addFinanceNotif(userId,'Loan Disbursed! 💰','NGN '+fmt(amt)+' has been credited to your wallet. Repayment starts today. Daily payment: NGN '+fmt(ln.dailyRepayment||0)+' for 30 days. Due date: '+dueDate.toLocaleDateString('en-NG',{day:'numeric',month:'short',year:'numeric'})+'. Pay daily to avoid default.');
-  toast('Doc fee confirmed. Loan disbursed to wallet!');loadAdmin();
-}
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
-// ── Daily Repayment Recording ──
-async function markRepayment(loanId,userId,dailyAmt){
-  if(!confirm('Record daily payment of NGN '+fmt(dailyAmt)+'?'))return;
-  const snap=await db.collection('loans').doc(loanId).get();
-  const ln=snap.data();
-  const newPaid=(ln.paidSoFar||0)+dailyAmt;
-  const newDays=(ln.daysRepaid||0)+1;
-  const newStatus=newPaid>=(ln.totalRepayment||0)?'repaid':'active';
-  await db.collection('loans').doc(loanId).update({paidSoFar:newPaid,daysRepaid:newDays,status:newStatus,lastPaymentAt:firebase.firestore.FieldValue.serverTimestamp()});
-  await db.collection('transactions').add({userId,type:'loan_repayment',amount:dailyAmt,description:'Loan Repayment Day '+newDays,status:'success',createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-  await addFinanceNotif(userId,newStatus==='repaid'?'Loan Fully Repaid! 🎉':'Repayment Recorded',newStatus==='repaid'?'Congratulations! Your loan is fully repaid. NGN '+fmt(ln.totalRepayment||0)+' paid in full.':'Day '+newDays+' repayment of NGN '+fmt(dailyAmt)+' recorded. Total paid: NGN '+fmt(newPaid)+' of NGN '+fmt(ln.totalRepayment||0)+'.');
-  toast(newStatus==='repaid'?'Loan fully repaid!':'Day '+newDays+' payment recorded.');loadAdmin();
-}
-
-// ── Mark Defaulted ──
-async function markDefaulted(loanId,userId){
-  if(!confirm('Mark this loan as DEFAULTED? Guarantors will be notified.'))return;
-  const snap=await db.collection('loans').doc(loanId).get();
-  const ln=snap.data();
-  await db.collection('loans').doc(loanId).update({status:'defaulted',defaultedAt:firebase.firestore.FieldValue.serverTimestamp()});
-  await addFinanceNotif(userId,'⚠ Loan Default Notice','Your loan of NGN '+fmt(ln.approvedAmount||ln.amount)+' has been marked as DEFAULTED due to non-payment. Recovery proceedings have been initiated. Contact us immediately on 08068886569 to resolve.');
-  // Notify guarantors (stored in data)
-  toast('Loan marked as defaulted. User notified.');loadAdmin();
-}
-
-// ── Mark Loan Fully Repaid ──
-async function markLoanRepaid(loanId,userId,amount){
-  if(!confirm('Mark this loan as fully repaid?'))return;
-  await db.collection('loans').doc(loanId).update({status:'repaid',paidSoFar:amount,repaidAt:firebase.firestore.FieldValue.serverTimestamp()});
-  await addFinanceNotif(userId,'Loan Fully Repaid ✅','Your loan of NGN '+fmt(amount)+' has been marked as fully repaid. Thank you! You are eligible to apply for a higher loan amount.');
-  toast('Loan marked as repaid.');loadAdmin();
-}
-</script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -1153,7 +1098,7 @@ function svcForm(t){
   if(t==='loan')return`<div class="info-box"><p style="font-size:13px;color:var(--green-d);line-height:1.6">Quick loans reviewed within 24 hours. Amount credited to wallet on approval.</p></div><div style="margin-bottom:13px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px;display:block">Loan Amount</label><select class="inp" id="s-amt"><option value="5000">NGN 5,000</option><option value="10000">NGN 10,000</option><option value="20000">NGN 20,000</option><option value="50000">NGN 50,000</option><option value="100000">NGN 100,000</option><option value="200000">NGN 200,000</option><option value="500000">NGN 500,000</option></select></div><div style="margin-bottom:13px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px;display:block">Purpose</label><input class="inp" id="s-phone" placeholder="Brief purpose of loan"/></div><div style="margin-bottom:20px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px;display:block">Repayment Period</label><select class="inp" id="s-meter"><option>7 days</option><option>14 days</option><option>30 days</option></select></div><button onclick="procLoan()" class="btn-g" style="width:100%;padding:13px;border-radius:11px;font-size:15px">Apply for Loan</button>`;
   if(t==='result')return`<div class="info-box"><p style="font-size:13px;color:var(--green-d);line-height:1.6">Check WAEC, NECO, JAMB, NABTEB results. Scratch card PIN delivered instantly.</p></div><div style="margin-bottom:13px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px;display:block">Exam Type</label><select class="inp" id="s-phone"><option>WAEC - West African Examinations Council</option><option>NECO - National Examinations Council</option><option>JAMB - Joint Admissions Board</option><option>NABTEB - National Business and Technical Board</option></select></div><div style="margin-bottom:13px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px;display:block">Year</label><select class="inp" id="s-meter"><option>2025</option><option>2024</option><option>2023</option><option>2022</option></select></div><div style="margin-bottom:20px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px;display:block">Result Checker</label><select class="inp" id="s-amt"><option value="800">WAEC Scratch Card - NGN 800</option><option value="700">NECO Scratch Card - NGN 700</option><option value="500">JAMB Profile Code - NGN 500</option><option value="750">NABTEB Scratch Card - NGN 750</option></select></div><button onclick="procSvc('result')" class="btn-g" style="width:100%;padding:13px;border-radius:11px;font-size:15px">Buy Result Checker</button>`;
 }
-function selNet(btn){btn.closest('div').querySelectorAll('button').forEach(b=>{b.style.borderColor='var(--g200)';b.style.background='#fff';});btn.style.borderColor='var(--green)';btn.style.background='var(--green-xl)';}
+// dup_selNet(btn){btn.closest('div').querySelectorAll('button').forEach(b=>{b.style.borderColor='var(--g200)';b.style.background='#fff';});btn.style.borderColor='var(--green)';btn.style.background='var(--green-xl)';}
 
 async function procLoan(){
   const amt=parseFloat(document.getElementById('s-amt')?.value||'0');
