@@ -1339,7 +1339,9 @@ async function getVTP(){
       if(d.mode)VTP.mode=d.mode;
       // If admin saved a custom base URL, parse it
       if(d.baseUrl){
-        const clean=d.baseUrl.replace(/\/+$/,'');
+        // Strip trailing slashes, then ensure /api is present
+        let clean=d.baseUrl.replace(/\/+$/,'');
+        if(!clean.endsWith('/api'))clean=clean+'/api';
         if(clean.includes('api-service'))VTP.liveBase=clean;
         else VTP.sandboxBase=clean;
       }
@@ -1985,7 +1987,7 @@ function aTab(tab){
       <div style="margin-bottom:10px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Mode</label><select class="inp" id="vt-mode2"><option value="sandbox">Sandbox (Testing)</option><option value="live">Live (Production)</option></select></div>
       <div style="margin-bottom:10px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">API Public Key</label><input class="inp" id="vt-pub2" placeholder="VTPass public key"/></div>
       <div style="margin-bottom:10px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">API Secret Key</label><input class="inp" type="password" id="vt-sec2" placeholder="VTPass secret key"/></div>
-      <div style="margin-bottom:14px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Base URL</label><input class="inp" id="vt-url2" value="https://sandbox.vtpass.com" placeholder="API base URL"/></div>
+      <div style="margin-bottom:14px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Base URL</label><input class="inp" id="vt-url2" value="https://sandbox.vtpass.com/api" placeholder="API base URL (include /api)"/></div>
       <div style="display:flex;gap:8px">
         <button onclick="testVtpass2()" style="flex:1;padding:11px;border-radius:10px;background:#dbeafe;border:1px solid #93c5fd;color:#1d4ed8;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">🔗 Test</button>
         <button onclick="saveVtpass2()" class="btn-g" style="flex:1;padding:11px;border-radius:10px;font-size:13px">💾 Save</button>
@@ -2674,7 +2676,8 @@ async function saveVtpass(){
   const mode=document.getElementById('vt-mode')?.value;
   const pub=document.getElementById('vt-pub')?.value.trim();
   const sec=document.getElementById('vt-sec')?.value.trim();
-  const url=document.getElementById('vt-url')?.value.trim();
+  const _rawUrl=document.getElementById('vt-url')?.value.trim();
+  const url=_rawUrl?(function(u){u=u.replace(/\/+$/,'');return u.endsWith('/api')?u:u+'/api';}(_rawUrl)):'';
   if(!pub||!sec||!url){toast('All fields required');return;}
   await db.collection('settings').doc('vtpass').set({mode,publicKey:pub,secretKey:sec,baseUrl:url,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:CU?.email});
   toast('VTPass config saved!');closeM('m-vtpass');
@@ -2683,7 +2686,8 @@ async function saveVtpass2(){
   const mode=document.getElementById('vt-mode2')?.value;
   const pub=document.getElementById('vt-pub2')?.value.trim();
   const sec=document.getElementById('vt-sec2')?.value.trim();
-  const url=document.getElementById('vt-url2')?.value.trim();
+  const _rawUrl2=document.getElementById('vt-url2')?.value.trim();
+  const url=_rawUrl2?(function(u){u=u.replace(/\/+$/,'');return u.endsWith('/api')?u:u+'/api';}(_rawUrl2)):'';
   if(!pub||!sec||!url){toast('All fields required');return;}
   await db.collection('settings').doc('vtpass').set({mode,publicKey:pub,secretKey:sec,baseUrl:url,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:CU?.email});
   toast('VTPass config saved!');
@@ -2748,7 +2752,7 @@ async function getVtpassConfig(){
     const s=await db.collection('settings').doc('vtpass').get();
     if(s.exists)return s.data();
   }catch(e){}
-  return {mode:'sandbox',baseUrl:'https://sandbox.vtpass.com',publicKey:'',secretKey:''};
+  return {mode:'sandbox',baseUrl:'https://sandbox.vtpass.com/api',publicKey:'',secretKey:''};
 }
 
 // ── Real-time transaction sync ──
@@ -4113,7 +4117,7 @@ async function loadRewardsHistoryAdmin(el){
   <div style="margin-bottom:10px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Mode</label><select class="inp" id="vt-mode"><option value="sandbox">Sandbox (Testing)</option><option value="live">Live (Production)</option></select></div>
   <div style="margin-bottom:10px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">API Public Key</label><input class="inp" id="vt-pub" placeholder="Enter public key"/></div>
   <div style="margin-bottom:10px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">API Secret Key</label><input class="inp" type="password" id="vt-sec" placeholder="Enter secret key"/></div>
-  <div style="margin-bottom:14px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Base URL</label><input class="inp" id="vt-url" placeholder="https://sandbox.vtpass.com or https://vtpass.com"/></div>
+  <div style="margin-bottom:14px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Base URL</label><input class="inp" id="vt-url" placeholder="https://sandbox.vtpass.com/api or https://api-service.vtpass.com/api"/></div>
   <div style="display:flex;gap:8px;margin-bottom:10px">
     <button onclick="testVtpass()" style="flex:1;padding:11px;border-radius:10px;background:#dbeafe;border:1px solid #93c5fd;color:#1d4ed8;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">🔗 Test Connection</button>
     <button onclick="saveVtpass()" class="btn-g" style="flex:1;padding:11px;border-radius:10px;font-size:13px">💾 Save Config</button>
