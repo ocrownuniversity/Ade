@@ -1593,8 +1593,16 @@ function extractNBSPlans(res, networkId){
       const providers = wrapper[netKey]; // array of provider objects
       console.log('[NBS] Provider array length:', providers.length);
       // Each provider has PRODUCT array
+      // CRITICAL: read the ID field — this is the MobileNetwork value for purchases
       const allPlans = [];
       providers.forEach(prov => {
+        // Store provider ID so purchases use the right code
+        const provId = prov.ID || prov.id || prov.NetworkID || prov.network_id;
+        if(provId){
+          nbsNetworkIds[networkId] = String(provId);
+          nbsNetworkIds[netKey]    = String(provId);
+          console.log('[NBS] Stored purchase ID for', networkId, '→', provId);
+        }
         const products = prov.PRODUCT || prov.products || prov.Plans || [];
         console.log('[NBS] Provider:', JSON.stringify(prov).slice(0,80), '| products:', products.length);
         products.forEach(prod => {
@@ -1827,19 +1835,59 @@ function updateDataAmt(sel){
 }
 
 // ── Network map ──
+// purchaseId = the MobileNetwork value NBS accepts for purchases
+// Plans response reveals actual IDs via {"MOBILE_NETWORK":{"MTN":[{"ID":"01",...}]}}
+// These IDs are stored in nbsNetworkIds at runtime when plans load
+const nbsNetworkIds = {}; // populated by extractNBSPlans: networkName → purchaseId
+
 const NET_MAP = {
   'MTN'    :{ airtime:'MTN',      data:'MTN'      },
-  'Airtel' :{ airtime:'AIRTEL',   data:'AIRTEL'   },
-  'Glo'    :{ airtime:'GLO',      data:'GLO'      },
-  '9mobile':{ airtime:'ETISALAT', data:'ETISALAT' }
+  'Airtel' :{ airtime:'Airtel',   data:'Airtel'   },
+  'Glo'    :{ airtime:'Glo',      data:'Glo'      },
+  '9mobile':{ airtime:'Etisalat', data:'Etisalat' }
 };
+
+// Known Nellobytesystems network IDs for purchases
+// Discovered from plans response: {"MOBILE_NETWORK":{"MTN":[{"ID":"01",...}]}}
+// These are used when plans haven't been fetched yet (e.g. airtime purchases)
+const NBS_NET_IDS = {
+  'MTN'    :'01', 'mtn'    :'01',
+  'GLO'    :'02', 'glo'    :'02', 'Glo':'02',
+  'AIRTEL' :'03', 'airtel' :'03', 'Airtel':'03',
+  'ETISALAT':'04','etisalat':'04', 'Etisalat':'04', '9mobile':'04', '9MOBILE':'04'
+};
+
+// Resolve actual purchase network ID:
+// 1. Use ID discovered from plans response (most accurate)
+// 2. Fall back to hardcoded known IDs
+// 3. Fall back to the name itself
+function resolveNetworkId(name){
+  const fromPlans = nbsNetworkIds[name] || nbsNetworkIds[name.toUpperCase()];
+  const hardcoded = NBS_NET_IDS[name];
+  const result    = fromPlans || hardcoded || name;
+  console.log('[resolveNetworkId]', name, '→', result, fromPlans?'(from plans)':hardcoded?'(hardcoded)':'(fallback)');
+  return result;
+}
 
 function selNet(btn){
   btn.closest('div').querySelectorAll('button').forEach(b=>{ b.style.borderColor='var(--g200)'; b.style.background='#fff'; });
   btn.style.borderColor='var(--green)'; btn.style.background='var(--green-xl)';
-  const amtEl = document.getElementById('s-amt');
-  const entry = NET_MAP[btn.textContent.trim()];
-  if(entry && amtEl && amtEl.tagName==='SELECT') fetchPlansForNetwork(entry.data);
+  const netName = btn.textContent.trim();
+  const entry   = NET_MAP[netName];
+  const amtEl   = document.getElementById('s-amt');
+  if(entry){
+    if(amtEl && amtEl.tagName==='SELECT'){
+      // Data panel — fetch plans (also populates nbsNetworkIds)
+      fetchPlansForNetwork(entry.data);
+    } else {
+      // Airtime panel — silently pre-fetch to discover network ID
+      if(!nbsNetworkIds[entry.data]){
+        apiFetch('dataPlans',{MobileNetwork:entry.data},{type:'prefetch'})
+          .then(res=>{ if(res) extractNBSPlans(res, entry.data); })
+          .catch(()=>{});
+      }
+    }
+  }
 }
 function selCable(btn){
   btn.closest('div').querySelectorAll('button').forEach(b=>{ b.style.borderColor='var(--g200)'; b.style.background='#fff'; });
@@ -1851,19 +1899,21 @@ function selCable(btn){
 
 // ── API purchase functions (wallet debited ONLY after success) ──
 async function apiAirtime(phone, network, amount, reqId){
-  // Nellobytesystems param: MobileNetwork (not NetworkID)
+  const netId = resolveNetworkId(network);
+  console.log('[API] Airtime MobileNetwork resolved:', network, '→', netId);
   return apiFetch('airtime',{
     MobileNumber:phone,
-    MobileNetwork:network,
+    MobileNetwork:netId,
     Amount:amount,
     RequestID:reqId
   },{ type:'airtime', amount, userId:CU?.uid||'' });
 }
 async function apiData(phone, network, planCode, amount, reqId){
-  // Nellobytesystems data params
+  const netId = resolveNetworkId(network);
+  console.log('[API] Data MobileNetwork resolved:', network, '→', netId, 'plan:', planCode);
   return apiFetch('data',{
     MobileNumber:phone,
-    MobileNetwork:network,
+    MobileNetwork:netId,
     DataPlan:planCode,
     Amount:amount,
     RequestID:reqId
