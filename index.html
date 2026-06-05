@@ -1536,7 +1536,7 @@ async function apiFetch(endpointKey, params={}, txMeta={}){
 
   await logRef.update({
     httpStatus,
-    rawResponse : raw.slice(0,2000),
+    rawResponse : raw.slice(0,1500),
     parsed      : parsed ? JSON.stringify(parsed).slice(0,2000) : '',
     status      : 'completed',
     respondedAt : firebase.firestore.FieldValue.serverTimestamp()
@@ -1548,13 +1548,14 @@ async function apiFetch(endpointKey, params={}, txMeta={}){
 // ── Success detection for Nellobytesystems responses ──
 function isApiSuccess(res){
   if(!res) return false;
-  // Check every possible field Nellobytesystems might use
   const st  = String(res.status||res.Status||res.StatusCode||res.code||res.Code||'').toLowerCase();
   const msg = String(res.message||res.Message||res.description||res.Description||res.response_description||'').toLowerCase();
-  const ok = st.includes('success') || st==='00' || st==='0' || st==='1'
-    || msg.includes('successful') || msg.includes('success');
-  // Log exact values so admin can see in console what came back
-  console.log('[isApiSuccess] st='+JSON.stringify(st)+' msg='+JSON.stringify(msg)+' → '+ok);
+  // Explicit failure keywords from Nellobytesystems
+  const failKeywords = ['missing','invalid','error','fail','network','unauthorized','unknown','insufficient'];
+  const isFail = failKeywords.some(k => st.includes(k) || msg.includes(k));
+  const ok = !isFail && (st.includes('success') || st==='00' || st==='0' || st==='1'
+    || msg.includes('successful') || msg.includes('success'));
+  console.log('[isApiSuccess] st='+JSON.stringify(st)+' msg='+JSON.stringify(msg)+' isFail='+isFail+' → '+ok);
   return ok;
 }
 
@@ -1570,6 +1571,73 @@ let currentPlanMeta  = {};
 
 async function fetchDataPlans(){}
 
+// ── Nellobytesystems plan extractor ──
+// Data response:  {"MOBILE_NETWORK":{"MTN":[{"ID":"01","PRODUCT":[{PRODUCT_SNO,PRODUCT_CODE,PRODUCT_NAME,PRODUCT_AMOUNT}]}]}}
+// Cable response: {"CABLE_TV":{"DSTV":[{"ID":"01","PRODUCT":[{PRODUCT_SNO,PRODUCT_CODE,PRODUCT_NAME,PRODUCT_AMOUNT}]}]}}
+function extractNBSPlans(res, networkId){
+  if(!res || typeof res !== 'object') return [];
+  console.log('[NBS] extractNBSPlans for:', networkId, '| keys:', Object.keys(res));
+
+  // ── Format 1: MOBILE_NETWORK or CABLE_TV wrapper ──
+  const wrapperKey = Object.keys(res).find(k => /MOBILE_NETWORK|CABLE_TV|NETWORK/i.test(k));
+  if(wrapperKey){
+    const wrapper = res[wrapperKey];
+    console.log('[NBS] Found wrapper:', wrapperKey, '| inner keys:', Object.keys(wrapper||{}));
+    // Find the network key inside (MTN, AIRTEL, GLO, ETISALAT, DSTV, etc.)
+    const netKey = Object.keys(wrapper).find(k =>
+      k.toUpperCase() === networkId.toUpperCase() ||
+      networkId.toUpperCase().includes(k.toUpperCase()) ||
+      k.toUpperCase().includes(networkId.toUpperCase())
+    ) || Object.keys(wrapper)[0];
+    if(netKey && Array.isArray(wrapper[netKey])){
+      const providers = wrapper[netKey]; // array of provider objects
+      console.log('[NBS] Provider array length:', providers.length);
+      // Each provider has PRODUCT array
+      const allPlans = [];
+      providers.forEach(prov => {
+        const products = prov.PRODUCT || prov.products || prov.Plans || [];
+        console.log('[NBS] Provider:', JSON.stringify(prov).slice(0,80), '| products:', products.length);
+        products.forEach(prod => {
+          allPlans.push({
+            variation_code   : String(prod.PRODUCT_CODE || prod.product_code || prod.code || prod.PRODUCT_SNO || ''),
+            variation_name   : String(prod.PRODUCT_NAME || prod.product_name || prod.name || prod.PLAN || ''),
+            variation_amount : String(prod.PRODUCT_AMOUNT || prod.product_amount || prod.price || prod.AMOUNT || 0),
+            description      : String(prod.PRODUCT_NAME || prod.product_name || prod.name || '')
+          });
+        });
+      });
+      if(allPlans.length) return allPlans;
+    }
+  }
+
+  // ── Format 2: direct array ──
+  if(Array.isArray(res)){
+    return res.map(p => ({
+      variation_code   : String(p.PRODUCT_CODE||p.DataPlanID||p.PlanID||p.id||p.code||''),
+      variation_name   : String(p.PRODUCT_NAME||p.DataPlan||p.Plan||p.name||''),
+      variation_amount : String(p.PRODUCT_AMOUNT||p.Price||p.price||p.Amount||0),
+      description      : String(p.PRODUCT_NAME||p.DataPlan||p.Plan||p.name||'')
+    }));
+  }
+
+  // ── Format 3: any key containing an array ──
+  for(const key of Object.keys(res)){
+    if(Array.isArray(res[key]) && res[key].length > 0){
+      const first = res[key][0];
+      if(typeof first === 'object' && first !== null){
+        console.log('[NBS] Fallback array under key:', key, '| sample:', JSON.stringify(first).slice(0,100));
+        return res[key].map(p => ({
+          variation_code   : String(p.PRODUCT_CODE||p.DataPlanID||p.PlanID||p.code||p.id||''),
+          variation_name   : String(p.PRODUCT_NAME||p.DataPlan||p.Plan||p.name||''),
+          variation_amount : String(p.PRODUCT_AMOUNT||p.Price||p.price||p.Amount||0),
+          description      : String(p.PRODUCT_NAME||p.DataPlan||p.Plan||p.name||'')
+        }));
+      }
+    }
+  }
+  return [];
+}
+
 async function fetchPlansForNetwork(networkId){
   if(!networkId) return;
   currentNetworkId = networkId;
@@ -1584,7 +1652,7 @@ async function fetchPlansForNetwork(networkId){
   console.log('[PLANS] Fetching plans for network:', networkId);
 
   try{
-    const res = await apiFetch('dataPlans', { NetworkID: networkId });
+    const res = await apiFetch('dataPlans', { MobileNetwork: networkId });
     if(loadEl) loadEl.style.display='none';
 
     // ── Full raw response log ──
@@ -1632,29 +1700,16 @@ async function fetchPlansForNetwork(networkId){
       console.log('[PLANS] First plan sample:', JSON.stringify(plans[0]));
     }
 
-    if(plans && plans.length > 0){
-      // ── Smart field mapper: detect field names from first item ──
-      const sample = plans[0];
-      const skeys  = Object.keys(sample);
-      console.log('[PLANS] Plan field names:', skeys);
-
-      // Auto-detect ID, name, price fields
-      const idField    = skeys.find(k=>/id/i.test(k)&&/plan|data|bundle/i.test(k)) || skeys.find(k=>/planid|dataid|bundleid|id$/i.test(k)) || skeys[0];
-      const nameField  = skeys.find(k=>/plan|data|bundle|name|desc/i.test(k)&&!/id|price|amt|cost/i.test(k)) || skeys.find(k=>/name/i.test(k)) || skeys[1];
-      const priceField = skeys.find(k=>/price|amt|cost|amount/i.test(k)) || skeys.find(k=>/price/i.test(k)) || skeys[2];
-      console.log('[PLANS] Auto-detected fields — id:'+idField+' name:'+nameField+' price:'+priceField);
-
-      const norm = plans.map(p=>({
-        variation_code   : String(p[idField]||p.DataPlanID||p.PlanID||p.planid||p.id||''),
-        variation_name   : String(p[nameField]||p.DataPlan||p.Plan||p.name||p.planname||''),
-        variation_amount : String(p[priceField]||p.Price||p.price||p.Amount||p.amount||0),
-        description      : String(p[nameField]||p.DataPlan||p.Plan||p.name||'')
-      }));
+    // ── Nellobytesystems specific extractor ──
+    // Response: {"MOBILE_NETWORK":{"MTN":[{"ID":"01","PRODUCT":[{PRODUCT_SNO,PRODUCT_CODE,PRODUCT_NAME,PRODUCT_AMOUNT}]}]}}
+    const norm = extractNBSPlans(res, networkId);
+    console.log('[PLANS] Normalized plans count:', norm.length);
+    if(norm.length > 0){
+      console.log('[PLANS] Sample plan:', JSON.stringify(norm[0]));
       planCache[networkId] = norm;
       renderPlans(norm, sel, infoEl);
     } else {
-      // Show full raw response so admin can diagnose
-      const rawStr = JSON.stringify(res).slice(0, 300);
+      const rawStr = JSON.stringify(res).slice(0, 400);
       sel.innerHTML = '<option value="">No plans returned</option>';
       if(infoEl){
         infoEl.style.display='block';
@@ -1683,7 +1738,7 @@ async function fetchCablePlans(provider){
   sel.innerHTML = '<option value="">Loading packages...</option>';
   console.log('[PLANS] Fetching cable plans for:', provider);
   try{
-    const res = await apiFetch('cablePlans', { NetworkID: provider });
+    const res = await apiFetch('cablePlans', { CableNetwork: provider });
     if(loadEl) loadEl.style.display='none';
     console.log('[PLANS] Cable raw response:', JSON.stringify(res));
     const plans = extractPlansArray(res);
@@ -1796,27 +1851,43 @@ function selCable(btn){
 
 // ── API purchase functions (wallet debited ONLY after success) ──
 async function apiAirtime(phone, network, amount, reqId){
+  // Nellobytesystems param: MobileNetwork (not NetworkID)
   return apiFetch('airtime',{
-    MobileNumber:phone, NetworkID:network,
-    Amount:amount, RequestID:reqId
+    MobileNumber:phone,
+    MobileNetwork:network,
+    Amount:amount,
+    RequestID:reqId
   },{ type:'airtime', amount, userId:CU?.uid||'' });
 }
 async function apiData(phone, network, planCode, amount, reqId){
+  // Nellobytesystems data params
   return apiFetch('data',{
-    MobileNumber:phone, NetworkID:network,
-    DataPlan:planCode, Amount:amount, RequestID:reqId
+    MobileNumber:phone,
+    MobileNetwork:network,
+    DataPlan:planCode,
+    Amount:amount,
+    RequestID:reqId
   },{ type:'data', amount, userId:CU?.uid||'' });
 }
 async function apiCable(smartcard, provider, planCode, amount, reqId){
+  // Nellobytesystems cable params
   return apiFetch('cable',{
-    SmartCardNo:smartcard, NetworkID:provider,
-    DataPlan:planCode, Amount:amount, RequestID:reqId
+    SmartCardNo:smartcard,
+    CableNetwork:provider,
+    DataPlan:planCode,
+    Amount:amount,
+    RequestID:reqId
   },{ type:'cable', amount, userId:CU?.uid||'' });
 }
 async function apiElectricity(meter, disco, meterType, amount, phone, reqId){
+  // Nellobytesystems electricity params
   return apiFetch('electricity',{
-    MeterNo:meter, NetworkID:disco, MeterType:meterType,
-    Amount:amount, MobileNumber:phone, RequestID:reqId
+    MeterNo:meter,
+    DiscoNetwork:disco,
+    MeterType:meterType,
+    Amount:amount,
+    MobileNumber:phone,
+    RequestID:reqId
   },{ type:'electricity', amount, userId:CU?.uid||'' });
 }
 
@@ -2947,7 +3018,7 @@ async function renderApiLogs(el){
         </div>
         <div style="font-size:11px;color:var(--g500);margin-bottom:4px">Ref: ${lg.requestId||'—'} &bull; HTTP: ${lg.httpStatus||'—'} &bull; User: ${lg.userId?.slice(0,8)||'—'}</div>
         <details><summary style="font-size:11px;cursor:pointer;color:var(--blue)">View response</summary>
-          <pre style="background:#f8fafc;border-radius:6px;padding:8px;font-size:10px;overflow-x:auto;margin-top:4px;max-height:100px">${(lg.rawResponse||'').slice(0,400)}</pre>
+          <pre style="background:#f8fafc;border-radius:6px;padding:8px;font-size:10px;overflow-x:auto;margin-top:4px;max-height:120px;white-space:pre-wrap;word-break:break-all">${String(lg.rawResponse||lg.parsed||'(no response)').slice(0,500)}</pre>
         </details>
       </div>`;
     }).join('')}`;
