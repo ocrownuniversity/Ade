@@ -1580,27 +1580,95 @@ async function fetchPlansForNetwork(networkId){
   if(planCache[networkId]){ renderPlans(planCache[networkId], sel, infoEl); return; }
   if(loadEl){ loadEl.style.display='block'; loadEl.textContent='⏳ Loading plans...'; }
   sel.innerHTML = '<option value="">Loading plans...</option>';
+
+  console.log('[PLANS] Fetching plans for network:', networkId);
+
   try{
     const res = await apiFetch('dataPlans', { NetworkID: networkId });
     if(loadEl) loadEl.style.display='none';
-    const plans = Array.isArray(res) ? res : (Array.isArray(res?.plans) ? res.plans : []);
-    if(plans.length){
+
+    // ── Full raw response log ──
+    console.log('[PLANS] Raw response type:', typeof res);
+    console.log('[PLANS] Raw response:', JSON.stringify(res));
+    if(res && typeof res === 'object') console.log('[PLANS] Response keys:', Object.keys(res));
+
+    // ── Smart multi-format extractor ──
+    // Nellobytesystems may wrap plans in different keys — probe every possibility
+    let plans = null;
+    if(Array.isArray(res)){
+      plans = res;
+      console.log('[PLANS] Format: top-level array, length:', plans.length);
+    } else if(res && typeof res === 'object'){
+      // Try every known wrapper key
+      const keys = Object.keys(res);
+      console.log('[PLANS] Probing object keys:', keys);
+      for(const key of keys){
+        if(Array.isArray(res[key]) && res[key].length > 0){
+          plans = res[key];
+          console.log('[PLANS] Found array under key "'+key+'", length:', plans.length);
+          break;
+        }
+      }
+      // Still nothing — check for nested object one level deeper
+      if(!plans){
+        for(const key of keys){
+          if(res[key] && typeof res[key]==='object' && !Array.isArray(res[key])){
+            const subKeys = Object.keys(res[key]);
+            for(const sk of subKeys){
+              if(Array.isArray(res[key][sk]) && res[key][sk].length > 0){
+                plans = res[key][sk];
+                console.log('[PLANS] Found array under key "'+key+'.'+sk+'", length:', plans.length);
+                break;
+              }
+            }
+          }
+          if(plans) break;
+        }
+      }
+    }
+
+    console.log('[PLANS] Extracted plans count:', plans ? plans.length : 0);
+    if(plans && plans.length > 0){
+      console.log('[PLANS] First plan sample:', JSON.stringify(plans[0]));
+    }
+
+    if(plans && plans.length > 0){
+      // ── Smart field mapper: detect field names from first item ──
+      const sample = plans[0];
+      const skeys  = Object.keys(sample);
+      console.log('[PLANS] Plan field names:', skeys);
+
+      // Auto-detect ID, name, price fields
+      const idField    = skeys.find(k=>/id/i.test(k)&&/plan|data|bundle/i.test(k)) || skeys.find(k=>/planid|dataid|bundleid|id$/i.test(k)) || skeys[0];
+      const nameField  = skeys.find(k=>/plan|data|bundle|name|desc/i.test(k)&&!/id|price|amt|cost/i.test(k)) || skeys.find(k=>/name/i.test(k)) || skeys[1];
+      const priceField = skeys.find(k=>/price|amt|cost|amount/i.test(k)) || skeys.find(k=>/price/i.test(k)) || skeys[2];
+      console.log('[PLANS] Auto-detected fields — id:'+idField+' name:'+nameField+' price:'+priceField);
+
       const norm = plans.map(p=>({
-        variation_code   : String(p.DataPlanID||p.PlanID||p.id||''),
-        variation_name   : p.DataPlan||p.Plan||p.name||'',
-        variation_amount : String(p.Price||p.price||p.Amount||0),
-        description      : p.DataPlan||p.Plan||''
+        variation_code   : String(p[idField]||p.DataPlanID||p.PlanID||p.planid||p.id||''),
+        variation_name   : String(p[nameField]||p.DataPlan||p.Plan||p.name||p.planname||''),
+        variation_amount : String(p[priceField]||p.Price||p.price||p.Amount||p.amount||0),
+        description      : String(p[nameField]||p.DataPlan||p.Plan||p.name||'')
       }));
       planCache[networkId] = norm;
       renderPlans(norm, sel, infoEl);
     } else {
-      sel.innerHTML = '<option value="">No plans available</option>';
-      if(infoEl){ infoEl.style.display='block'; infoEl.textContent='⚠ No plans returned for '+networkId; }
+      // Show full raw response so admin can diagnose
+      const rawStr = JSON.stringify(res).slice(0, 300);
+      sel.innerHTML = '<option value="">No plans returned</option>';
+      if(infoEl){
+        infoEl.style.display='block';
+        infoEl.style.color='#dc2626';
+        infoEl.innerHTML='<strong>⚠ No plans from provider for: '+networkId+'</strong><br/>'
+          +'<span style="font-size:11px;font-family:monospace;word-break:break-all">Raw: '+rawStr+'</span>';
+      }
+      console.warn('[PLANS] No plans extracted. Full response:', JSON.stringify(res));
     }
   }catch(e){
     if(loadEl) loadEl.style.display='none';
-    sel.innerHTML = '<option value="">⚠ '+e.message+'</option>';
-    console.error('[API] fetchPlansForNetwork error:', e.message);
+    sel.innerHTML = '<option value="">⚠ '+e.message.slice(0,60)+'</option>';
+    if(infoEl){ infoEl.style.display='block'; infoEl.style.color='#dc2626'; infoEl.textContent='❌ '+e.message; }
+    console.error('[PLANS] fetchPlansForNetwork error:', e.message, e);
   }
 }
 
@@ -1613,27 +1681,63 @@ async function fetchCablePlans(provider){
   if(planCache[cacheKey]){ renderPlans(planCache[cacheKey], sel, infoEl); return; }
   if(loadEl){ loadEl.style.display='block'; loadEl.textContent='⏳ Loading packages...'; }
   sel.innerHTML = '<option value="">Loading packages...</option>';
+  console.log('[PLANS] Fetching cable plans for:', provider);
   try{
     const res = await apiFetch('cablePlans', { NetworkID: provider });
     if(loadEl) loadEl.style.display='none';
-    const plans = Array.isArray(res) ? res : (Array.isArray(res?.plans) ? res.plans : []);
+    console.log('[PLANS] Cable raw response:', JSON.stringify(res));
+    const plans = extractPlansArray(res);
+    console.log('[PLANS] Cable plans count:', plans.length);
     if(plans.length){
-      const norm = plans.map(p=>({
-        variation_code   : String(p.DataPlanID||p.PlanID||p.id||''),
-        variation_name   : p.DataPlan||p.Plan||p.name||'',
-        variation_amount : String(p.Price||p.price||p.Amount||0),
-        description      : p.DataPlan||p.Plan||''
-      }));
+      const norm = normalizePlans(plans);
       planCache[cacheKey] = norm;
       renderPlans(norm, sel, infoEl);
     } else {
+      const rawStr = JSON.stringify(res).slice(0,300);
       sel.innerHTML = '<option value="">No packages available</option>';
+      if(infoEl){ infoEl.style.display='block'; infoEl.style.color='#dc2626';
+        infoEl.innerHTML='<strong>⚠ No packages from provider for: '+provider+'</strong><br/>'
+          +'<span style="font-size:11px;font-family:monospace;word-break:break-all">Raw: '+rawStr+'</span>'; }
     }
   }catch(e){
     if(loadEl) loadEl.style.display='none';
-    sel.innerHTML = '<option value="">⚠ '+e.message+'</option>';
-    console.error('[API] fetchCablePlans error:', e.message);
+    sel.innerHTML = '<option value="">⚠ '+e.message.slice(0,60)+'</option>';
+    if(infoEl){ infoEl.style.display='block'; infoEl.style.color='#dc2626'; infoEl.textContent='❌ '+e.message; }
+    console.error('[PLANS] fetchCablePlans error:', e.message);
   }
+}
+
+// ── Shared helpers ──
+function extractPlansArray(res){
+  if(!res) return [];
+  if(Array.isArray(res)) return res;
+  if(typeof res !== 'object') return [];
+  for(const key of Object.keys(res)){
+    if(Array.isArray(res[key]) && res[key].length > 0) return res[key];
+  }
+  // one level deeper
+  for(const key of Object.keys(res)){
+    if(res[key] && typeof res[key]==='object' && !Array.isArray(res[key])){
+      for(const sk of Object.keys(res[key])){
+        if(Array.isArray(res[key][sk]) && res[key][sk].length > 0) return res[key][sk];
+      }
+    }
+  }
+  return [];
+}
+function normalizePlans(plans){
+  if(!plans.length) return [];
+  const s = plans[0];
+  const sk = Object.keys(s);
+  const idF    = sk.find(k=>/planid|dataid|bundleid|id$/i.test(k)) || sk[0];
+  const nameF  = sk.find(k=>/plan|data|bundle|name/i.test(k)&&!/id|price|amt/i.test(k)) || sk[1];
+  const priceF = sk.find(k=>/price|amt|cost|amount/i.test(k)) || sk[2];
+  return plans.map(p=>({
+    variation_code   : String(p[idF]||p.DataPlanID||p.PlanID||p.id||''),
+    variation_name   : String(p[nameF]||p.DataPlan||p.Plan||p.name||''),
+    variation_amount : String(p[priceF]||p.Price||p.price||p.Amount||0),
+    description      : String(p[nameF]||p.DataPlan||p.Plan||p.name||'')
+  }));
 }
 
 function renderPlans(plans, sel, infoEl){
@@ -2687,6 +2791,7 @@ function toggleApiEnabled(el){
   el.classList.toggle('on');
 }
 
+function clearPlanCache(){ for(const k in planCache) delete planCache[k]; console.log('[PLANS] Cache cleared'); }
 async function saveApiConfig(){
   const r = document.getElementById('api-save-result');
   r.style.display='block'; r.style.background='#fef3c7'; r.style.color='#92400e';
@@ -2713,6 +2818,7 @@ async function saveApiConfig(){
     await db.collection('settings').doc('apiconfig').set(data, {merge:true});
     // Reload runtime config
     await loadApiConfig();
+    clearPlanCache();
     r.style.background='#dcfce7'; r.style.color='#15803d';
     r.textContent='✅ Configuration saved! System is ready.';
     toast('API config saved!');
