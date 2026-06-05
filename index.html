@@ -701,7 +701,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--black);over
         <div class="anav fin-tab" onclick="aTab('fin-loans')">🏦 Loan Requests</div>
         <div class="anav fin-tab" onclick="aTab('fin-investments')">📈 Investments</div>
         <div class="anav fin-tab" onclick="aTab('fin-analytics')">📊 Fin Analytics</div>
-        <div class="anav fin-tab" onclick="aTab('vtpass')">⚙️ VTPass Settings</div>
+        <div class="anav fin-tab" onclick="aTab('vtpass')">⚙️ API Settings</div>
         <div style="font-size:10px;font-weight:700;color:rgba(74,222,128,.3);padding:10px 6px 4px;text-transform:uppercase;letter-spacing:.8px">Rewards</div>
         <div class="anav" onclick="aTab('rewards-settings')">🎁 Rewards Settings</div>
         <div class="anav" onclick="aTab('rewards-history')">📊 Rewards History</div>
@@ -732,7 +732,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--black);over
         <button onclick="aTab('fin-loans')" style="padding:7px 13px;border-radius:50px;border:1.5px solid #c4b5fd;background:#faf5ff;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:'Inter',sans-serif;color:#6d28d9">Loans</button>
         <button onclick="aTab('fin-investments')" style="padding:7px 13px;border-radius:50px;border:1.5px solid #c4b5fd;background:#faf5ff;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:'Inter',sans-serif;color:#6d28d9">Investments</button>
         <button onclick="aTab('fin-analytics')" style="padding:7px 13px;border-radius:50px;border:1.5px solid #c4b5fd;background:#faf5ff;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:'Inter',sans-serif;color:#6d28d9">Fin Stats</button>
-        <button onclick="aTab('vtpass')" style="padding:7px 13px;border-radius:50px;border:1.5px solid #c4b5fd;background:#faf5ff;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:'Inter',sans-serif;color:#6d28d9">VTPass</button>
+        <button onclick="aTab('vtpass')" style="padding:7px 13px;border-radius:50px;border:1.5px solid #c4b5fd;background:#faf5ff;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:'Inter',sans-serif;color:#6d28d9">API</button>
         <button onclick="aTab('rewards-settings')" style="padding:7px 13px;border-radius:50px;border:1.5px solid #86efac;background:#f0fdf4;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:'Inter',sans-serif;color:#15803d">🎁 Rewards</button>
       </div>
       <div id="a-content"></div>
@@ -1192,26 +1192,11 @@ function svcForm(t){
   if(t==='airtime')return`${nbtns}<div style="margin-bottom:13px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px;display:block">Phone Number</label><input class="inp" id="s-phone" type="tel" placeholder="080XXXXXXXX"/></div><div style="margin-bottom:20px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px;display:block">Amount</label><input class="inp" id="s-amt" type="number" placeholder="100"/>${qk([100,200,500,1000])}</div><button onclick="procSvc('airtime')" class="btn-g" style="width:100%;padding:13px;border-radius:11px;font-size:15px">Buy Airtime</button>`;
   if(t==='data')return`${nbtns}<div style="margin-bottom:13px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px;display:block">Phone Number</label><input class="inp" id="s-phone" type="tel" placeholder="080XXXXXXXX" oninput="fetchDataPlans()"/></div><div style="margin-bottom:4px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px;display:block">Data Plan</label><select class="inp" id="s-amt" onchange="updateDataAmt(this)"><option value="">-- Select network first --</option></select></div><div id="data-loading" style="display:none;font-size:12px;color:var(--g500);padding:6px 2px;margin-bottom:8px">Fetching plans...</div><div id="data-info" style="display:none;background:var(--green-xl);border:1px solid #bbf7d0;border-radius:9px;padding:10px 12px;margin-bottom:14px;font-size:12px;color:var(--green-d)"></div><button onclick="procSvc('data')" class="btn-g" style="width:100%;padding:13px;border-radius:11px;font-size:15px;margin-top:6px">Buy Data</button>`;
   if(t==='cable')return`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:13px">${['DSTV','GOtv','StarTimes'].map(p=>`<button onclick="selCable(this)" style="padding:9px 2px;border:1.5px solid var(--g200);border-radius:9px;background:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">${p}</button>`).join('')}</div><div style="margin-bottom:13px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px;display:block">Smart Card Number</label><input class="inp" id="s-phone" placeholder="e.g. 1212121212"/></div><div style="margin-bottom:4px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px;display:block">Package</label><select class="inp" id="s-amt" onchange="updateDataAmt(this)"><option value="">— Select provider first —</option></select></div><div id="data-loading" style="display:none;font-size:12px;color:var(--g500);padding:6px 2px;margin-bottom:8px">Loading packages...</div><div id="data-info" style="display:none;background:var(--green-xl);border:1px solid #bbf7d0;border-radius:9px;padding:10px 12px;margin-bottom:14px;font-size:12px;color:var(--green-d)"></div><button onclick="procSvc('cable')" class="btn-g" style="width:100%;padding:13px;border-radius:11px;font-size:15px;margin-top:6px">Pay Subscription</button>`;
-  if(t==='electricity')return`<div style="margin-bottom:13px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px;display:block">Distribution Company</label><select class="inp" id="s-phone"><option>EKEDC - Eko Electric</option><option>IKEDC - Ikeja Electric</option><option>AEDC - Abuja Electric</option><option>IBEDC - Ibadan Electric</option><option>PHEDC - Port Harcourt Electric</option><option>EEDC - Enugu Electric</option><option>KEDC - Kano Electric</option><option>JED - Jos Electric</option></select></div><div style="margin-bottom:13px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px;display:block">Meter Number</label><input class="inp" id="s-meter" placeholder="Meter number"/></div><div style="margin-bottom:20px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px;display:block">Amount</label><input class="inp" id="s-amt" type="number" placeholder="1000"/>${qk([1000,2000,5000,10000])}</div><button onclick="procSvc('electricity')" class="btn-g" style="width:100%;padding:13px;border-radius:11px;font-size:15px">Pay Electricity</button>`;
+  if(t==='electricity')return`<div style="margin-bottom:13px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px;display:block">Distribution Company</label><select class="inp" id="s-phone"><option>EKEDC - Eko Electric</option><option>IKEDC - Ikeja Electric</option><option>AEDC - Abuja Electric</option><option>IBEDC - Ibadan Electric</option><option>PHEDC - Port Harcourt Electric</option><option>EEDC - Enugu Electric</option><option>KEDC - Kano Electric</option><option>JED - Jos Electric</option></select></div><div style="margin-bottom:13px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px;display:block">Meter Type</label><select class="inp" id="s-meter-type"><option value="prepaid">Prepaid</option><option value="postpaid">Postpaid</option></select></div><div style="margin-bottom:13px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px;display:block">Meter Number</label><input class="inp" id="s-meter" placeholder="Meter number"/></div><div style="margin-bottom:20px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px;display:block">Amount</label><input class="inp" id="s-amt" type="number" placeholder="1000"/>${qk([1000,2000,5000,10000])}</div><button onclick="procSvc('electricity')" class="btn-g" style="width:100%;padding:13px;border-radius:11px;font-size:15px">Pay Electricity</button>`;
   if(t==='loan')return`<div class="info-box"><p style="font-size:13px;color:var(--green-d);line-height:1.6">Quick loans reviewed within 24 hours. Amount credited to wallet on approval.</p></div><div style="margin-bottom:13px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px;display:block">Loan Amount</label><select class="inp" id="s-amt"><option value="5000">NGN 5,000</option><option value="10000">NGN 10,000</option><option value="20000">NGN 20,000</option><option value="50000">NGN 50,000</option><option value="100000">NGN 100,000</option><option value="200000">NGN 200,000</option><option value="500000">NGN 500,000</option></select></div><div style="margin-bottom:13px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px;display:block">Purpose</label><input class="inp" id="s-phone" placeholder="Brief purpose of loan"/></div><div style="margin-bottom:20px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px;display:block">Repayment Period</label><select class="inp" id="s-meter"><option>7 days</option><option>14 days</option><option>30 days</option></select></div><button onclick="procLoan()" class="btn-g" style="width:100%;padding:13px;border-radius:11px;font-size:15px">Apply for Loan</button>`;
   if(t==='result')return`<div class="info-box"><p style="font-size:13px;color:var(--green-d);line-height:1.6">Check WAEC, NECO, JAMB, NABTEB results. Scratch card PIN delivered instantly.</p></div><div style="margin-bottom:13px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px;display:block">Exam Type</label><select class="inp" id="s-phone"><option>WAEC - West African Examinations Council</option><option>NECO - National Examinations Council</option><option>JAMB - Joint Admissions Board</option><option>NABTEB - National Business and Technical Board</option></select></div><div style="margin-bottom:13px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px;display:block">Year</label><select class="inp" id="s-meter"><option>2025</option><option>2024</option><option>2023</option><option>2022</option></select></div><div style="margin-bottom:20px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px;display:block">Result Checker</label><select class="inp" id="s-amt"><option value="800">WAEC Scratch Card - NGN 800</option><option value="700">NECO Scratch Card - NGN 700</option><option value="500">JAMB Profile Code - NGN 500</option><option value="750">NABTEB Scratch Card - NGN 750</option></select></div><button onclick="procSvc('result')" class="btn-g" style="width:100%;padding:13px;border-radius:11px;font-size:15px">Buy Result Checker</button>`;
 }
-function selNet(btn){
-  btn.closest('div').querySelectorAll('button').forEach(b=>{b.style.borderColor='var(--g200)';b.style.background='#fff';});
-  btn.style.borderColor='var(--green)';btn.style.background='var(--green-xl)';
-  const netName=btn.textContent.trim();
-  const netEntry=NET_MAP[netName];
-  if(netEntry){fetchPlansForNetwork(netEntry.data);}
-}
-function selCable(btn){
-  btn.closest('div').querySelectorAll('button').forEach(b=>{b.style.borderColor='var(--g200)';b.style.background='#fff';});
-  btn.style.borderColor='var(--green)';btn.style.background='var(--green-xl)';
-  const name=btn.textContent.trim().toLowerCase();
-  let svcId='dstv';
-  if(name.includes('gotv')||name.includes('go tv')){svcId='gotv';}
-  else if(name.includes('star')){svcId='startimes';}
-  fetchPlansForNetwork(svcId);
-}
+// selNet and selCable defined below near renderPlans
 
 async function procLoan(){closeM('m-svc');openM('m-loan-apply');}
 
@@ -1302,360 +1287,411 @@ async function verPin(){
     await execSvc({...pSvc,useRewards});
   }
 }
-// ===== VTPASS ENGINE (v4 - FIXED) =====
-// KEY FIXES:
-// 1. corsproxy.io needs ?url= param format (not bare ?)
-// 2. GET requests use api-key header (Basic Auth breaks CORS preflight on GET)
-// 3. POST /pay uses Basic Auth (publicKey:secretKey base64)
-// 4. Duplicate execSvc removed — only one authoritative version below
-// 5. Airtime has no variations — skipped in diagnostic (not an error)
+// ===== TRANSACTION EXECUTOR =====
+// Wallet is ONLY debited AFTER successful provider confirmation
+async function execSvc({type, amt, extra, useRewards}){
+  if(!CU) return;
+  const s   = await db.collection('users').doc(CU.uid).get();
+  const ud  = s.data()||{};
+  const bal = useRewards ? (ud.rewardsBalance||0) : (ud.balance||0);
+  if(bal < amt){ toast('Insufficient '+(useRewards?'rewards ':'')+'balance. Please fund your wallet.'); return; }
 
-const VTP={
-  sandboxBase:'https://sandbox.vtpass.com/api',
-  liveBase:'https://api-service.vtpass.com/api',
-  apiKey:'03f401bf628bf9bc9013a324f3865c4a',
-  pubKey:'PK_510dca003bdefc29d919142e5a66452fefd459dcea3',
-  secKey:'SK_3602c9fce88b8bd84978e1bc3dfd411ca3e87100193',
-  mode:'sandbox'
-};
-
-function vtpBase(){return VTP.mode==='live'?VTP.liveBase:VTP.sandboxBase;}
-
-async function getVTP(){
-  try{
-    const s=await db.collection('settings').doc('vtpass').get();
-    if(s.exists){
-      const d=s.data();
-      if(d.publicKey)VTP.pubKey=d.publicKey;
-      if(d.secretKey)VTP.secKey=d.secretKey;
-      if(d.mode)VTP.mode=d.mode;
-      if(d.baseUrl){
-        let u=d.baseUrl.replace(/\/+$/,'');
-        if(!u.endsWith('/api'))u+='/api';
-        if(u.includes('api-service'))VTP.liveBase=u;
-        else VTP.sandboxBase=u;
-      }
-    }
-  }catch(e){console.warn('[VTP] Firestore config error:',e.message);}
-  return VTP;
-}
-
-// ── CORS PROXY FETCH ──
-// corsproxy.io: FREE, supports GET+POST+Authorization header
-// Correct format: https://corsproxy.io/?url=ENCODED_URL
-async function vtpFetch(path, opts={}){
-  await getVTP();
-  const fullUrl = vtpBase() + '/' + path.replace(/^\//,'');
-  const proxyUrl = 'https://corsproxy.io/?url=' + encodeURIComponent(fullUrl);
-  const isPost = (opts.method||'GET')==='POST';
-
-  const headers = isPost
-    ? { 'Authorization':'Basic '+btoa(VTP.pubKey+':'+VTP.secKey), 'Content-Type':'application/json' }
-    : { 'api-key':VTP.apiKey, 'public-key':VTP.pubKey };
-
-  console.log('[VTP]', isPost?'POST':'GET', fullUrl);
-  if(opts.body) console.log('[VTP] Body:', opts.body);
-
-  let raw = '';
-  try{
-    const res = await fetch(proxyUrl, { method: opts.method||'GET', headers, body: opts.body });
-    raw = await res.text();
-    console.log('[VTP] HTTP', res.status, 'raw:', raw.slice(0,400));
-  }catch(e){
-    // Fallback: thingproxy
-    console.warn('[VTP] corsproxy failed, trying thingproxy:', e.message);
-    try{
-      const r2 = await fetch('https://thingproxy.freeboard.io/fetch/'+fullUrl,
-        { method: opts.method||'GET', headers, body: opts.body });
-      raw = await r2.text();
-      console.log('[VTP] thingproxy HTTP', r2.status, 'raw:', raw.slice(0,400));
-    }catch(e2){
-      throw new Error('Both proxies failed. Check internet. ('+e2.message+')');
-    }
-  }
-
-  if(!raw) throw new Error('Empty response from VTPass.');
-  if(raw.trim().startsWith('<')){
-    console.error('[VTP] HTML response — auth/CORS issue:', raw.slice(0,200));
-    throw new Error('VTPass returned HTML (auth failed or service blocked). Check API keys on vtpass.com.');
-  }
-  try{ return JSON.parse(raw); }
-  catch(e){ throw new Error('Bad JSON from VTPass: '+raw.slice(0,100)); }
-}
-
-// Service ID map
-const NET_MAP={
-  'MTN':    {airtime:'mtn',      data:'mtn-data'},
-  'Airtel': {airtime:'airtel',   data:'airtel-data'},
-  'Glo':    {airtime:'glo',      data:'glo-data'},
-  '9mobile':{airtime:'etisalat', data:'etisalat-data'}
-};
-
-const planCache={};
-let currentNetworkId=null;
-let currentPlanMeta={};
-
-async function fetchDataPlans(){}
-
-async function fetchPlansForNetwork(networkId){
-  if(!networkId)return;
-  currentNetworkId=networkId;
-  const sel=document.getElementById('s-amt');
-  const loadEl=document.getElementById('data-loading');
-  const infoEl=document.getElementById('data-info');
-  if(!sel)return;
-  if(planCache[networkId]){renderPlans(planCache[networkId],sel,infoEl);return;}
-  if(loadEl){loadEl.style.display='block';loadEl.textContent='⏳ Loading plans...';}
-  sel.innerHTML='<option value="">Loading plans...</option>';
-  try{
-    // GET with api-key headers via vtpFetch
-    const json=await vtpFetch('service-variations?serviceID='+networkId,{method:'GET'});
-    if(loadEl)loadEl.style.display='none';
-    const variations=json?.content?.varations||json?.content?.variations||[];
-    if(variations.length){
-      planCache[networkId]=variations;
-      renderPlans(variations,sel,infoEl);
-    }else{
-      sel.innerHTML='<option value="">No plans found — enable service at vtpass.com</option>';
-      if(infoEl){infoEl.style.display='block';infoEl.textContent='⚠ No plans for '+networkId+'. Enable at vtpass.com → Sandbox → Services. Full: '+JSON.stringify(json).slice(0,80);}
-    }
-  }catch(e){
-    if(loadEl)loadEl.style.display='none';
-    sel.innerHTML='<option value="">Error loading plans: '+e.message.slice(0,50)+'</option>';
-    if(infoEl){infoEl.style.display='block';infoEl.style.color='#dc2626';infoEl.textContent='❌ '+e.message;}
-    console.error('[VTP] fetchPlansForNetwork error:',e.message);
-  }
-}
-
-
-function renderPlans(plans,sel,infoEl){
-  currentPlanMeta={};
-  sel.innerHTML='<option value="">-- Select a plan --</option>';
-  plans.forEach(p=>{
-    const name=p.name||p.variation_name||'';
-    const price=parseFloat(p.variation_amount||p.price||0);
-    const code=p.variation_code||p.code||'';
-    // Extract validity from name or description
-    let validity='';
-    const src=(name+' '+(p.description||'')).toLowerCase();
-    const dayMatch=src.match(/(\d+)\s*day/i);
-    const monthMatch=src.match(/(\d+)\s*month/i);
-    const hrMatch=src.match(/(\d+)\s*hour/i);
-    if(hrMatch)validity=hrMatch[1]+' Hours';
-    else if(dayMatch)validity=dayMatch[1]+' Days';
-    else if(monthMatch)validity=monthMatch[1]+' Month'+(parseInt(monthMatch[1])>1?'s':'');
-    const label=name+(validity?' ('+validity+')':'')+' — NGN '+fmt(price);
-    const opt=document.createElement('option');
-    opt.value=price;
-    opt.dataset.code=code;
-    opt.dataset.validity=validity;
-    opt.dataset.name=name;
-    opt.textContent=label;
-    sel.appendChild(opt);
-    currentPlanMeta[price+'_'+code]={code,name,validity,price};
-  });
-  if(infoEl){infoEl.style.display='none';}
-}
-
-function updateDataAmt(sel){
-  const opt=sel.options[sel.selectedIndex];
-  const infoEl=document.getElementById('data-info');
-  if(opt&&opt.dataset.name&&infoEl){
-    const v=opt.dataset.validity;
-    infoEl.style.display='block';
-    infoEl.innerHTML='<strong>'+opt.dataset.name+'</strong>'+(v?' &nbsp;|&nbsp; Validity: <strong>'+v+'</strong>':'');
-  }else if(infoEl)infoEl.style.display='none';
-}
-
-function selNet(btn){
-  btn.closest('div').querySelectorAll('button').forEach(b=>{b.style.borderColor='var(--g200)';b.style.background='#fff';});
-  btn.style.borderColor='var(--green)';btn.style.background='var(--green-xl)';
-  const netName=btn.textContent.trim();
-  const netEntry=NET_MAP[netName];
-  if(netEntry){
-    // For data panels, fetch plans using the data serviceID
-    fetchPlansForNetwork(netEntry.data);
-  }
-}
-
-// Generate unique transaction reference
-function txRef(){return 'ZMN'+Date.now()+Math.floor(Math.random()*10000);}
-
-// [old execSvc removed — single authoritative version below]
-// ══════════════════════════════════════════════════════════════
-//  VTPASS API — FULL AUDIT FIX
-//  Root causes fixed:
-//  1. Airtime was using 'mtn-data' instead of 'mtn' as serviceID
-//  2. Keys not reloaded from Firestore before each call
-//  3. Electricity missing phone field, used email instead
-//  4. Success detection missed response_description='000'
-//  5. No detailed error logging or display
-//  6. Sandbox URL was using wrong path format
-// ══════════════════════════════════════════════════════════════
-
-async function execSvc({type,amt,extra,useRewards}){
-  if(!CU)return;
-  await getVTP(); // Refresh keys from Firestore every time
-  const s=await db.collection('users').doc(CU.uid).get();
-  const ud=s.data()||{};
-  const rwBal=ud.rewardsBalance||0;
-  if(useRewards){
-    if(rwBal<amt){toast('Insufficient rewards balance.');return;}
-  }else{
-    if((ud.balance||0)<amt){toast('Insufficient balance. Please fund your wallet.');return;}
-  }
-  const descs={airtime:'Airtime Purchase',data:'Data Subscription',cable:'Cable TV Subscription',electricity:'Electricity Payment',result:'Result Checker PIN'};
-  const ref=txRef();
-  console.log('[VTP] Starting transaction:',type,'Amount:',amt,'Ref:',ref,'Extra:',JSON.stringify(extra));
-
-  const txRef2=await db.collection('transactions').add({
-    userId:CU.uid,type,amount:amt,
-    description:(extra&&extra.planName)?extra.planName:descs[type]||type,
-    status:'pending',ref,extra:extra||{},
+  const descs = {
+    airtime:'Airtime Purchase', data:'Data Subscription',
+    cable:'Cable TV Subscription', electricity:'Electricity Payment',
+    result:'Result Checker PIN'
+  };
+  const ref    = genRequestId();
+  const txRef2 = await db.collection('transactions').add({
+    userId:CU.uid, type, amount:amt,
+    description:(extra?.planName)||descs[type]||type,
+    status:'pending', ref, extra:extra||{},
+    provider: API_CFG.providerName||'Nellobytesystems',
     createdAt:firebase.firestore.FieldValue.serverTimestamp()
   });
 
+  let apiResult = null;
   try{
-    let vtpResult=null;
     if(type==='airtime'){
-      vtpResult=await vtpAirtime(extra.phone,extra.networkId,amt,ref);
+      apiResult = await apiAirtime(extra.phone, extra.networkId, amt, ref);
     }else if(type==='data'){
-      vtpResult=await vtpData(extra.phone,extra.networkId,extra.variationCode,amt,ref);
+      apiResult = await apiData(extra.phone, extra.networkId, extra.variationCode, amt, ref);
     }else if(type==='cable'){
-      vtpResult=await vtpCable(extra.smartcard,extra.serviceId,extra.variationCode,amt,ref);
+      apiResult = await apiCable(extra.smartcard, extra.serviceId, extra.variationCode, amt, ref);
     }else if(type==='electricity'){
-      vtpResult=await vtpElectricity(extra.meter,extra.serviceId,extra.meterType,amt,ref,extra.custPhone);
-    }else if(type==='result'){
-      vtpResult=await vtpResultChecker(extra.serviceId,extra.variationCode,amt,ref);
+      const custPhone = extra.custPhone||UD?.phone||'08011111111';
+      apiResult = await apiElectricity(extra.meter, extra.serviceId, extra.meterType, amt, custPhone, ref);
+    }else{
+      apiResult = {status:'error', message:'Service not supported yet.'};
     }
 
-    console.log('[VTP] Raw response:',JSON.stringify(vtpResult));
+    console.log('[EXEC] Full API response:', JSON.stringify(apiResult));
 
-    // VTPass success: code==='000' OR transactions.status==='delivered'
-    const txStatus=vtpResult?.content?.transactions?.status;
-    const respCode=vtpResult?.code||vtpResult?.response_code||'';
-    const respDesc=vtpResult?.response_description||vtpResult?.content?.transactions?.response_description||'';
-    const success=(respCode==='000')||(txStatus==='delivered');
+    const success = isApiSuccess(apiResult);
+    const respCode = String(apiResult?.status||apiResult?.Status||apiResult?.StatusCode||'');
+    const respDesc = getApiError(apiResult);
 
     if(success){
+      // ── Debit wallet ONLY after confirmed success ──
       if(useRewards){
         await db.collection('users').doc(CU.uid).update({rewardsBalance:firebase.firestore.FieldValue.increment(-amt)});
       }else{
         await db.collection('users').doc(CU.uid).update({balance:firebase.firestore.FieldValue.increment(-amt)});
       }
-      await txRef2.update({status:'success',vtpCode:respCode,vtpDesc:respDesc,vtpResponse:JSON.stringify(vtpResult).slice(0,800)});
+      await txRef2.update({status:'success', apiCode:respCode, apiDesc:respDesc, apiResponse:JSON.stringify(apiResult).slice(0,800)});
+
+      // ── Cashback reward ──
       try{
-        const rwSnap=await db.collection('settings').doc('rewards').get();
-        const rwCfg=rwSnap.exists?rwSnap.data():{cashbackEnabled:true,cashbackPct:1};
+        const rwSnap = await db.collection('settings').doc('rewards').get();
+        const rwCfg  = rwSnap.exists ? rwSnap.data() : {cashbackEnabled:true, cashbackPct:1};
         if(rwCfg.cashbackEnabled!==false){
-          const pct=(rwCfg.cashbackPct||1)/100;
-          const cashback=Math.round(amt*pct*100)/100;
+          const pct      = (rwCfg.cashbackPct||1)/100;
+          const cashback = Math.round(amt*pct*100)/100;
           if(cashback>0){
-            await db.collection('users').doc(CU.uid).update({rewardsBalance:firebase.firestore.FieldValue.increment(cashback),cashbackEarned:firebase.firestore.FieldValue.increment(cashback)});
-            await addNotif(CU.uid,'Cashback Credited! 🎖','You earned NGN '+fmt(cashback)+' cashback on your '+((extra&&extra.planName)?extra.planName:descs[type])+' transaction.');
+            await db.collection('users').doc(CU.uid).update({
+              rewardsBalance : firebase.firestore.FieldValue.increment(cashback),
+              cashbackEarned : firebase.firestore.FieldValue.increment(cashback)
+            });
+            await db.collection('rewards').add({
+              userId:CU.uid, type:'cashback', amount:cashback, txId:txRef2.id,
+              description:'Cashback on '+(extra?.planName||descs[type]),
+              createdAt:firebase.firestore.FieldValue.serverTimestamp()
+            });
+            await addNotif(CU.uid,'Cashback Credited! 🎖','You earned NGN '+fmt(cashback)+' cashback on your '+(extra?.planName||descs[type])+' transaction.');
           }
         }
-      }catch(e){console.warn('Cashback error',e);}
-      await addNotif(CU.uid,'Transaction Successful',(extra&&extra.planName?extra.planName:descs[type])+' of NGN '+fmt(amt)+' was successful.');
-      toast('✅ Transaction successful!');
-      showReceipt({type,amt,extra,ref,descs,vtpResult,cashback:0});
-      loadDash();pSvc=null;
+      }catch(e){ console.warn('Cashback error',e); }
+
+      await addNotif(CU.uid,'Transaction Successful',(extra?.planName||descs[type])+' of NGN '+fmt(amt)+' was successful.');
+      toast('Transaction successful!');
+      showReceipt({type, amt, extra, ref, descs, vtpResult:apiResult, cashback:0});
+      loadDash(); pSvc=null;
+
     }else{
-      await txRef2.update({status:'failed',vtpCode:respCode,vtpDesc:respDesc,vtpResponse:JSON.stringify(vtpResult||{}).slice(0,800)});
-      // Build detailed, user-readable error
-      let errDetail='';
-      if(respCode)errDetail+=`Code: ${respCode}. `;
-      if(respDesc)errDetail+=respDesc;
-      else if(vtpResult?.content)errDetail+=JSON.stringify(vtpResult.content).slice(0,120);
-      else errDetail='No response from VTPass. Check your VTPass dashboard.';
-      console.error('[VTP] Transaction failed. Code:',respCode,'Desc:',respDesc,'Full:',vtpResult);
-      // Show detailed failure modal
-      showVtpError(type,amt,ref,respCode,errDetail,vtpResult);
+      // Provider returned failure — do NOT debit wallet
+      await txRef2.update({status:'failed', apiCode:respCode, apiDesc:respDesc, apiResponse:JSON.stringify(apiResult||{}).slice(0,800)});
+      let errDetail = respDesc || '';
+      if(apiResult?.raw) errDetail += ' Raw: '+String(apiResult.raw).slice(0,200);
+      console.error('[EXEC] Transaction failed. Code:',respCode,'Desc:',respDesc,'Full:',apiResult);
+      showApiError(type, amt, ref, respCode, errDetail, apiResult);
     }
+
   }catch(er){
-    await txRef2.update({status:'failed',error:er.message});
-    console.error('[VTP] Network/parse error:',er);
-    toast('❌ Connection error: '+er.message+'. Check internet and try again.');
+    await txRef2.update({status:'failed', error:er.message});
+    toast('Error: '+er.message);
+    console.error('[EXEC] Exception:', er);
   }
 }
 
-// ── Show detailed VTPass error modal ──
-function showVtpError(type,amt,ref,code,desc,raw){
-  const m=document.createElement('div');
-  m.className='modal open';
-  m.innerHTML=`<div class="mbox" style="max-height:90vh;overflow-y:auto">
-    <div style="text-align:center;margin-bottom:16px">
-      <div style="font-size:40px;margin-bottom:8px">⚠️</div>
-      <div style="font-size:17px;font-weight:800;color:#dc2626">Transaction Failed</div>
-      <div style="font-size:12px;color:var(--g400);margin-top:4px">Service: ${type.toUpperCase()} · Amount: NGN ${fmt(amt)}</div>
+function showApiError(type, amt, ref, code, desc, raw){
+  const el = document.getElementById('svc-body');
+  if(!el) return;
+  const rawStr = raw ? JSON.stringify(raw, null, 2) : 'No response body';
+  closeM('m-svc');
+  setTimeout(()=>{
+    openM('m-svc');
+    document.getElementById('svc-title').textContent='Transaction Failed';
+    el.innerHTML=`
+    <div style="text-align:center;padding:10px 0 6px">
+      <div style="font-size:44px">⚠️</div>
+      <div style="font-weight:800;font-size:18px;color:#dc2626;margin:6px 0">Transaction Failed</div>
+      <div style="font-size:12px;color:var(--g500);margin-bottom:14px">${type.toUpperCase()} · NGN ${fmt(amt)}</div>
     </div>
-    <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:11px;padding:14px;margin-bottom:12px">
-      <div style="font-size:11px;font-weight:700;color:#dc2626;text-transform:uppercase;margin-bottom:6px">VTPass Error Response</div>
-      <div style="font-size:13px;font-weight:600;color:#dc2626;margin-bottom:4px">${desc||'Unknown error'}</div>
-      ${code?`<div style="font-size:11px;color:#b91c1c;margin-top:4px">Response Code: <strong>${code}</strong></div>`:''}
-      <div style="font-size:10px;color:var(--g400);margin-top:6px;word-break:break-all">Ref: ${ref}</div>
+    <div style="background:#fef2f2;border:1.5px solid #fca5a5;border-radius:12px;padding:14px;margin-bottom:14px">
+      <div style="font-size:11px;font-weight:800;color:#dc2626;letter-spacing:.05em;margin-bottom:4px">API ERROR RESPONSE</div>
+      <div style="font-weight:700;font-size:14px;color:#dc2626">${desc||'Transaction could not be completed'}</div>
+      ${code?`<div style="font-size:12px;color:#dc2626;margin-top:4px">Status Code: <strong>${code}</strong></div>`:''}
+      <div style="font-size:11px;color:var(--g500);margin-top:4px">Ref: ${ref}</div>
     </div>
-    <div style="background:#f8fafc;border-radius:10px;padding:12px;margin-bottom:14px">
-      <div style="font-size:11px;font-weight:700;color:var(--g600);margin-bottom:6px">Common Causes</div>
-      <ul style="font-size:12px;color:var(--g600);padding-left:16px;line-height:1.9;margin:0">
-        <li>Service not whitelisted in your VTPass sandbox account</li>
-        <li>Invalid sandbox test number (use 08011111111 for MTN)</li>
-        <li>Variation code expired or invalid</li>
-        <li>API keys not matching sandbox account</li>
-        <li>Insufficient VTPass sandbox wallet balance</li>
-      </ul>
-    </div>
-    <details style="margin-bottom:14px">
-      <summary style="font-size:12px;font-weight:600;color:var(--g500);cursor:pointer;padding:8px 0">📋 Raw VTPass Response (for debugging)</summary>
-      <pre style="font-size:10px;background:#f1f5f9;border-radius:8px;padding:10px;overflow-x:auto;white-space:pre-wrap;color:var(--g700);margin-top:8px">${JSON.stringify(raw,null,2)}</pre>
+    <div style="font-size:13px;font-weight:700;color:var(--g700);margin-bottom:8px">Your wallet was NOT debited.</div>
+    <details style="margin-bottom:16px">
+      <summary style="font-size:12px;cursor:pointer;color:var(--g500);display:flex;align-items:center;gap:5px">🗂 Raw API Response</summary>
+      <pre style="background:#f8fafc;border-radius:8px;padding:10px;font-size:11px;overflow-x:auto;margin-top:6px;max-height:150px">${rawStr.slice(0,600)}</pre>
     </details>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <button onclick="this.closest('.modal').remove()" style="padding:12px;border-radius:10px;background:var(--g100);border:1px solid var(--g200);font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">Close</button>
-      <a href="https://vtpass.com/documentation" target="_blank" style="padding:12px;border-radius:10px;background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;font-size:13px;font-weight:700;text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center">VTPass Docs</a>
-    </div>
-  </div>`;
-  document.body.appendChild(m);
+    <button onclick="closeM('m-svc')" class="btn-g" style="width:100%;padding:13px;border-radius:11px;font-size:15px">Close</button>`;
+  }, 100);
 }
 
-// ══════════════════════════════════════════════════════════════
-//  VTPASS PURCHASE FUNCTIONS
-// ══════════════════════════════════════════════════════════════
+// ===== NELLOBYTESYSTEMS API CONFIG =====
+// Provider: Nellobytesystems | Docs: https://www.nellobytesystems.com/APIDocs.asp
+// All credentials stored in Firestore → settings/apiconfig (admin-only read)
+// Users NEVER see API keys — all calls go through admin-controlled config
 
-async function vtpAirtime(phone,serviceID,amount,requestRef){
-  // serviceID = 'mtn' | 'airtel' | 'glo' | 'etisalat'
-  // Airtime: no billersCode, no variation_code needed
-  const body=JSON.stringify({request_id:requestRef,serviceID,amount:String(amount),phone});
-  return vtpFetch('pay',{method:'POST',body});
+const API_DEFAULTS = {
+  providerName : 'Nellobytesystems',
+  baseUrl      : 'https://www.nellobytesystems.com/',
+  userId       : 'CK100352389',
+  apiKey       : '',   // entered by admin after deployment
+  callbackUrl  : '',
+  enabled      : true,
+  endpoints    : {
+    airtime     : 'APIAirtimeV1.asp',
+    data        : 'APIDatabundleV1.asp',
+    cable       : 'APICableTVV1.asp',
+    electricity : 'APIElectricityV1.asp',
+    balance     : 'APIWalletBalance.asp',
+    dataPlans   : 'APIDataBundlePlansV1.asp',
+    cablePlans  : 'APICableTVPlansV1.asp'
+  }
+};
+
+// Runtime config (loaded from Firestore, never exposed to users)
+const API_CFG = Object.assign({}, API_DEFAULTS);
+
+// Load config from Firestore (admin-only document)
+async function loadApiConfig(){
+  try{
+    const s = await db.collection('settings').doc('apiconfig').get();
+    if(s.exists){
+      const d = s.data();
+      if(d.providerName) API_CFG.providerName = d.providerName;
+      if(d.baseUrl)      API_CFG.baseUrl      = String(d.baseUrl).trim().replace(/\/+$/,'')+'/';
+      if(d.userId)       API_CFG.userId       = String(d.userId).trim();
+      if(d.apiKey)       API_CFG.apiKey       = String(d.apiKey).trim();
+      if(d.callbackUrl)  API_CFG.callbackUrl  = String(d.callbackUrl).trim();
+      if(typeof d.enabled !== 'undefined') API_CFG.enabled = !!d.enabled;
+      if(d.endpoints)    Object.assign(API_CFG.endpoints, d.endpoints);
+    }
+  }catch(e){ console.warn('[API] Config load error:',e.message); }
+  return API_CFG;
 }
 
-async function vtpData(phone,serviceID,variation_code,amount,requestRef){
-  // serviceID = 'mtn-data' | 'airtel-data' | 'glo-data' | 'etisalat-data'
-  // billersCode = phone number for data
-  const body=JSON.stringify({request_id:requestRef,serviceID,billersCode:phone,variation_code,amount:String(amount),phone});
-  return vtpFetch('pay',{method:'POST',body});
+// Generate unique RequestID per transaction
+function genRequestId(){
+  return 'ZMN'+Date.now()+Math.floor(Math.random()*100000);
+}
+function txRef(){ return genRequestId(); }
+
+// ── Core API fetch (GET with query params — no CORS proxy needed) ──
+// Logs every request + response to Firestore api_logs collection
+async function apiFetch(endpointKey, params={}, txMeta={}){
+  await loadApiConfig();
+  if(!API_CFG.enabled){
+    throw new Error('API is currently disabled by admin. Please try again later.');
+  }
+  if(!API_CFG.apiKey){
+    throw new Error('API Key not configured. Admin must set the API Key in API Settings.');
+  }
+  const endpoint = API_CFG.endpoints[endpointKey] || endpointKey;
+  const url      = API_CFG.baseUrl + endpoint;
+  const allParams = Object.assign({
+    UserID : API_CFG.userId,
+    APIKey : API_CFG.apiKey,
+    output : 'JSON'
+  }, params);
+  const qs  = Object.entries(allParams).map(([k,v])=>encodeURIComponent(k)+'='+encodeURIComponent(v)).join('&');
+  const fullUrl = url + '?' + qs;
+  const safeUrl = fullUrl.replace(API_CFG.apiKey, '***HIDDEN***');
+  console.log('[API] →', endpointKey, safeUrl);
+
+  const logRef = db.collection('api_logs').doc();
+  const logData = {
+    requestId   : params.RequestID || allParams.RequestID || '',
+    provider    : API_CFG.providerName,
+    endpoint    : endpointKey,
+    url         : safeUrl,
+    params      : Object.assign({}, allParams, {APIKey:'***HIDDEN***'}),
+    status      : 'pending',
+    userId      : txMeta.userId || (CU?.uid||''),
+    type        : txMeta.type   || endpointKey,
+    amount      : txMeta.amount || 0,
+    createdAt   : firebase.firestore.FieldValue.serverTimestamp()
+  };
+  await logRef.set(logData).catch(()=>{});
+
+  let raw='', parsed=null, httpStatus=0;
+  try{
+    const res = await fetch(fullUrl);
+    httpStatus = res.status;
+    raw = await res.text();
+    console.log('[API] ← HTTP', httpStatus, raw.slice(0,300));
+    try{ parsed = JSON.parse(raw); }catch(e){ parsed = { status: raw.trim(), raw }; }
+  }catch(netErr){
+    await logRef.update({ status:'net_error', error:netErr.message, respondedAt:firebase.firestore.FieldValue.serverTimestamp() }).catch(()=>{});
+    throw new Error('Network error: '+netErr.message);
+  }
+
+  await logRef.update({
+    httpStatus,
+    rawResponse : raw.slice(0,2000),
+    parsed      : parsed ? JSON.stringify(parsed).slice(0,2000) : '',
+    status      : 'completed',
+    respondedAt : firebase.firestore.FieldValue.serverTimestamp()
+  }).catch(()=>{});
+
+  return parsed;
 }
 
-async function vtpCable(smartcard,serviceID,variation_code,amount,requestRef){
-  // serviceID = 'dstv' | 'gotv' | 'startimes'
-  const body=JSON.stringify({request_id:requestRef,serviceID,billersCode:smartcard,variation_code,amount:String(amount),subscription_type:'change',quantity:1});
-  return vtpFetch('pay',{method:'POST',body});
+// ── Success detection for Nellobytesystems responses ──
+function isApiSuccess(res){
+  if(!res) return false;
+  const st = String(res.status||res.Status||res.StatusCode||'').toLowerCase();
+  const msg = String(res.message||res.Message||res.description||'').toLowerCase();
+  // Nellobytesystems returns status='successful' or status='00' on success
+  return st.includes('success') || st==='00' || st==='1' || msg.includes('successful');
 }
 
-async function vtpElectricity(meter,serviceID,meterType,amount,requestRef,custPhone){
-  // variation_code = 'prepaid' | 'postpaid'
-  const phone = custPhone||UD?.phone||'08011111111';
-  const body=JSON.stringify({request_id:requestRef,serviceID,billersCode:meter,variation_code:meterType,amount:String(amount),phone});
-  return vtpFetch('pay',{method:'POST',body});
+function getApiError(res){
+  if(!res) return 'No response from API provider.';
+  return res.message || res.Message || res.description || res.status || JSON.stringify(res).slice(0,120);
 }
 
-async function vtpResultChecker(serviceID,variation_code,amount,requestRef){
-  const phone = UD?.phone||'08011111111';
-  const body=JSON.stringify({request_id:requestRef,serviceID,billersCode:'none',variation_code,amount:String(amount),phone});
-  return vtpFetch('pay',{method:'POST',body});
+// ── Plan fetching ──
+const planCache = {};
+let currentNetworkId = null;
+let currentPlanMeta  = {};
+
+async function fetchDataPlans(){}
+
+async function fetchPlansForNetwork(networkId){
+  if(!networkId) return;
+  currentNetworkId = networkId;
+  const sel    = document.getElementById('s-amt');
+  const loadEl = document.getElementById('data-loading');
+  const infoEl = document.getElementById('data-info');
+  if(!sel) return;
+  if(planCache[networkId]){ renderPlans(planCache[networkId], sel, infoEl); return; }
+  if(loadEl){ loadEl.style.display='block'; loadEl.textContent='⏳ Loading plans...'; }
+  sel.innerHTML = '<option value="">Loading plans...</option>';
+  try{
+    const res = await apiFetch('dataPlans', { NetworkID: networkId });
+    if(loadEl) loadEl.style.display='none';
+    const plans = Array.isArray(res) ? res : (Array.isArray(res?.plans) ? res.plans : []);
+    if(plans.length){
+      const norm = plans.map(p=>({
+        variation_code   : String(p.DataPlanID||p.PlanID||p.id||''),
+        variation_name   : p.DataPlan||p.Plan||p.name||'',
+        variation_amount : String(p.Price||p.price||p.Amount||0),
+        description      : p.DataPlan||p.Plan||''
+      }));
+      planCache[networkId] = norm;
+      renderPlans(norm, sel, infoEl);
+    } else {
+      sel.innerHTML = '<option value="">No plans available</option>';
+      if(infoEl){ infoEl.style.display='block'; infoEl.textContent='⚠ No plans returned for '+networkId; }
+    }
+  }catch(e){
+    if(loadEl) loadEl.style.display='none';
+    sel.innerHTML = '<option value="">⚠ '+e.message+'</option>';
+    console.error('[API] fetchPlansForNetwork error:', e.message);
+  }
 }
 
-function vtpResult2(serviceID,variation_code,amount,requestRef){
-  return vtpResultChecker(serviceID,variation_code,amount,requestRef);
+async function fetchCablePlans(provider){
+  const sel    = document.getElementById('s-amt');
+  const loadEl = document.getElementById('data-loading');
+  const infoEl = document.getElementById('data-info');
+  if(!sel) return;
+  const cacheKey = 'cable_'+provider;
+  if(planCache[cacheKey]){ renderPlans(planCache[cacheKey], sel, infoEl); return; }
+  if(loadEl){ loadEl.style.display='block'; loadEl.textContent='⏳ Loading packages...'; }
+  sel.innerHTML = '<option value="">Loading packages...</option>';
+  try{
+    const res = await apiFetch('cablePlans', { NetworkID: provider });
+    if(loadEl) loadEl.style.display='none';
+    const plans = Array.isArray(res) ? res : (Array.isArray(res?.plans) ? res.plans : []);
+    if(plans.length){
+      const norm = plans.map(p=>({
+        variation_code   : String(p.DataPlanID||p.PlanID||p.id||''),
+        variation_name   : p.DataPlan||p.Plan||p.name||'',
+        variation_amount : String(p.Price||p.price||p.Amount||0),
+        description      : p.DataPlan||p.Plan||''
+      }));
+      planCache[cacheKey] = norm;
+      renderPlans(norm, sel, infoEl);
+    } else {
+      sel.innerHTML = '<option value="">No packages available</option>';
+    }
+  }catch(e){
+    if(loadEl) loadEl.style.display='none';
+    sel.innerHTML = '<option value="">⚠ '+e.message+'</option>';
+    console.error('[API] fetchCablePlans error:', e.message);
+  }
+}
+
+function renderPlans(plans, sel, infoEl){
+  currentPlanMeta = {};
+  sel.innerHTML = '<option value="">-- Select a plan --</option>';
+  plans.forEach(p=>{
+    const name  = p.variation_name||'';
+    const price = parseFloat(p.variation_amount||0);
+    const code  = p.variation_code||'';
+    const src   = (name+' '+(p.description||'')).toLowerCase();
+    const dm=src.match(/(\d+)\s*day/i), mm=src.match(/(\d+)\s*month/i), hm=src.match(/(\d+)\s*hour/i);
+    const validity = hm?hm[1]+' Hours':dm?dm[1]+' Days':mm?mm[1]+' Month'+(parseInt(mm[1])>1?'s':''):'';
+    const opt = document.createElement('option');
+    opt.value = price;
+    opt.dataset.code     = code;
+    opt.dataset.validity = validity;
+    opt.dataset.name     = name;
+    opt.textContent      = name+(validity?' ('+validity+')':'')+' — NGN '+fmt(price);
+    sel.appendChild(opt);
+    currentPlanMeta[price+'_'+code] = {code, name, validity, price};
+  });
+  if(infoEl) infoEl.style.display='none';
+}
+
+function updateDataAmt(sel){
+  const opt   = sel.options[sel.selectedIndex];
+  const infoEl= document.getElementById('data-info');
+  if(opt && opt.dataset.name && infoEl){
+    infoEl.style.display='block';
+    infoEl.innerHTML='<strong>'+opt.dataset.name+'</strong>'+(opt.dataset.validity?' &nbsp;|&nbsp; Validity: <strong>'+opt.dataset.validity+'</strong>':'');
+  } else if(infoEl) infoEl.style.display='none';
+}
+
+// ── Network map ──
+const NET_MAP = {
+  'MTN'    :{ airtime:'MTN',      data:'MTN'      },
+  'Airtel' :{ airtime:'AIRTEL',   data:'AIRTEL'   },
+  'Glo'    :{ airtime:'GLO',      data:'GLO'      },
+  '9mobile':{ airtime:'ETISALAT', data:'ETISALAT' }
+};
+
+function selNet(btn){
+  btn.closest('div').querySelectorAll('button').forEach(b=>{ b.style.borderColor='var(--g200)'; b.style.background='#fff'; });
+  btn.style.borderColor='var(--green)'; btn.style.background='var(--green-xl)';
+  const amtEl = document.getElementById('s-amt');
+  const entry = NET_MAP[btn.textContent.trim()];
+  if(entry && amtEl && amtEl.tagName==='SELECT') fetchPlansForNetwork(entry.data);
+}
+function selCable(btn){
+  btn.closest('div').querySelectorAll('button').forEach(b=>{ b.style.borderColor='var(--g200)'; b.style.background='#fff'; });
+  btn.style.borderColor='var(--green)'; btn.style.background='var(--green-xl)';
+  const name = btn.textContent.trim().toUpperCase();
+  const svcId = name.includes('GOTV')?'GOTV':name.includes('STAR')?'STARTIMES':'DSTV';
+  fetchCablePlans(svcId);
+}
+
+// ── API purchase functions (wallet debited ONLY after success) ──
+async function apiAirtime(phone, network, amount, reqId){
+  return apiFetch('airtime',{
+    MobileNumber:phone, NetworkID:network,
+    Amount:amount, RequestID:reqId
+  },{ type:'airtime', amount, userId:CU?.uid||'' });
+}
+async function apiData(phone, network, planCode, amount, reqId){
+  return apiFetch('data',{
+    MobileNumber:phone, NetworkID:network,
+    DataPlan:planCode, Amount:amount, RequestID:reqId
+  },{ type:'data', amount, userId:CU?.uid||'' });
+}
+async function apiCable(smartcard, provider, planCode, amount, reqId){
+  return apiFetch('cable',{
+    SmartCardNo:smartcard, NetworkID:provider,
+    DataPlan:planCode, Amount:amount, RequestID:reqId
+  },{ type:'cable', amount, userId:CU?.uid||'' });
+}
+async function apiElectricity(meter, disco, meterType, amount, phone, reqId){
+  return apiFetch('electricity',{
+    MeterNo:meter, NetworkID:disco, MeterType:meterType,
+    Amount:amount, MobileNumber:phone, RequestID:reqId
+  },{ type:'electricity', amount, userId:CU?.uid||'' });
+}
+
+// ── Transaction status checker ──
+async function checkTxStatus(requestId){
+  return apiFetch('status',{ RequestID:requestId },{ type:'status_check' });
 }
 
 // HISTORY
@@ -1808,7 +1844,7 @@ function aTab(tab){
         const vtDiv=document.createElement('div');
         vtDiv.id='vt-quick-btn';
         vtDiv.style.cssText='margin-top:14px';
-        vtDiv.innerHTML=`<button onclick="aTab('vtpass')" style="display:flex;align-items:center;gap:10px;width:100%;max-width:360px;padding:14px 16px;background:#fff;border:1.5px solid #e2e8f0;border-radius:12px;cursor:pointer;font-family:'Inter',sans-serif;text-align:left"><div style="width:36px;height:36px;background:#ede9fe;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">⚙️</div><div><div style="font-weight:600;font-size:13px">VTPass API Settings</div><div style="font-size:11px;color:var(--g400)">Manage API keys & mode</div></div></button>`;
+        vtDiv.innerHTML=`<button onclick="aTab('vtpass')" style="display:flex;align-items:center;gap:10px;width:100%;max-width:360px;padding:14px 16px;background:#fff;border:1.5px solid #e2e8f0;border-radius:12px;cursor:pointer;font-family:'Inter',sans-serif;text-align:left"><div style="width:36px;height:36px;background:#ede9fe;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">⚙️</div><div><div style="font-weight:600;font-size:13px">API Settings</div><div style="font-size:11px;color:var(--g400)">Nellobytesystems integration</div></div></button>`;
         ac.appendChild(vtDiv);
       }
     },100);
@@ -1877,22 +1913,15 @@ function aTab(tab){
     return;
   }
   if(tab==='vtpass'){
-    loadVtpassConfig();
-    el.innerHTML=`<div class="card" style="padding:20px;max-width:480px">
-      <div style="font-weight:700;font-size:15px;margin-bottom:5px">VTPass API Configuration</div>
-      <div style="font-size:13px;color:var(--g500);margin-bottom:16px">Manage API keys and mode for VTU services</div>
-      <div id="vt-admin-current" style="background:#f1f5f9;border-radius:10px;padding:12px;margin-bottom:14px;font-size:12px;color:var(--g600)">Loading...</div>
-      <div style="margin-bottom:10px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Mode</label><select class="inp" id="vt-mode2"><option value="sandbox">Sandbox (Testing)</option><option value="live">Live (Production)</option></select></div>
-      <div style="margin-bottom:10px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">API Public Key</label><input class="inp" id="vt-pub2" placeholder="VTPass public key"/></div>
-      <div style="margin-bottom:10px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">API Secret Key</label><input class="inp" type="password" id="vt-sec2" placeholder="VTPass secret key"/></div>
-      <div style="margin-bottom:14px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Base URL</label><input class="inp" id="vt-url2" value="https://sandbox.vtpass.com/api" placeholder="API base URL (include /api)"/></div>
-      <div style="display:flex;gap:8px">
-        <button onclick="testVtpass2()" style="flex:1;padding:11px;border-radius:10px;background:#dbeafe;border:1px solid #93c5fd;color:#1d4ed8;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">🔗 Test</button>
-        <button onclick="saveVtpass2()" class="btn-g" style="flex:1;padding:11px;border-radius:10px;font-size:13px">💾 Save</button>
-      </div>
-      <div id="vt-result2" style="display:none;border-radius:10px;padding:11px;font-size:13px;margin-top:10px"></div>
-    </div>`;
-    loadVtpassConfig2();
+    el.innerHTML=`
+    <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+      <button onclick="apiSubTab('settings')" id="ast-settings" style="padding:7px 14px;border-radius:50px;background:var(--green);color:#fff;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">⚙️ Settings</button>
+      <button onclick="apiSubTab('diagnostics')" id="ast-diagnostics" style="padding:7px 14px;border-radius:50px;background:#fff;color:var(--g600);border:1.5px solid var(--g200);font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">🔬 Diagnostics</button>
+      <button onclick="apiSubTab('logs')" id="ast-logs" style="padding:7px 14px;border-radius:50px;background:#fff;color:var(--g600);border:1.5px solid var(--g200);font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">📋 API Logs</button>
+      <button onclick="apiSubTab('txcheck')" id="ast-txcheck" style="padding:7px 14px;border-radius:50px;background:#fff;color:var(--g600);border:1.5px solid var(--g200);font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">🔍 TX Status</button>
+    </div>
+    <div id="api-sub-content"></div>`;
+    apiSubTab('settings');
   }
 
   // ── Finance Admin Tabs ──
@@ -2546,120 +2575,317 @@ function viewImg(url){
 }
 
 // ── VTPass Config ──
-async function loadVtpassConfig(){
-  const el=document.getElementById('vt-current');if(!el)return;
-  try{
-    const s=await db.collection('settings').doc('vtpass').get();
-    if(s.exists){
-      const d=s.data();
-      el.innerHTML=`<div style="font-weight:600;margin-bottom:4px">Current Config</div>Mode: <strong>${d.mode||'sandbox'}</strong> · URL: <strong>${d.baseUrl||'—'}</strong><br/>Public Key: <strong>${d.publicKey?d.publicKey.slice(0,4)+'****'+d.publicKey.slice(-4):'Not set'}</strong>`;
-      document.getElementById('vt-mode').value=d.mode||'sandbox';
-      document.getElementById('vt-url').value=d.baseUrl||'';
-    } else {el.textContent='No config saved yet. Using defaults.';}
-  }catch(e){el.textContent='Error loading config.';}
-}
-async function loadVtpassConfig2(){
-  try{
-    const s=await db.collection('settings').doc('vtpass').get();
-    if(s.exists){
-      const d=s.data();
-      const el=document.getElementById('vt-admin-current');
-      if(el)el.innerHTML=`Mode: <strong>${d.mode||'sandbox'}</strong> · URL: <strong>${d.baseUrl||'—'}</strong><br/>Public Key: <strong>${d.publicKey?d.publicKey.slice(0,4)+'****'+d.publicKey.slice(-4):'Not set'}</strong>`;
-      const m=document.getElementById('vt-mode2');if(m)m.value=d.mode||'sandbox';
-      const u=document.getElementById('vt-url2');if(u)u.value=d.baseUrl||'';
+// ===== API SETTINGS FUNCTIONS =====
+
+// Sub-tab switcher
+function apiSubTab(tab){
+  ['settings','diagnostics','logs','txcheck'].forEach(t=>{
+    const btn=document.getElementById('ast-'+t);
+    if(btn){
+      btn.style.background=t===tab?'var(--green)':'#fff';
+      btn.style.color=t===tab?'#fff':'var(--g600)';
+      btn.style.border=t===tab?'none':'1.5px solid var(--g200)';
     }
-  }catch(e){}
-}
-async function saveVtpass(){
-  const mode=document.getElementById('vt-mode')?.value;
-  const pub=document.getElementById('vt-pub')?.value.trim();
-  const sec=document.getElementById('vt-sec')?.value.trim();
-  const _rawUrl=document.getElementById('vt-url')?.value.trim();
-  const url=_rawUrl?(function(u){u=u.replace(/\/+$/,'');return u.endsWith('/api')?u:u+'/api';}(_rawUrl)):'';
-  if(!pub||!sec||!url){toast('All fields required');return;}
-  await db.collection('settings').doc('vtpass').set({mode,publicKey:pub,secretKey:sec,baseUrl:url,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:CU?.email});
-  toast('VTPass config saved!');closeM('m-vtpass');
-}
-async function saveVtpass2(){
-  const mode=document.getElementById('vt-mode2')?.value;
-  const pub=document.getElementById('vt-pub2')?.value.trim();
-  const sec=document.getElementById('vt-sec2')?.value.trim();
-  const _rawUrl2=document.getElementById('vt-url2')?.value.trim();
-  const url=_rawUrl2?(function(u){u=u.replace(/\/+$/,'');return u.endsWith('/api')?u:u+'/api';}(_rawUrl2)):'';
-  if(!pub||!sec||!url){toast('All fields required');return;}
-  await db.collection('settings').doc('vtpass').set({mode,publicKey:pub,secretKey:sec,baseUrl:url,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:CU?.email});
-  toast('VTPass config saved!');
-  const r=document.getElementById('vt-result2');if(r){r.style.display='block';r.style.background='#dcfce7';r.style.color='#15803d';r.textContent='✅ Configuration saved successfully!';}
-}
-async function testVtpass(){
-  const r=document.getElementById('vt-result');
-  if(r){r.style.display='block';r.style.background='#f8fafc';r.innerHTML='<div style="padding:12px;color:var(--g500);font-size:13px">⏳ Running diagnostic on all services...</div>';}
-  await getVTP();
-  const results=[];
-
-  // 1. Connection via GET service-categories
-  try{
-    const j=await vtpFetch('service-categories',{method:'GET'});
-    const ok=!!(j&&(j.content||j.response_description));
-    results.push({ok,label:'Connection & Auth',detail:ok?'✅ Connected. Response: '+JSON.stringify(j).slice(0,80):'⚠ Got response but check auth: '+JSON.stringify(j).slice(0,80)});
-  }catch(e){results.push({ok:false,label:'Connection & Auth',detail:'❌ '+e.message});}
-
-  // 2. Data/Cable/Electricity plans — airtime has NO variations (normal, not an error)
-  const svcs=[
-    {id:'mtn-data',label:'MTN Data',hasPlans:true},
-    {id:'airtel-data',label:'Airtel Data',hasPlans:true},
-    {id:'glo-data',label:'Glo Data',hasPlans:true},
-    {id:'etisalat-data',label:'9mobile Data',hasPlans:true},
-    {id:'dstv',label:'DSTV',hasPlans:true},
-    {id:'gotv',label:'GOtv',hasPlans:true},
-    {id:'startimes',label:'Startimes',hasPlans:true},
-    {id:'ikeja-electric',label:'Ikeja Electric',hasPlans:true},
-    {id:'ekedc',label:'EKEDC',hasPlans:true},
-    {id:'abuja-electric',label:'Abuja Electric',hasPlans:true},
-    {id:'phed',label:'PHED',hasPlans:true},
-  ];
-  // Airtime — no variations needed, just note it
-  ['mtn','airtel','glo','etisalat'].forEach(id=>{
-    results.push({ok:true,label:id.toUpperCase()+' Airtime ('+id+')',detail:'✅ Airtime needs no plan selection — purchases directly'});
   });
-  for(const svc of svcs){
-    try{
-      const j=await vtpFetch('service-variations?serviceID='+svc.id,{method:'GET'});
-      const vars=j?.content?.varations||j?.content?.variations||[];
-      const ok=vars.length>0;
-      results.push({ok,label:svc.label+' ('+svc.id+')',detail:ok?'✅ '+vars.length+' plan(s) ready':'❌ 0 plans — enable at vtpass.com → Sandbox → Services. Raw: '+JSON.stringify(j).slice(0,100)});
-    }catch(e){results.push({ok:false,label:svc.label+' ('+svc.id+')',detail:'❌ '+e.message.slice(0,100)});}
-  }
-
-  if(r){
-    const ok=results.filter(x=>x.ok).length, fail=results.filter(x=>!x.ok).length;
-    r.style.background='#fff';
-    r.innerHTML='<div style="font-weight:700;font-size:13px;margin-bottom:6px">Diagnostic: '+ok+' ✅ · '+fail+' ❌</div>'
-      +'<div style="font-size:11px;color:var(--g500);margin-bottom:10px">Base: '+vtpBase()+' · Key: '+VTP.pubKey.slice(0,16)+'...</div>'
-      +results.map(x=>'<div style="display:flex;gap:8px;padding:5px 0;border-bottom:1px solid #f1f5f9;font-size:11px">'
-        +'<span style="flex-shrink:0">'+(x.ok?'✅':'❌')+'</span>'
-        +'<div><div style="font-weight:600">'+x.label+'</div><div style="color:'+(x.ok?'#15803d':'#dc2626')+'">'+x.detail+'</div></div></div>').join('')
-      +'<div style="margin-top:10px;background:#fef3c7;border-radius:8px;padding:10px;font-size:11px;color:#92400e;line-height:1.8">'
-      +'<strong>Sandbox test values:</strong><br>MTN airtime/data: 08011111111<br>DSTV smartcard: 1212121212<br>Meter number: 1234567890<br>'
-      +'<strong>Enable services:</strong> vtpass.com → Login → Sandbox → Request Services</div>';
-  }
-}
-async function testVtpass2(){
-  const r=document.getElementById('vt-result2');
-  if(r){r.style.display='block';r.innerHTML='<div style="padding:8px;font-size:12px;color:var(--g500)">⏳ Testing...</div>';}
-  await testVtpass();
-  const r1=document.getElementById('vt-result');
-  if(r&&r1)r.innerHTML=r1.innerHTML;
+  const el=document.getElementById('api-sub-content');
+  if(!el) return;
+  if(tab==='settings')    renderApiSettings(el);
+  if(tab==='diagnostics') renderApiDiagnostics(el);
+  if(tab==='logs')        renderApiLogs(el);
+  if(tab==='txcheck')     renderTxChecker(el);
 }
 
-// ── Fetch VTPass config before VTU calls ──
-async function getVtpassConfig(){
+async function renderApiSettings(el){
+  el.innerHTML='<div style="text-align:center;padding:24px;color:var(--g400)">Loading config...</div>';
+  // Load saved config from Firestore, fall back to API_DEFAULTS
+  let cfg = Object.assign({}, API_DEFAULTS);
   try{
-    const s=await db.collection('settings').doc('vtpass').get();
-    if(s.exists)return s.data();
+    const s = await db.collection('settings').doc('apiconfig').get();
+    if(s.exists) Object.assign(cfg, s.data());
   }catch(e){}
-  return {mode:'sandbox',baseUrl:'https://sandbox.vtpass.com/api',publicKey:'',secretKey:''};
+  const enabled = typeof cfg.enabled==='undefined' ? true : cfg.enabled;
+  el.innerHTML=`
+  <div class="card" style="padding:18px;margin-bottom:12px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+      <div style="font-weight:700;font-size:15px">API Settings</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:12px;color:var(--g500)">${enabled?'Enabled':'Disabled'}</span>
+        <div class="tsw ${enabled?'on':''}" id="api-enabled-sw" onclick="toggleApiEnabled(this)"></div>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--g500);margin-bottom:16px">Nellobytesystems VTU integration — credentials stored securely in database</div>
+
+    <div style="margin-bottom:12px">
+      <label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Provider Name</label>
+      <input class="inp" id="api-providerName" value="${cfg.providerName||API_DEFAULTS.providerName}"/>
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Base URL</label>
+      <input class="inp" id="api-baseUrl" value="${cfg.baseUrl||API_DEFAULTS.baseUrl}"/>
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">User ID</label>
+      <input class="inp" id="api-userId" value="${cfg.userId||API_DEFAULTS.userId}"/>
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">
+        API Key &nbsp;<span style="color:#dc2626;font-size:10px;background:#fef2f2;padding:2px 7px;border-radius:4px">Enter after deployment</span>
+      </label>
+      <input class="inp" type="password" id="api-apiKey" placeholder="Enter your Nellobytesystems API Key" value="${cfg.apiKey?'••••••••••••':''}" autocomplete="off"/>
+      <div style="font-size:11px;color:var(--g400);margin-top:4px">Stored encrypted in database. Never exposed to users.</div>
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Callback URL <span style="font-size:10px;color:var(--g400)">(optional)</span></label>
+      <input class="inp" id="api-callbackUrl" value="${cfg.callbackUrl||''}" placeholder="https://yourapp.com/callback"/>
+    </div>
+
+    <div style="background:#f8fafc;border-radius:10px;padding:12px;margin-bottom:14px">
+      <div style="font-size:11px;font-weight:700;color:var(--g500);margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em">API Endpoints</div>
+      ${Object.entries(API_DEFAULTS.endpoints).map(([k,v])=>`
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <span style="font-size:11px;color:var(--g500);min-width:80px;text-transform:capitalize">${k}</span>
+        <input class="inp" id="api-ep-${k}" value="${(cfg.endpoints&&cfg.endpoints[k])||v}" style="padding:7px 10px;font-size:12px"/>
+      </div>`).join('')}
+    </div>
+
+    <div style="display:flex;gap:8px">
+      <button onclick="testApiConnection()" style="flex:1;padding:11px;border-radius:10px;background:#dbeafe;border:1px solid #93c5fd;color:#1d4ed8;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">🔗 Test Connection</button>
+      <button onclick="saveApiConfig()" class="btn-g" style="flex:1;padding:11px;border-radius:10px;font-size:13px">💾 Save Config</button>
+    </div>
+    <div id="api-save-result" style="display:none;border-radius:10px;padding:11px;font-size:13px;margin-top:10px"></div>
+  </div>`;
 }
+
+function toggleApiEnabled(el){
+  el.classList.toggle('on');
+}
+
+async function saveApiConfig(){
+  const r = document.getElementById('api-save-result');
+  r.style.display='block'; r.style.background='#fef3c7'; r.style.color='#92400e';
+  r.textContent='Saving...';
+  try{
+    const apiKeyInput = (document.getElementById('api-apiKey')?.value||'').trim();
+    const eps = {};
+    Object.keys(API_DEFAULTS.endpoints).forEach(k=>{
+      const v=(document.getElementById('api-ep-'+k)?.value||'').trim();
+      if(v) eps[k]=v;
+    });
+    const data = {
+      providerName : (document.getElementById('api-providerName')?.value||'').trim()||API_DEFAULTS.providerName,
+      baseUrl      : (document.getElementById('api-baseUrl')?.value||'').trim()||API_DEFAULTS.baseUrl,
+      userId       : (document.getElementById('api-userId')?.value||'').trim()||API_DEFAULTS.userId,
+      callbackUrl  : (document.getElementById('api-callbackUrl')?.value||'').trim(),
+      enabled      : document.getElementById('api-enabled-sw')?.classList.contains('on'),
+      endpoints    : eps,
+      updatedAt    : firebase.firestore.FieldValue.serverTimestamp(),
+      updatedBy    : CU?.email||''
+    };
+    // Only update apiKey if user typed something new (not the placeholder dots)
+    if(apiKeyInput && !apiKeyInput.includes('•')){ data.apiKey = apiKeyInput; }
+    await db.collection('settings').doc('apiconfig').set(data, {merge:true});
+    // Reload runtime config
+    await loadApiConfig();
+    r.style.background='#dcfce7'; r.style.color='#15803d';
+    r.textContent='✅ Configuration saved! System is ready.';
+    toast('API config saved!');
+  }catch(e){
+    r.style.background='#fef2f2'; r.style.color='#dc2626';
+    r.textContent='❌ Error: '+e.message;
+  }
+}
+
+async function testApiConnection(){
+  const r = document.getElementById('api-save-result');
+  if(!r){ toast('Save first, then test.'); return; }
+  r.style.display='block'; r.style.background='#fef3c7'; r.style.color='#92400e';
+  r.innerHTML='⏳ Testing connection...';
+  // Temporarily load what's in the form
+  await loadApiConfig();
+  const startTime = Date.now();
+  try{
+    // Test: check wallet balance — lightest possible call
+    const res = await apiFetch('balance', {}, {type:'test'});
+    const ms  = Date.now()-startTime;
+    const ok  = res && !String(res.status||'').toLowerCase().includes('error') && !String(res.message||'').toLowerCase().includes('invalid');
+    if(ok){
+      r.style.background='#dcfce7'; r.style.color='#15803d';
+      r.innerHTML='✅ Connection successful ('+ms+'ms)<br/><span style="font-size:11px">Balance: '+(res.balance||res.Balance||res.WalletBalance||JSON.stringify(res).slice(0,60))+'</span>';
+    } else {
+      r.style.background='#fef2f2'; r.style.color='#dc2626';
+      r.innerHTML='⚠️ Connected but API returned: <strong>'+JSON.stringify(res).slice(0,120)+'</strong>';
+    }
+  }catch(e){
+    r.style.background='#fef2f2'; r.style.color='#dc2626';
+    r.innerHTML='❌ Connection failed: '+e.message;
+  }
+}
+
+async function renderApiDiagnostics(el){
+  el.innerHTML='<div style="text-align:center;padding:24px;color:var(--g400)">⏳ Running diagnostics...</div>';
+  await loadApiConfig();
+  const tests = [
+    {key:'airtime',    label:'Airtime', network:'MTN',    phone:'08011111111', amount:100},
+    {key:'data',       label:'Data',    network:'MTN',    planCode:'',         amount:100},
+    {key:'cable',      label:'Cable TV',network:'DSTV',   smartcard:'',        amount:100},
+    {key:'electricity',label:'Electricity',network:'EKEDC',meter:'',           amount:500},
+  ];
+
+  let html = `
+  <div class="card" style="padding:16px;margin-bottom:12px">
+    <div style="font-weight:700;font-size:14px;margin-bottom:4px">🔬 API Diagnostics</div>
+    <div style="font-size:11px;color:var(--g500);margin-bottom:14px">
+      Provider: <strong>${API_CFG.providerName}</strong> &bull;
+      UserID: <strong>${API_CFG.userId||'⚠ Not set'}</strong> &bull;
+      API Key: <strong>${API_CFG.apiKey?'Set ('+API_CFG.apiKey.length+' chars)':'⚠ NOT SET'}</strong> &bull;
+      Enabled: <strong>${API_CFG.enabled?'Yes':'No'}</strong>
+    </div>
+    ${!API_CFG.apiKey?'<div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px;color:#dc2626">⚠️ API Key is not set. Go to Settings tab and enter your API Key.</div>':''}
+    <div style="font-size:11px;color:var(--g500);margin-bottom:12px">Checking all endpoints...</div>`;
+
+  el.innerHTML = html + '<div style="padding:12px;font-size:12px;color:var(--g400)">⏳ Running tests...</div></div>';
+
+  const results = [];
+  for(const t of tests){
+    try{
+      const start = Date.now();
+      let res;
+      if(t.key==='airtime'){
+        res = await apiFetch('airtime',{MobileNumber:t.phone,NetworkID:t.network,Amount:t.amount,RequestID:'DIAG_'+Date.now()},{type:'diag'});
+      } else if(t.key==='data'){
+        res = await apiFetch('dataPlans',{NetworkID:t.network},{type:'diag'});
+      } else if(t.key==='cable'){
+        res = await apiFetch('cablePlans',{NetworkID:t.network},{type:'diag'});
+      } else {
+        res = await apiFetch('balance',{},{type:'diag'});
+      }
+      const ms = Date.now()-start;
+      const rawStr = JSON.stringify(res).slice(0,200);
+      const ok = res && !String(JSON.stringify(res)).toLowerCase().includes('invalid api') && !String(JSON.stringify(res)).toLowerCase().includes('invalid key');
+      results.push({label:t.label, ok, ms, raw:rawStr});
+    }catch(e){
+      results.push({label:t.label, ok:false, ms:0, raw:e.message});
+    }
+  }
+
+  const rows = results.map(r=>`
+    <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid #f1f5f9">
+      <span style="font-size:16px">${r.ok?'✅':'❌'}</span>
+      <div style="flex:1">
+        <div style="font-weight:600;font-size:13px">${r.label} ${r.ms?'<span style="font-size:10px;color:var(--g400)">('+r.ms+'ms)</span>':''}</div>
+        <div style="font-size:11px;color:${r.ok?'var(--ok)':'#dc2626'};margin-top:2px">${r.raw}</div>
+      </div>
+    </div>`).join('');
+
+  el.innerHTML = `
+  <div class="card" style="padding:16px;margin-bottom:12px">
+    <div style="font-weight:700;font-size:14px;margin-bottom:4px">🔬 API Diagnostics — ${results.filter(r=>r.ok).length}/${results.length} OK</div>
+    <div style="font-size:11px;color:var(--g500);margin-bottom:14px">
+      Provider: <strong>${API_CFG.providerName}</strong> &bull;
+      UserID: <strong>${API_CFG.userId||'⚠ Not set'}</strong> &bull;
+      API Key: <strong>${API_CFG.apiKey?'✅ Set':'❌ NOT SET'}</strong> &bull;
+      Base URL: <strong>${API_CFG.baseUrl}</strong>
+    </div>
+    ${!API_CFG.apiKey?'<div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px;color:#dc2626">⚠️ API Key not set. Enter it in Settings tab then Save.</div>':''}
+    ${rows}
+    <button onclick="renderApiDiagnostics(document.getElementById('api-sub-content'))" style="width:100%;margin-top:14px;padding:10px;background:#f1f5f9;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">🔄 Re-run Diagnostics</button>
+  </div>`;
+}
+
+async function renderApiLogs(el){
+  el.innerHTML='<div style="text-align:center;padding:24px;color:var(--g400)">⏳ Loading API logs...</div>';
+  try{
+    const snap = await db.collection('api_logs').orderBy('createdAt','desc').limit(50).get();
+    if(snap.empty){ el.innerHTML='<div class="card" style="padding:32px;text-align:center;color:var(--g400)"><div style="font-size:36px;margin-bottom:8px">📋</div><p>No API logs yet. Transactions will appear here.</p></div>'; return; }
+    const logs = snap.docs.map(d=>({id:d.id,...d.data()}));
+    el.innerHTML=`
+    <div style="font-weight:700;font-size:14px;margin-bottom:10px">📋 API Request Logs (last 50)</div>
+    ${logs.map(lg=>{
+      const ok = lg.status==='completed';
+      const parsed = lg.parsed ? JSON.parse(lg.parsed||'{}') : {};
+      const success = isApiSuccess(parsed);
+      return `<div class="card" style="padding:12px;margin-bottom:8px;border-left:4px solid ${success?'var(--green)':lg.status==='pending'?'#d97706':'#dc2626'}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+          <div>
+            <span class="chip ${success?'c-ok':lg.status==='pending'?'c-warn':'c-err'}">${lg.status||'?'}</span>
+            <strong style="font-size:13px;margin-left:6px">${lg.endpoint||lg.type||'?'}</strong>
+          </div>
+          <span style="font-size:10px;color:var(--g400)">${lg.createdAt?.toDate?lg.createdAt.toDate().toLocaleString():''}</span>
+        </div>
+        <div style="font-size:11px;color:var(--g500);margin-bottom:4px">Ref: ${lg.requestId||'—'} &bull; HTTP: ${lg.httpStatus||'—'} &bull; User: ${lg.userId?.slice(0,8)||'—'}</div>
+        <details><summary style="font-size:11px;cursor:pointer;color:var(--blue)">View response</summary>
+          <pre style="background:#f8fafc;border-radius:6px;padding:8px;font-size:10px;overflow-x:auto;margin-top:4px;max-height:100px">${(lg.rawResponse||'').slice(0,400)}</pre>
+        </details>
+      </div>`;
+    }).join('')}`;
+  }catch(e){
+    el.innerHTML='<div class="card" style="padding:16px;color:#dc2626">Error loading logs: '+e.message+'<br/><span style="font-size:11px">You may need to create a Firestore index for api_logs.</span></div>';
+  }
+}
+
+async function renderTxChecker(el){
+  el.innerHTML=`
+  <div class="card" style="padding:18px;margin-bottom:12px">
+    <div style="font-weight:700;font-size:15px;margin-bottom:4px">🔍 Transaction Status Checker</div>
+    <div style="font-size:12px;color:var(--g500);margin-bottom:14px">Check the status of any transaction using its Request ID</div>
+    <div style="margin-bottom:12px">
+      <label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Request ID / Reference</label>
+      <input class="inp" id="tx-check-id" placeholder="e.g. ZMN178060197..."/>
+    </div>
+    <button onclick="runTxCheck()" class="btn-g" style="width:100%;padding:12px;border-radius:10px;font-size:14px">🔍 Check Status</button>
+    <div id="tx-check-result" style="margin-top:14px"></div>
+  </div>`;
+}
+
+async function runTxCheck(){
+  const rid = document.getElementById('tx-check-id')?.value.trim();
+  const el  = document.getElementById('tx-check-result');
+  if(!rid||!el){ toast('Enter a Request ID'); return; }
+  el.innerHTML='<div style="text-align:center;padding:16px;color:var(--g400)">⏳ Checking...</div>';
+  try{
+    // Check Firestore first
+    const snap = await db.collection('transactions').where('ref','==',rid).limit(1).get();
+    let firestoreRow = '';
+    if(!snap.empty){
+      const tx = {id:snap.docs[0].id, ...snap.docs[0].data()};
+      firestoreRow = `<div style="background:#f0fdf4;border-radius:8px;padding:10px;margin-bottom:10px;font-size:12px">
+        <div style="font-weight:700;margin-bottom:4px">📁 Firestore Record</div>
+        <div>Status: <strong style="color:${tx.status==='success'?'var(--ok)':'#dc2626'}">${tx.status}</strong></div>
+        <div>Type: ${tx.type} · Amount: NGN ${fmt(tx.amount||0)}</div>
+        <div>API Code: ${tx.apiCode||'—'} · ${tx.apiDesc||'—'}</div>
+        <div style="font-size:10px;color:var(--g400);margin-top:3px">${fdate(tx.createdAt)}</div>
+      </div>`;
+    }
+    // Also query provider
+    let providerRow = '';
+    try{
+      const res = await checkTxStatus(rid);
+      providerRow = `<div style="background:#f8fafc;border-radius:8px;padding:10px;font-size:12px">
+        <div style="font-weight:700;margin-bottom:4px">🌐 Provider Response</div>
+        <pre style="font-size:11px;overflow-x:auto">${JSON.stringify(res,null,2).slice(0,400)}</pre>
+      </div>`;
+    }catch(e){
+      providerRow = `<div style="font-size:12px;color:var(--g500);padding:8px;background:#f8fafc;border-radius:8px">Provider query: ${e.message}</div>`;
+    }
+    el.innerHTML = firestoreRow + providerRow || '<div style="font-size:13px;color:var(--g400);text-align:center;padding:16px">No record found for this Request ID.</div>';
+  }catch(e){
+    el.innerHTML='<div style="color:#dc2626;font-size:13px">Error: '+e.message+'</div>';
+  }
+}
+
+// Legacy stubs (no-op) to prevent any remaining references from crashing
+async function loadVtpassConfig(){}
+async function loadVtpassConfig2(){}
+async function saveVtpass(){}
+async function saveVtpass2(){}
+async function testVtpass(){ testApiConnection(); }
+async function testVtpass2(){ testApiConnection(); }
+async function getCK(){ return loadApiConfig(); }
+function vtpGetHeaders(){ return {}; }
+function vtpPostHeaders(){ return {}; }
+async function getVTP(){ return loadApiConfig(); }
+
+
 
 // ── Real-time transaction sync ──
 function startRealtimeSync(){
@@ -4021,9 +4247,10 @@ async function loadRewardsHistoryAdmin(el){
   </div>
   <div id="vt-current" style="background:#f1f5f9;border-radius:10px;padding:12px;margin-bottom:14px;font-size:12px;color:var(--g600)">Loading current config...</div>
   <div style="margin-bottom:10px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Mode</label><select class="inp" id="vt-mode"><option value="sandbox">Sandbox (Testing)</option><option value="live">Live (Production)</option></select></div>
-  <div style="margin-bottom:10px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">API Public Key</label><input class="inp" id="vt-pub" placeholder="Enter public key"/></div>
-  <div style="margin-bottom:10px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">API Secret Key</label><input class="inp" type="password" id="vt-sec" placeholder="Enter secret key"/></div>
-  <div style="margin-bottom:14px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Base URL</label><input class="inp" id="vt-url" placeholder="https://sandbox.vtpass.com/api or https://api-service.vtpass.com/api"/></div>
+  <div style="margin-bottom:10px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">API Key <span style='color:#dc2626;font-size:10px;font-weight:400'>(static key from VTPass profile)</span></label><input class="inp" id="vt-api" placeholder="e.g. 03f401bf628bf9bc9013..."/></div>
+  <div style="margin-bottom:10px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Public Key <span style='color:#64748b;font-size:10px;font-weight:400'>(PK_...)</span></label><input class="inp" id="vt-pub" placeholder="PK_510dca003b..."/></div>
+  <div style="margin-bottom:10px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Secret Key <span style='color:#64748b;font-size:10px;font-weight:400'>(SK_...)</span></label><input class="inp" type="password" id="vt-sec" placeholder="SK_..."/></div>
+  <div style="margin-bottom:14px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Base URL</label><input class="inp" id="vt-url" placeholder="https://sandbox.vtpass.com or https://vtpass.com"/></div>
   <div style="display:flex;gap:8px;margin-bottom:10px">
     <button onclick="testVtpass()" style="flex:1;padding:11px;border-radius:10px;background:#dbeafe;border:1px solid #93c5fd;color:#1d4ed8;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">🔗 Test Connection</button>
     <button onclick="saveVtpass()" class="btn-g" style="flex:1;padding:11px;border-radius:10px;font-size:13px">💾 Save Config</button>
