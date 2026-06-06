@@ -2427,6 +2427,7 @@ function aTab(tab){
             <div style="display:flex;gap:6px;flex-wrap:wrap">
               ${ln.status==='approved'?`<button onclick="activateLoan('${ln.id}','${ln.userId}',${amt})" style="flex:1;padding:7px 10px;background:#dcfce7;border:1px solid #86efac;color:#15803d;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;min-width:80px">Disburse Wallet</button>`:''}
               <button onclick="markLoanRepaid('${ln.id}','${ln.userId}',${amt})" style="flex:1;padding:7px 10px;background:#dbeafe;border:1px solid #93c5fd;color:#1d4ed8;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;min-width:80px">Mark Repaid</button>
+              <button onclick="openAdminCashRepayment('${ln.id}','${ln.userId}','${ln.userName||ln.userEmail||''}',${amt})" style="flex:1;padding:7px 10px;background:#fef3c7;border:1px solid #fde047;color:#92400e;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;min-width:80px">💵 Cash Pay</button>
               <button onclick="markLoanDefaulted('${ln.id}','${ln.userId}',${amt})" style="flex:1;padding:7px 10px;background:#fee2e2;border:1px solid #fca5a5;color:#dc2626;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;min-width:80px">Default</button>
               ${ln.repaymentSchedule?`<button onclick="showAdminSchedule('${ln.id}')" style="flex:1;padding:7px 10px;background:#ede9fe;border:1px solid #c4b5fd;color:#5b21b6;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;min-width:80px">Schedule</button>`:''}
             </div>
@@ -2909,16 +2910,22 @@ async function viewUserDetails(uid){
   try{
     const [uS,txS,lS,iS,wS]=await Promise.all([
       db.collection('users').doc(uid).get(),
-      db.collection('transactions').where('userId','==',uid).orderBy('createdAt','desc').limit(10).get(),
-      db.collection('loans').where('userId','==',uid).orderBy('createdAt','desc').limit(5).get(),
-      db.collection('investments').where('userId','==',uid).orderBy('createdAt','desc').limit(5).get(),
-      db.collection('withdrawals').where('userId','==',uid).orderBy('createdAt','desc').limit(5).get()
+      db.collection('transactions').where('userId','==',uid).get(),
+      db.collection('loans').where('userId','==',uid).get(),
+      db.collection('investments').where('userId','==',uid).get(),
+      db.collection('withdrawals').where('userId','==',uid).get()
     ]);
+    // Sort in JS to avoid Firestore composite index requirements
+    const sortByDate=(docs,limit=10)=>docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>{const ta=a.createdAt?.toDate?a.createdAt.toDate():new Date(a.createdAt||0);const tb=b.createdAt?.toDate?b.createdAt.toDate():new Date(b.createdAt||0);return tb-ta;}).slice(0,limit);
+    const txDocs=sortByDate(txS.docs,10);
+    const lDocs=sortByDate(lS.docs,5);
+    const iDocs=sortByDate(iS.docs,5);
+    const wDocs=sortByDate(wS.docs,5);
     if(!uS.exists){body.innerHTML='<p style="color:#dc2626;text-align:center;padding:20px">User not found.</p>';return;}
     const u=uS.data();
     const sc=u.status==='suspended'?'#dc2626':u.status==='inactive'?'#d97706':'#16a34a';
     const fd=ts=>{if(!ts)return'—';const d=ts.toDate?ts.toDate():new Date(ts);return d.toLocaleDateString('en-NG',{day:'2-digit',month:'short',year:'numeric'});};
-    const tRows=txS.docs.map(d=>{const t=d.data();return'<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f8fafc;font-size:12px"><div style="flex:1;min-width:0"><div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(t.description||t.type||'—')+'</div><div style="color:var(--g400);font-size:11px">'+fd(t.createdAt)+'</div></div><div style="font-weight:700;color:'+(t.type==='credit'?'#16a34a':'#dc2626')+';margin-left:8px">'+(t.type==='credit'?'+':'−')+'NGN '+fmt(t.amount||0)+'</div></div>';}).join('')||'<div style="text-align:center;padding:14px;color:var(--g400);font-size:12px">No transactions</div>';
+    const tRows=txDocs.map(t=>'<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f8fafc;font-size:12px"><div style="flex:1;min-width:0"><div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(t.description||t.type||'—')+'</div><div style="color:var(--g400);font-size:11px">'+fd(t.createdAt)+'</div></div><div style="font-weight:700;color:'+(t.type==='credit'?'#16a34a':'#dc2626')+';margin-left:8px">'+(t.type==='credit'?'+':'−')+'NGN '+fmt(t.amount||0)+'</div></div>').join('')||'<div style="text-align:center;padding:14px;color:var(--g400);font-size:12px">No transactions</div>';
     const av=u.photoURL?'<img src="'+u.photoURL+'" style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:3px solid #e2e8f0;flex-shrink:0"/>'
       :'<div style="width:64px;height:64px;background:linear-gradient(135deg,#16a34a,#22c55e);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:28px;color:#fff;flex-shrink:0">'+(u.name||'U')[0].toUpperCase()+'</div>';
     body.innerHTML=
@@ -2949,9 +2956,9 @@ async function viewUserDetails(uid){
       '</div></div>'+
       '<div class="card" style="padding:14px;margin-bottom:14px"><div style="font-size:12px;font-weight:700;color:var(--g700);margin-bottom:10px">RECENT TRANSACTIONS (Last 10)</div>'+tRows+'</div>'+
       '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px">'+
-      '<div class="card" style="padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:#7c3aed">'+iS.size+'</div><div style="font-size:11px;color:var(--g500)">Investments</div></div>'+
-      '<div class="card" style="padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:#d97706">'+lS.size+'</div><div style="font-size:11px;color:var(--g500)">Loans</div></div>'+
-      '<div class="card" style="padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:#0284c7">'+wS.size+'</div><div style="font-size:11px;color:var(--g500)">Withdrawals</div></div>'+
+      '<div class="card" style="padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:#7c3aed">'+iDocs.length+'</div><div style="font-size:11px;color:var(--g500)">Investments</div></div>'+
+      '<div class="card" style="padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:#d97706">'+lDocs.length+'</div><div style="font-size:11px;color:var(--g500)">Loans</div></div>'+
+      '<div class="card" style="padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:#0284c7">'+wDocs.length+'</div><div style="font-size:11px;color:var(--g500)">Withdrawals</div></div>'+
       '</div>'+
       '<div style="display:flex;gap:8px;flex-wrap:wrap">'+
       '<a href="mailto:'+(u.email||'')+'" style="flex:1;min-width:120px;padding:10px;background:#dbeafe;border:1px solid #93c5fd;color:#1d4ed8;border-radius:9px;font-size:12px;font-weight:700;text-decoration:none;text-align:center">✉ Email</a>'+
@@ -4046,10 +4053,23 @@ async function approveLoan(loanId, userId){
 
 async function activateLoan(loanId, userId, amount){
   const totalRepay = amount * 1.24;
+  // Fetch existing loan data to preserve/generate repayment schedule
+  const lSnap = await db.collection('loans').doc(loanId).get();
+  const lnData = lSnap.data() || {};
+  const now = new Date();
+  // Use existing schedule (from approval) or generate a fresh one starting today
+  let schedule = lnData.repaymentSchedule;
+  if(!schedule || !schedule.length){
+    schedule = generateRepaymentSchedule(now, totalRepay);
+  }
   await db.collection('loans').doc(loanId).update({
     status: 'active',
     activatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-    totalRepayable: totalRepay
+    totalRepayable: totalRepay,
+    approvedAmount: amount,
+    dailyRepayment: Math.round((totalRepay/30)*100)/100,
+    repaymentSchedule: schedule,
+    lastDeductionDate: null
   });
   await db.collection('users').doc(userId).update({balance: firebase.firestore.FieldValue.increment(amount)});
   await db.collection('transactions').add({userId, type:'loan_disbursement', amount, description:'Loan Disbursed to Wallet', status:'success', createdAt: firebase.firestore.FieldValue.serverTimestamp()});
@@ -4075,6 +4095,125 @@ async function markLoanDefaulted(loanId, userId, amount){
   await db.collection('recoveryLog').add({loanId, userId, userName: ln?.userName||'', amount, guarantor1: ln?.guarantor1||{}, guarantor2: ln?.guarantor2||{}, createdAt: firebase.firestore.FieldValue.serverTimestamp(), status:'initiated', notes:'Auto-logged on default'});
   toast('Loan defaulted. Recovery workflow initiated.');
   loadAdmin();
+}
+
+// ── Admin: open cash repayment modal ──
+function openAdminCashRepayment(loanId, userId, userName, loanAmt){
+  // Build modal content dynamically
+  let existing = document.getElementById('m-admin-cash-repay');
+  if(!existing){
+    existing = document.createElement('div');
+    existing.id = 'm-admin-cash-repay';
+    existing.className = 'modal';
+    document.body.appendChild(existing);
+  }
+  existing.innerHTML = `
+  <div class="mbox" style="max-width:480px;margin:0 auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div>
+        <h3 style="font-size:16px;font-weight:800">💵 Record Cash Repayment</h3>
+        <p style="font-size:12px;color:var(--g400);margin-top:2px">User: <strong>${userName}</strong></p>
+      </div>
+      <button onclick="closeM('m-admin-cash-repay')" style="background:var(--g100);border:none;width:32px;height:32px;border-radius:50%;cursor:pointer;color:var(--g600);font-size:16px">✕</button>
+    </div>
+    <div class="info-box" style="margin-bottom:14px">
+      <p style="font-size:12px;color:var(--green-d);line-height:1.7">Record a cash payment made by the user in person. This will update the loan repayment schedule and log the transaction — wallet balance is <strong>not</strong> deducted (cash was paid physically).</p>
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Repayment Amount (NGN)</label>
+      <input class="inp" type="number" id="cash-repay-amt" placeholder="Enter amount paid in cash"/>
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Payment Date</label>
+      <input class="inp" type="date" id="cash-repay-date" value="${new Date().toISOString().split('T')[0]}"/>
+    </div>
+    <div style="margin-bottom:16px">
+      <label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Note (optional)</label>
+      <input class="inp" id="cash-repay-note" placeholder="e.g. Cash collected at office"/>
+    </div>
+    <button onclick="adminRecordCashRepayment('${loanId}','${userId}')" class="btn-g" style="width:100%;padding:13px;border-radius:11px;font-size:15px">✅ Record Cash Payment</button>
+  </div>`;
+  existing.classList.add('open');
+}
+
+async function adminRecordCashRepayment(loanId, userId){
+  const amtEl = document.getElementById('cash-repay-amt');
+  const dateEl = document.getElementById('cash-repay-date');
+  const noteEl = document.getElementById('cash-repay-note');
+  const amt = parseFloat(amtEl?.value || 0);
+  const payDate = dateEl?.value || new Date().toISOString().split('T')[0];
+  const note = (noteEl?.value || '').trim();
+  if(!amt || amt <= 0){ toast('Enter a valid repayment amount'); return; }
+  if(!confirm('Record cash payment of NGN '+fmt(amt)+' for this loan?')) return;
+  try{
+    const snap = await db.collection('loans').doc(loanId).get();
+    if(!snap.exists){ toast('Loan not found'); return; }
+    const ln = snap.data();
+    let sch = ln.repaymentSchedule || [];
+    // If no schedule, generate one from activatedAt
+    if(!sch.length){
+      const activatedAt = ln.activatedAt?.toDate ? ln.activatedAt.toDate() : null;
+      if(activatedAt){
+        const totalRepay = ln.totalRepayable || ((ln.approvedAmount||ln.amount)*1.24);
+        sch = generateRepaymentSchedule(activatedAt, totalRepay);
+      }
+    }
+    // Find the first unpaid installment on or before the payment date
+    // and mark it paid (or multiple if amount covers more than one)
+    let remaining = amt;
+    let paidDays = 0;
+    for(let i = 0; i < sch.length; i++){
+      if(sch[i].paid) continue;
+      if(remaining <= 0) break;
+      if(sch[i].dueDate > payDate) break; // only mark days up to payment date
+      const dayAmt = sch[i].amount;
+      if(remaining >= dayAmt){
+        sch[i].paid = true;
+        sch[i].paidAt = new Date(payDate).toISOString();
+        sch[i].cashPayment = true;
+        sch[i].adminNote = note || 'Cash payment recorded by admin';
+        remaining -= dayAmt;
+        paidDays++;
+      } else {
+        // Partial payment — mark as partial
+        sch[i].partialPaid = (sch[i].partialPaid || 0) + remaining;
+        sch[i].adminNote = note || 'Partial cash payment';
+        remaining = 0;
+        paidDays++;
+      }
+    }
+    if(paidDays === 0){
+      // No due installment found — just log as a general payment
+      toast('No due installments found for this date. Payment logged as a transaction only.');
+    }
+    const allPaid = sch.every(s => s.paid);
+    const totalPaid = sch.filter(s=>s.paid).length;
+    await db.collection('loans').doc(loanId).update({
+      repaymentSchedule: sch,
+      status: allPaid ? 'repaid' : 'active',
+      lastCashPaymentDate: payDate
+    });
+    // Log transaction (no wallet deduction — cash was paid physically)
+    await db.collection('transactions').add({
+      userId, type: 'loan_repayment_cash', amount: amt,
+      description: `Cash Loan Repayment — ${paidDays} day(s) (NGN ${fmt(amt)})${note?' · '+note:''}`,
+      status: 'success', loanId,
+      paymentDate: payDate,
+      recordedBy: 'admin',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    // Notify user
+    await addFinanceNotif(userId, '✅ Cash Repayment Recorded',
+      `Admin has recorded your cash payment of NGN ${fmt(amt)} on ${payDate}. ${paidDays} installment(s) marked paid. ${allPaid ? 'Your loan is fully repaid!' : (30-totalPaid)+' days remaining.'}`);
+    if(allPaid){
+      await addFinanceNotif(userId, '🎉 Loan Fully Repaid!', `All 30 daily installments have been recorded. Your loan is now fully repaid. Thank you!`);
+    }
+    closeM('m-admin-cash-repay');
+    toast('✅ Cash payment recorded! '+(paidDays>0?paidDays+' day(s) marked paid.':'Transaction logged.'));
+    aTab('fin-loans');
+  }catch(er){
+    toast('❌ Error: '+er.message);
+  }
 }
 
 async function recordDailyPayment(loanId, userId, dayIndex){
@@ -4472,7 +4611,16 @@ async function runDailyLoanDeductions(){
       const ln=doc.data();
       // Prevent double-deduction on same day
       if(ln.lastDeductionDate===todayStr)continue;
-      const sch=ln.repaymentSchedule||[];
+      let sch=ln.repaymentSchedule||[];
+      // If no schedule exists, generate one from activatedAt date
+      if(!sch.length){
+        const activatedAt=ln.activatedAt?.toDate?ln.activatedAt.toDate():null;
+        if(!activatedAt)continue;
+        const totalRepay=ln.totalRepayable||(( ln.approvedAmount||ln.amount)*1.24);
+        sch=generateRepaymentSchedule(activatedAt,totalRepay);
+        // Save the generated schedule
+        await doc.ref.update({repaymentSchedule:sch,dailyRepayment:Math.round((totalRepay/30)*100)/100,totalRepayable:totalRepay});
+      }
       const dayIdx=sch.findIndex(s=>s.dueDate===todayStr&&!s.paid);
       if(dayIdx===-1)continue;
       const dayAmt=sch[dayIdx].amount;
