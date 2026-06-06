@@ -161,28 +161,71 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--black);over
 
 <!-- ======== PWA INSTALL BANNER ======== -->
 <script>
-// Safe stubs — defined immediately so onclick never throws before main script loads
-window.triggerPwaInstall = window.triggerPwaInstall || function(){
-  var m=document.getElementById('pwa-guide-modal');
-  if(m){m.style.display='flex';}
+// ─────────────────────────────────────────────────────────────
+//  CAPTURE beforeinstallprompt AS EARLY AS POSSIBLE
+//  Must be in the <head> / top of <body> — NOT at bottom of file.
+//  Chrome fires this event once, very early. If we miss it, the
+//  native install dialog is never available for that page load.
+// ─────────────────────────────────────────────────────────────
+window.__pwaPrompt = null;
+window.__pwaInstalled = false;
+
+window.addEventListener('beforeinstallprompt', function(e) {
+  e.preventDefault();                 // stop Chrome's mini infobar
+  window.__pwaPrompt = e;             // stash it globally
+  // Show banner as soon as the prompt is capturable
+  var b = document.getElementById('pwa-banner');
+  if (b) {
+    var dismissed = localStorage.getItem('zmonie_banner_dismissed');
+    var hidePermanently = localStorage.getItem('zmonie_installed');
+    if (!hidePermanently && !(dismissed && Date.now() - parseInt(dismissed) < 3*24*60*60*1000)) {
+      b.style.display = 'flex';
+    }
+  }
+});
+
+window.addEventListener('appinstalled', function() {
+  window.__pwaInstalled = true;
+  window.__pwaPrompt = null;
+  localStorage.setItem('zmonie_installed', '1');
+  var b = document.getElementById('pwa-banner');
+  if (b) b.style.display = 'none';
+});
+
+// Stub functions — overridden below after full script loads
+window.triggerPwaInstall = function() {
+  if (window.__pwaPrompt) {
+    window.__pwaPrompt.prompt();
+    window.__pwaPrompt.userChoice.then(function(r) {
+      if (r.outcome === 'accepted') {
+        localStorage.setItem('zmonie_installed', '1');
+        var b = document.getElementById('pwa-banner');
+        if (b) b.style.display = 'none';
+      }
+      window.__pwaPrompt = null;
+    });
+  } else {
+    // No native prompt available — show manual guide
+    if (window.showInstallGuide) window.showInstallGuide();
+  }
 };
-window.dismissPwaBanner = window.dismissPwaBanner || function(){
-  var b=document.getElementById('pwa-banner');
-  if(b) b.style.display='none';
-  try{localStorage.setItem('zmonie_banner_dismissed', Date.now());}catch(e){}
+window.dismissPwaBanner = function() {
+  var b = document.getElementById('pwa-banner');
+  if (b) b.style.display = 'none';
+  try { localStorage.setItem('zmonie_banner_dismissed', Date.now()); } catch(e) {}
 };
-window.closePwaGuide = window.closePwaGuide || function(){
-  var m=document.getElementById('pwa-guide-modal');
-  if(m) m.style.display='none';
+window.closePwaGuide = function() {
+  var m = document.getElementById('pwa-guide-modal');
+  if (m) m.style.display = 'none';
 };
 </script>
-<div id="pwa-banner" role="banner" aria-label="Install ZMONIE App">
+<div id="pwa-banner" role="banner" aria-label="Install ZMONIE App" style="display:none">
   <div class="pwa-icon"><span style="font-weight:800;font-size:18px;color:#fff">Z</span></div>
   <div class="pwa-info">
     <strong>Install ZMONIE App</strong>
     <span>Fast, secure &amp; works offline</span>
   </div>
-  <button class="pwa-install-btn" id="pwa-install-btn" onclick="triggerPwaInstall()">Install App</button>
+  <button class="pwa-install-btn" id="pwa-install-btn" onclick="triggerPwaInstall()">Install</button>
   <button class="pwa-dismiss" onclick="dismissPwaBanner()" aria-label="Dismiss">×</button>
 </div>
 
@@ -5275,11 +5318,10 @@ window.addEventListener('load', () => {
 });
 
 // ══════════════════════════════════════════════════
-// PWA INSTALL BANNER — Always visible, works like Jumia
+// PWA INSTALL — full implementation (syncs with top-of-page capture)
 // ══════════════════════════════════════════════════
 (function() {
-  var deferredPrompt = null;
-  var DISMISS_KEY = 'zmonie_banner_dismissed';
+  var DISMISS_KEY   = 'zmonie_banner_dismissed';
   var INSTALLED_KEY = 'zmonie_installed';
 
   function isStandalone() {
@@ -5290,11 +5332,10 @@ window.addEventListener('load', () => {
 
   function setBanner(visible) {
     var b = document.getElementById('pwa-banner');
-    if (!b) return;
-    b.style.display = visible ? 'flex' : 'none';
+    if (b) b.style.display = visible ? 'flex' : 'none';
   }
 
-  function shouldShowBanner() {
+  function canShow() {
     if (isStandalone()) return false;
     if (localStorage.getItem(INSTALLED_KEY)) return false;
     var dismissed = localStorage.getItem(DISMISS_KEY);
@@ -5302,54 +5343,27 @@ window.addEventListener('load', () => {
     return true;
   }
 
-  // Show banner on load
-  function onReady() {
-    if (shouldShowBanner()) {
-      setBanner(true);
-    }
-  }
+  // If prompt was already captured before this script ran, show banner now
+  if (window.__pwaPrompt && canShow()) setBanner(true);
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', onReady);
-  } else {
-    onReady();
-  }
-
-  // Capture native install prompt (Android Chrome/Edge)
-  window.addEventListener('beforeinstallprompt', function(e) {
-    e.preventDefault();
-    deferredPrompt = e;
-    // Make sure banner is visible when prompt is available
-    if (shouldShowBanner()) setBanner(true);
-  });
-
-  // App installed — hide banner forever
-  window.addEventListener('appinstalled', function() {
-    setBanner(false);
-    localStorage.setItem(INSTALLED_KEY, '1');
-    deferredPrompt = null;
-  });
-
-  // Called by Install App button
+  // Re-assign triggerPwaInstall with full logic now that showInstallGuide is available
   window.triggerPwaInstall = async function() {
-    if (deferredPrompt) {
-      // Android Chrome — real native install, no Chrome icon
-      deferredPrompt.prompt();
-      var choice = await deferredPrompt.userChoice;
+    if (window.__pwaPrompt) {
+      // ✅ Real native install dialog — one tap, no extra steps
+      window.__pwaPrompt.prompt();
+      var choice = await window.__pwaPrompt.userChoice;
       if (choice.outcome === 'accepted') {
         setBanner(false);
         localStorage.setItem(INSTALLED_KEY, '1');
       }
-      deferredPrompt = null;
+      window.__pwaPrompt = null;
+    } else if (isStandalone()) {
+      // Already installed
+      setBanner(false);
     } else {
-      // iOS Safari or unsupported browser — show step-by-step guide
+      // iOS or browser with no native prompt — show manual guide
       showInstallGuide();
     }
-  };
-
-  window.closePwaGuide = function() {
-    var m = document.getElementById('pwa-guide-modal');
-    if (m) m.style.display = 'none';
   };
 
   window.dismissPwaBanner = function() {
@@ -5357,17 +5371,22 @@ window.addEventListener('load', () => {
     localStorage.setItem(DISMISS_KEY, Date.now().toString());
   };
 
+  window.closePwaGuide = function() {
+    var m = document.getElementById('pwa-guide-modal');
+    if (m) m.style.display = 'none';
+  };
+
   window.showInstallGuide = function() {
-    var isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    var isIos     = /iphone|ipad|ipod/i.test(navigator.userAgent);
     var isSamsung = /samsungbrowser/i.test(navigator.userAgent);
-    var step2 = isIos
-      ? 'Tap the <b>Share</b> button <span style="font-size:18px">⎙</span> at the bottom of Safari'
+    var step1 = isIos
+      ? 'Tap the <strong>Share</strong> button ⎙ at the bottom of Safari'
       : isSamsung
-      ? 'Tap the <b>Menu</b> (⋮) then tap <b>"Add page to"</b>'
-      : 'Tap the <b>Menu</b> (⋮) at the top right of your browser';
-    var step3 = isIos
-      ? 'Tap <b>"Add to Home Screen"</b> then tap <b>Add</b>'
-      : 'Tap <b>"Add to Home Screen"</b> or <b>"Install App"</b>';
+      ? 'Tap the <strong>Menu</strong> (⋮) then tap <strong>"Add page to"</strong>'
+      : 'Tap the <strong>Menu</strong> (⋮) at the top-right of Chrome';
+    var step2 = isIos
+      ? 'Tap <strong>"Add to Home Screen"</strong> then tap <strong>Add</strong>'
+      : 'Tap <strong>"Add to Home Screen"</strong> or <strong>"Install App"</strong>';
 
     var existing = document.getElementById('pwa-guide-modal');
     if (existing) { existing.style.display = 'flex'; return; }
@@ -5375,20 +5394,21 @@ window.addEventListener('load', () => {
     var modal = document.createElement('div');
     modal.id = 'pwa-guide-modal';
     modal.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.65);display:flex;align-items:flex-end;justify-content:center';
-    modal.innerHTML = '<div style="background:#fff;border-radius:24px 24px 0 0;padding:24px 20px 36px;width:100%;max-width:500px">'
+    modal.innerHTML =
+      '<div style="background:#fff;border-radius:24px 24px 0 0;padding:24px 20px 40px;width:100%;max-width:500px">'
       + '<div style="width:40px;height:4px;background:#e5e7eb;border-radius:4px;margin:0 auto 20px"></div>'
       + '<div style="display:flex;align-items:center;gap:14px;margin-bottom:20px">'
-      + '<div style="width:56px;height:56px;background:linear-gradient(135deg,#22c55e,#15803d);border-radius:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0"><span style="font-size:28px;font-weight:900;color:#fff">Z</span></div>'
-      + '<div><div style="font-size:18px;font-weight:800">Install ZMONIE</div>'
-      + '<div style="font-size:12px;color:#6b7280;margin-top:2px">Follow these steps to install</div></div></div>'
+      + '<div style="width:52px;height:52px;background:linear-gradient(135deg,#16a34a,#15803d);border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0"><span style="font-size:26px;font-weight:900;color:#fff">Z</span></div>'
+      + '<div><div style="font-size:17px;font-weight:800;color:#111">Install ZMONIE</div>'
+      + '<div style="font-size:12px;color:#6b7280;margin-top:2px">2 quick steps to install</div></div></div>'
       + '<div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px">'
-      + '<div style="display:flex;gap:14px;align-items:center;background:#f0fdf4;border-radius:14px;padding:14px">'
-      + '<div style="width:32px;height:32px;background:#16a34a;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:14px;flex-shrink:0">1</div>'
-      + '<div style="font-size:13px;color:#374151">' + step2 + '</div></div>'
-      + '<div style="display:flex;gap:14px;align-items:center;background:#f0fdf4;border-radius:14px;padding:14px">'
-      + '<div style="width:32px;height:32px;background:#16a34a;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:14px;flex-shrink:0">2</div>'
-      + '<div style="font-size:13px;color:#374151">' + step3 + '</div></div></div>'
-      + '<button onclick="closePwaGuide()" style="width:100%;padding:14px;background:linear-gradient(135deg,#22c55e,#15803d);color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif">Got it!</button>'
+      + '<div style="display:flex;gap:14px;align-items:flex-start;background:#f0fdf4;border-radius:14px;padding:14px">'
+      + '<div style="width:28px;height:28px;background:#16a34a;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:13px;flex-shrink:0">1</div>'
+      + '<div style="font-size:13px;color:#374151;line-height:1.6">' + step1 + '</div></div>'
+      + '<div style="display:flex;gap:14px;align-items:flex-start;background:#f0fdf4;border-radius:14px;padding:14px">'
+      + '<div style="width:28px;height:28px;background:#16a34a;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:13px;flex-shrink:0">2</div>'
+      + '<div style="font-size:13px;color:#374151;line-height:1.6">' + step2 + '</div></div></div>'
+      + '<button onclick="closePwaGuide()" style="width:100%;padding:14px;background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif">Got it!</button>'
       + '</div>';
     document.body.appendChild(modal);
     modal.addEventListener('click', function(e) { if (e.target === modal) closePwaGuide(); });
@@ -5398,8 +5418,8 @@ window.addEventListener('load', () => {
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
       navigator.serviceWorker.register('./sw.js')
-        .then(function(reg) { console.log('[SW] OK:', reg.scope); })
-        .catch(function(e) { console.log('[SW] Skip:', e.message); });
+        .then(function(reg) { console.log('[SW] registered:', reg.scope); })
+        .catch(function(e)  { console.log('[SW] skipped:', e.message); });
     });
   }
 
