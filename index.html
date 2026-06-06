@@ -1047,26 +1047,21 @@ window.closePwaGuide = window.closePwaGuide || function(){
 </div></div>
 <script>
 const fbCfg={apiKey:"AIzaSyCHOa7B3BWSdNGak4NMNLG0kc_s57K2uYo",authDomain:"sunrise-7f82c.firebaseapp.com",projectId:"sunrise-7f82c",storageBucket:"sunrise-7f82c.firebasestorage.app",messagingSenderId:"518496778912",appId:"1:518496778912:web:3415aa8b061bce632c27c5"};
-if(typeof firebase === 'undefined'){
-  // Firebase SDK not loaded — show internet connection error page
+// ── Firebase availability check ──
+(function checkFirebase(){
+  if(typeof firebase !== 'undefined') return; // all good
   document.addEventListener('DOMContentLoaded', function(){
     document.querySelectorAll('.page').forEach(function(p){p.style.display='none';});
-    document.body.style.background='#f8fafc';
     var div=document.createElement('div');
-    div.style.cssText='position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center;font-family:Inter,sans-serif;background:#fff';
+    div.style.cssText='position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center;font-family:Inter,sans-serif;background:#fff;z-index:99999';
     div.innerHTML='<div style="font-size:60px;margin-bottom:16px">📶</div>'
       +'<h2 style="font-size:20px;font-weight:800;color:#111;margin-bottom:10px">No Internet Connection</h2>'
-      +'<p style="font-size:14px;color:#6b7280;line-height:1.7;max-width:300px;margin-bottom:24px">ZMONIE requires an internet connection to load. Please connect to the internet and reload the page.</p>'
-      +'<button onclick="location.reload()" style="padding:13px 28px;background:#16a34a;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif">Try Again</button>'
-      +'<p style="margin-top:16px;font-size:12px;color:#9ca3af">Make sure you open this page from<br/>your GitHub Pages URL, not a local file</p>';
+      +'<p style="font-size:14px;color:#6b7280;line-height:1.7;max-width:300px;margin-bottom:24px">ZMONIE needs internet to load. Please connect and try again.</p>'
+      +'<button onclick="location.reload()" style="padding:13px 28px;background:#16a34a;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif">🔄 Try Again</button>';
     document.body.appendChild(div);
-    // Also hide the PWA banner
-    var b=document.getElementById('pwa-banner');
-    if(b) b.style.display='none';
+    var b=document.getElementById('pwa-banner');if(b)b.style.display='none';
   });
-  // Stop execution here cleanly — no throw, no cascade errors
-  /* FIREBASE_NOT_LOADED */
-} else {
+})();
 firebase.initializeApp(fbCfg);
 const auth=firebase.auth(),db=firebase.firestore(),gp=new firebase.auth.GoogleAuthProvider();
 let CU=null,UD=null,bHid=false,pSvc=null,allTx=[],si=0,sTimer=null;
@@ -1164,7 +1159,15 @@ async function doGoogle(){
     }
   }catch(er){toast('Google sign-in failed: '+er.message);}
 }
-async function doLogout(){await auth.signOut();}
+async function doLogout(){
+  try{
+    await auth.signOut();
+    CU=null; UD=null;
+    goPg('pg-land');
+  }catch(e){
+    toast('Sign out failed: '+e.message);
+  }
+}
 function tpw(id){const el=document.getElementById(id);el.type=el.type==='password'?'text':'password';}
 
 // DASHBOARD
@@ -5036,6 +5039,15 @@ window.addEventListener('load', () => {
 // ══════════════════════════════════════════════════
 // PWA INSTALL BANNER — Always visible, works like Jumia
 // ══════════════════════════════════════════════════
+
+// Catch beforeinstallprompt AS EARLY AS POSSIBLE (before any other code)
+window._pwaPromptCaught = null;
+window.addEventListener('beforeinstallprompt', function(e){
+  e.preventDefault();
+  window._pwaPromptCaught = e;
+  console.log('[PWA] beforeinstallprompt captured early');
+});
+
 (function() {
   var deferredPrompt = null;
   var DISMISS_KEY = 'zmonie_banner_dismissed';
@@ -5074,11 +5086,15 @@ window.addEventListener('load', () => {
     onReady();
   }
 
-  // Capture native install prompt (Android Chrome/Edge)
+  // Sync with early-captured prompt
+  if (window._pwaPromptCaught) {
+    deferredPrompt = window._pwaPromptCaught;
+  }
+  // Also listen for future events
   window.addEventListener('beforeinstallprompt', function(e) {
     e.preventDefault();
     deferredPrompt = e;
-    // Make sure banner is visible when prompt is available
+    window._pwaPromptCaught = e;
     if (shouldShowBanner()) setBanner(true);
   });
 
@@ -5091,17 +5107,24 @@ window.addEventListener('load', () => {
 
   // Called by Install App button
   window.triggerPwaInstall = async function() {
-    if (deferredPrompt) {
-      // Android Chrome — real native install, no Chrome icon
-      deferredPrompt.prompt();
-      var choice = await deferredPrompt.userChoice;
-      if (choice.outcome === 'accepted') {
-        setBanner(false);
-        localStorage.setItem(INSTALLED_KEY, '1');
+    // Use early-captured prompt OR the one set by this IIFE
+    var prompt = deferredPrompt || window._pwaPromptCaught;
+    if (prompt) {
+      try {
+        prompt.prompt();
+        var choice = await prompt.userChoice;
+        if (choice.outcome === 'accepted') {
+          setBanner(false);
+          localStorage.setItem(INSTALLED_KEY, '1');
+        }
+      } catch(e) {
+        console.log('[PWA] prompt error:', e);
+        showInstallGuide();
       }
       deferredPrompt = null;
+      window._pwaPromptCaught = null;
     } else {
-      // iOS Safari or unsupported browser — show step-by-step guide
+      // No native prompt available — show manual guide
       showInstallGuide();
     }
   };
@@ -5828,7 +5851,6 @@ async function apiHandleVerifyTransaction(req){
 }
 
 
-} // end firebase else block
 </script>
 
 <!-- LOAN APPLICATION MODAL -->
