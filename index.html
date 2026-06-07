@@ -161,63 +161,41 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--black);over
 
 <!-- ======== PWA INSTALL BANNER ======== -->
 <script>
-// ─────────────────────────────────────────────────────────────
-//  CAPTURE beforeinstallprompt AS EARLY AS POSSIBLE
-//  Must be in the <head> / top of <body> — NOT at bottom of file.
-//  Chrome fires this event once, very early. If we miss it, the
-//  native install dialog is never available for that page load.
-// ─────────────────────────────────────────────────────────────
+// ── PWA: capture beforeinstallprompt as early as possible ──
 window.__pwaPrompt = null;
-window.__pwaInstalled = !!localStorage.getItem('zmonie_installed');
 
-// ── Capture install prompt as early as possible ──
 window.addEventListener('beforeinstallprompt', function(e) {
   e.preventDefault();
   window.__pwaPrompt = e;
-  showPwaBannerIfEligible();
+  // Swap button text to show native install is available
+  var btn = document.getElementById('pwa-install-btn');
+  if (btn) btn.textContent = 'Install';
 });
 
 window.addEventListener('appinstalled', function() {
-  window.__pwaInstalled = true;
   window.__pwaPrompt = null;
-  localStorage.setItem('zmonie_installed', '1');
-  hidePwaBanner();
-});
-
-function showPwaBannerIfEligible() {
-  if (window.__pwaInstalled) return;
-  // Check if running in standalone mode already
-  if (window.matchMedia('(display-mode: standalone)').matches || navigator.standalone) return;
-  var b = document.getElementById('pwa-banner');
-  if (b) b.style.display = 'flex';
-}
-
-function hidePwaBanner() {
+  localStorage.setItem('zmonie_pwa_done', '1');
   var b = document.getElementById('pwa-banner');
   if (b) b.style.display = 'none';
-}
+});
 
 window.triggerPwaInstall = function() {
   if (window.__pwaPrompt) {
-    // Real native one-tap install
     window.__pwaPrompt.prompt();
     window.__pwaPrompt.userChoice.then(function(r) {
-      if (r.outcome === 'accepted') {
-        localStorage.setItem('zmonie_installed', '1');
-        hidePwaBanner();
-      }
+      if (r.outcome === 'accepted') localStorage.setItem('zmonie_pwa_done', '1');
       window.__pwaPrompt = null;
+      var b = document.getElementById('pwa-banner');
+      if (b) b.style.display = 'none';
     });
   } else {
-    // iOS or browser without native prompt — show manual guide
     if (typeof showInstallGuide === 'function') showInstallGuide();
   }
 };
 
 window.dismissPwaBanner = function() {
-  hidePwaBanner();
-  // Only snooze for 1 day (not 3) so it comes back sooner
-  try { localStorage.setItem('zmonie_banner_dismissed', Date.now()); } catch(e) {}
+  var b = document.getElementById('pwa-banner');
+  if (b) b.style.display = 'none';
 };
 
 window.closePwaGuide = function() {
@@ -225,14 +203,20 @@ window.closePwaGuide = function() {
   if (m) m.style.display = 'none';
 };
 
-// Show banner on load even before beforeinstallprompt fires
-// (covers browsers that fire it after DOMContentLoaded)
+// Hide banner ONLY if already installed as PWA (standalone mode) or user finished install
 document.addEventListener('DOMContentLoaded', function() {
-  // Small delay so standalone check is accurate
-  setTimeout(showPwaBannerIfEligible, 500);
+  var alreadyInstalled = localStorage.getItem('zmonie_pwa_done');
+  var isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  if (alreadyInstalled || isStandalone) {
+    var b = document.getElementById('pwa-banner');
+    if (b) b.style.display = 'none';
+  }
+  // Clear stale keys from old code that permanently blocked the banner
+  localStorage.removeItem('zmonie_installed');
+  localStorage.removeItem('zmonie_banner_dismissed');
 });
 </script>
-<div id="pwa-banner" role="banner" aria-label="Install ZMONIE App" style="display:none">
+<div id="pwa-banner" role="banner" aria-label="Install ZMONIE App">
   <div class="pwa-icon"><span style="font-weight:800;font-size:18px;color:#fff">Z</span></div>
   <div class="pwa-info">
     <strong>Install ZMONIE App</strong>
