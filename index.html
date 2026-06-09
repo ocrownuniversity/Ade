@@ -1626,14 +1626,25 @@ function tpw(id){const el=document.getElementById(id);el.type=el.type==='passwor
 async function loadDash(){
   if(!CU)return;
   const s=await db.collection('users').doc(CU.uid).get();UD=s.data();
-  // Patch null/missing fields from Firebase Auth object (covers Google users)
-  if(!UD.name||UD.name==='null'||UD.name==='User'){
-    if(CU.displayName) UD.name=CU.displayName;
+  // Patch null/missing/placeholder name from Firebase Auth object (covers Google users)
+  if(!UD.name||UD.name==='null'||UD.name==='User'||UD.name.trim()===''){
+    if(CU.displayName){
+      UD.name=CU.displayName;
+      // Persist the real name back to Firestore so it sticks
+      await db.collection('users').doc(CU.uid).update({name:CU.displayName});
+    }
   }
-  if(!UD.photoURL && CU.photoURL) UD.photoURL=CU.photoURL;
-  if(!UD.email && CU.email) UD.email=CU.email;
-  const nm=(UD.name&&UD.name!=='null')?UD.name:(CU.displayName||CU.email||'User');
-  const safeName=nm.replace(/null/gi,'').trim()||'User';
+  if(!UD.photoURL && CU.photoURL){
+    UD.photoURL=CU.photoURL;
+    await db.collection('users').doc(CU.uid).update({photoURL:CU.photoURL});
+  }
+  if(!UD.email && CU.email){
+    UD.email=CU.email;
+    await db.collection('users').doc(CU.uid).update({email:CU.email});
+  }
+  // Build safe display name — never show 'null', 'User', or blank
+  const nm=(UD.name&&UD.name!=='null'&&UD.name!=='User')?UD.name:(CU.displayName||'');
+  const safeName=nm.replace(/null/gi,'').trim()||CU.email?.split('@')[0]||'User';
   const initials=safeName.split(' ').filter(Boolean).map(w=>w[0]).join('').slice(0,2).toUpperCase()||'U';
   // Update letter avatars
   const avLtr=document.getElementById('d-avatar-letter');if(avLtr)avLtr.textContent=initials;
@@ -2992,76 +3003,19 @@ function aTab(tab){
       const pending=AD.loans.filter(l=>l.status==='pending');
       const active=AD.loans.filter(l=>l.status==='active'||l.status==='approved');
       const closed=AD.loans.filter(l=>l.status==='repaid'||l.status==='rejected');
-      let html='';
 
-      if(pending.length){
-        html+=`<div style="font-weight:700;font-size:14px;color:#d97706;margin-bottom:10px;display:flex;align-items:center;gap:6px"><span style="background:#fef3c7;border-radius:50%;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-size:12px">${pending.length}</span> Pending Loans</div>`;
-        pending.forEach(ln=>{
-          const g1=ln.guarantor1||ln.guarantor||{};
-          const g2=ln.guarantor2||{};
-          html+=`<div class="card" style="padding:16px;margin-bottom:12px;border-left:4px solid #d97706">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
-              <div><div style="font-weight:700;font-size:15px">${ln.userName||ln.userEmail||'Unknown'}</div><div style="font-size:11px;color:var(--g400)">${ln.userEmail||''} · ${fdate(ln.createdAt)}</div></div>
-              <span class="status-badge sb-pending">PENDING</span>
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
-              <div style="background:#f8fafc;border-radius:9px;padding:10px"><div style="font-size:10px;color:var(--g400);margin-bottom:2px">AMOUNT</div><div style="font-size:18px;font-weight:800;color:var(--black)">NGN ${fmt(ln.amount)}</div></div>
-              <div style="background:#f8fafc;border-radius:9px;padding:10px"><div style="font-size:10px;color:var(--g400);margin-bottom:2px">DURATION</div><div style="font-size:14px;font-weight:700">${ln.duration||'N/A'}</div></div>
-            </div>
-            <div style="font-size:12px;color:var(--g600);margin-bottom:4px"><strong>Purpose:</strong> ${ln.purpose||'—'}</div>
-            <div style="font-size:12px;color:var(--g600);margin-bottom:4px"><strong>Address:</strong> ${ln.address||'—'}</div>
-            <div style="font-size:12px;color:var(--g600);margin-bottom:12px"><strong>Employment:</strong> ${ln.employment||'—'}</div>
-            ${ln.passportUrl?`<div style="margin-bottom:12px"><div style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px">&#128248; Passport Photo</div><div style="display:flex;gap:8px;align-items:center"><img src="${ln.passportUrl}" style="width:64px;height:64px;border-radius:10px;object-fit:cover;border:1px solid #e2e8f0;cursor:pointer" onclick="viewImg('${ln.passportUrl}')"/><a href="${ln.passportUrl}" download style="font-size:12px;color:var(--green-d);font-weight:600;text-decoration:none">⬇ Download</a></div></div>`:'<div style="margin-bottom:12px;padding:10px;background:#fef2f2;border-radius:9px;font-size:12px;color:#dc2626">⚠ No passport photo uploaded</div>'}
-            ${ln.idUrl?`<div style="margin-bottom:12px"><div style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px">&#129706; ID: ${ln.idType||'Document'}</div><div style="display:flex;gap:8px;align-items:center"><img src="${ln.idUrl}" style="width:80px;height:52px;border-radius:9px;object-fit:cover;border:1px solid #e2e8f0;cursor:pointer" onclick="viewImg('${ln.idUrl}')"/><a href="${ln.idUrl}" download style="font-size:12px;color:var(--green-d);font-weight:600;text-decoration:none">⬇ Download</a></div></div>`:'<div style="margin-bottom:12px;padding:10px;background:#fef2f2;border-radius:9px;font-size:12px;color:#dc2626">⚠ No ID document uploaded</div>'}
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
-              <div style="background:#faf5ff;border:1px solid #c4b5fd;border-radius:10px;padding:11px"><div style="font-size:11px;font-weight:700;color:#5b21b6;margin-bottom:7px">Guarantor 1</div><div style="font-size:12px;color:var(--g700);line-height:1.7">${g1.name||'—'}<br/>${g1.phone||'—'}<br/>${g1.relationship||'—'}<br/><span style="font-size:11px;color:var(--g400)">${g1.address||''}</span></div></div>
-              <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:11px"><div style="font-size:11px;font-weight:700;color:#c2410c;margin-bottom:7px">Guarantor 2</div><div style="font-size:12px;color:var(--g700);line-height:1.7">${g2.name||'—'}<br/>${g2.phone||'—'}<br/>${g2.relationship||'—'}<br/><span style="font-size:11px;color:var(--g400)">${g2.address||''}</span></div></div>
-            </div>
-            <div style="margin-bottom:10px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Approved Amount (NGN)</label><input class="inp" id="la-amt-${ln.id}" value="${ln.amount}" type="number" style="font-size:14px;font-weight:700"/></div>
-            <div style="margin-bottom:12px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Admin Note / Reason</label><input class="inp" id="la-note-${ln.id}" placeholder="Optional note for user..."/></div>
-            <div style="display:flex;gap:8px">
-              <button onclick="approveLoan('${ln.id}','${ln.userId}')" style="flex:1;padding:12px;background:#dcfce7;border:1.5px solid #86efac;color:#15803d;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">✅ Approve & Credit Wallet</button>
-              <button onclick="rejectLoan('${ln.id}','${ln.userId}')" style="flex:1;padding:12px;background:#fee2e2;border:1.5px solid #fca5a5;color:#dc2626;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">❌ Reject</button>
-            </div>
-          </div>`;
-        });
-      }
+      const tabBtns=`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
+        <button onclick="adminLoanTab('pending')" id="lnt-pending" style="padding:7px 13px;border-radius:50px;font-size:11px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;background:#fef3c7;color:#92400e;border:1.5px solid #fde68a">Pending (${pending.length})</button>
+        <button onclick="adminLoanTab('active')" id="lnt-active" style="padding:7px 13px;border-radius:50px;font-size:11px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;background:#dbeafe;color:#1d4ed8;border:1.5px solid #93c5fd">Active/Approved (${active.length})</button>
+        <button onclick="adminLoanTab('closed')" id="lnt-closed" style="padding:7px 13px;border-radius:50px;font-size:11px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;background:#f1f5f9;color:#475569;border:1.5px solid #cbd5e1">History (${closed.length})</button>
+      </div><div id="loan-tab-content"></div>`;
 
-      if(active.length){
-        html+=`<div style="font-weight:700;font-size:14px;color:#2563eb;margin:16px 0 10px;display:flex;align-items:center;gap:6px"><span style="background:#dbeafe;border-radius:50%;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-size:12px">${active.length}</span> Active Loans</div>`;
-        active.forEach(ln=>{
-          const amt = ln.approvedAmount||ln.amount;
-          const totalR = ln.totalRepayable||(amt*1.24);
-          const daily = ln.dailyRepayment||(totalR/30);
-          const paid = ln.repaymentSchedule?ln.repaymentSchedule.filter(s=>s.paid).length:0;
-          html+=`<div class="card" style="padding:14px;margin-bottom:8px;border-left:4px solid var(--blue)">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
-              <div><div style="font-weight:600;font-size:13px">${ln.userName||ln.userEmail}</div><div style="font-size:20px;font-weight:800;color:var(--black)">NGN ${fmt(amt)}</div><div style="font-size:11px;color:var(--g500)">Total repay: NGN ${fmt(totalR)} &bull; Daily: NGN ${fmt(daily)}</div></div>
-              <div style="text-align:right"><span class="status-badge sb-${ln.status}">${ln.status}</span>${ln.dueDate?`<div style="font-size:10px;color:var(--g400);margin-top:4px">Due: ${fdateShort(ln.dueDate)}</div>`:''}</div>
-            </div>
-            ${ln.repaymentSchedule?`<div style="background:#f1f5f9;border-radius:8px;padding:8px 10px;margin-bottom:10px;font-size:12px"><span style="color:#15803d;font-weight:700">${paid}/30</span> days paid &bull; <span style="color:#2563eb;font-weight:700">NGN ${fmt(paid*daily)}</span> collected</div>`:''}
-            <div style="display:flex;gap:6px;flex-wrap:wrap">
-              ${ln.status==='approved'?`<button onclick="activateLoan('${ln.id}','${ln.userId}',${amt})" style="flex:1;padding:7px 10px;background:#dcfce7;border:1px solid #86efac;color:#15803d;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;min-width:80px">Disburse Wallet</button>`:''}
-              <button onclick="markLoanRepaid('${ln.id}','${ln.userId}',${amt})" style="flex:1;padding:7px 10px;background:#dbeafe;border:1px solid #93c5fd;color:#1d4ed8;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;min-width:80px">Mark Repaid</button>
-              <button onclick="openAdminCashRepayment('${ln.id}','${ln.userId}','${ln.userName||ln.userEmail||''}',${amt})" style="flex:1;padding:7px 10px;background:#fef3c7;border:1px solid #fde047;color:#92400e;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;min-width:80px">&#128181; Cash Pay</button>
-              <button onclick="markLoanDefaulted('${ln.id}','${ln.userId}',${amt})" style="flex:1;padding:7px 10px;background:#fee2e2;border:1px solid #fca5a5;color:#dc2626;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;min-width:80px">Default</button>
-              ${ln.repaymentSchedule?`<button onclick="showAdminSchedule('${ln.id}')" style="flex:1;padding:7px 10px;background:#ede9fe;border:1px solid #c4b5fd;color:#5b21b6;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;min-width:80px">Schedule</button>`:''}
-            </div>
-          </div>`;
-        });
-      }
-
-      if(closed.length){
-        html+=`<div style="font-weight:700;font-size:14px;color:var(--g500);margin:16px 0 10px">History (${closed.length})</div>`;
-        closed.forEach(ln=>{
-          html+=`<div class="card" style="padding:12px;margin-bottom:6px;opacity:.8"><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:600;font-size:13px">${ln.userName||ln.userEmail}</div><div style="font-size:12px;color:var(--g500)">NGN ${fmt(ln.approvedAmount||ln.amount)} · ${fdateShort(ln.createdAt)}</div></div><span class="status-badge sb-${ln.status}">${ln.status}</span></div></div>`;
-        });
-      }
-
-      if(!html) html='<div class="card" style="padding:32px;text-align:center;color:var(--g400)"><div style="font-size:36px;margin-bottom:10px">&#127974;</div><p>No loan applications yet</p></div>';
-      el.innerHTML=html;
-    }).catch(e=>{el.innerHTML='<div class="card" style="padding:20px;color:#dc2626">Error loading loans: '+e.message+'</div>';});
+      el.innerHTML=tabBtns;
+      window._loanData={pending,active,closed};
+      adminLoanTab('pending');
+    }).catch(e=>el.innerHTML='<p style="color:#dc2626">Error: '+e.message+'</p>');
   }
+
 
   if(tab==='fin-investments'){
     el.innerHTML='<div style="padding:20px;text-align:center;color:var(--g400)"><div style="font-size:24px">⏳</div><p style="font-size:13px">Loading investments...</p></div>';
@@ -3927,7 +3881,217 @@ function copyInvCode(){
 }
 
 
-// approveLoan - replaced with enhanced version above
+// ── Admin: Loan tab switcher ──
+function adminLoanTab(tab){
+  const data=window._loanData||{pending:[],active:[],closed:[]};
+  const cont=document.getElementById('loan-tab-content');
+  if(!cont)return;
+  ['pending','active','closed'].forEach(t=>{
+    const btn=document.getElementById('lnt-'+t);
+    if(btn){btn.style.opacity=(t===tab)?'1':'0.55';btn.style.fontWeight=(t===tab)?'800':'700';}
+  });
+  const items=data[tab]||[];
+  if(!items.length){
+    cont.innerHTML=`<div class="card" style="padding:32px;text-align:center;color:var(--g400)"><div style="font-size:36px;margin-bottom:10px">&#127974;</div><p>No ${tab} loan applications</p></div>`;
+    return;
+  }
+  let html='';
+  items.forEach(ln=>{
+    const amt=ln.approvedAmount||ln.amount;
+    const paid=ln.repaymentSchedule?ln.repaymentSchedule.filter(s=>s.paid).length:0;
+    const totalR=ln.totalRepayable||(amt*1.24);
+    const daily=ln.dailyRepayment||(totalR/30);
+    const userName=ln.userName&&ln.userName!=='User'?ln.userName:(ln.userEmail||'Unknown');
+    const statusColors={pending:'#d97706',active:'#2563eb',approved:'#2563eb',repaid:'#15803d',rejected:'#dc2626'};
+    const borderCol=statusColors[ln.status]||'#94a3b8';
+    html+=`<div class="card" style="padding:14px;margin-bottom:10px;border-left:4px solid ${borderCol}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <div><div style="font-weight:700;font-size:14px">${userName}</div><div style="font-size:11px;color:var(--g400)">${ln.userEmail||''} · ${fdate(ln.createdAt)}</div></div>
+        <span class="status-badge sb-${ln.status}">${ln.status}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">
+        <div style="background:#f8fafc;border-radius:9px;padding:9px"><div style="font-size:9px;color:var(--g400)">AMOUNT</div><div style="font-size:16px;font-weight:800">NGN ${fmt(amt)}</div></div>
+        <div style="background:#f8fafc;border-radius:9px;padding:9px"><div style="font-size:9px;color:var(--g400)">DURATION</div><div style="font-size:13px;font-weight:700">${ln.duration||'N/A'}</div></div>
+      </div>
+      ${tab==='active'&&ln.repaymentSchedule?`<div style="background:#f1f5f9;border-radius:8px;padding:8px 10px;margin-bottom:10px;font-size:12px"><span style="color:#15803d;font-weight:700">${paid}/30</span> days paid · <span style="color:#2563eb;font-weight:700">NGN ${fmt(paid*daily)}</span> collected</div>`:''}
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button onclick="adminViewLoanDetail('${ln.id}')" style="flex:2;padding:9px;background:#f1f5f9;border:1.5px solid #cbd5e1;color:#334155;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif">&#128065; View Full Details</button>
+        ${tab==='pending'?`
+        <button onclick="adminQuickApproveLoan('${ln.id}','${ln.userId}')" style="flex:1;padding:9px;background:#dcfce7;border:1.5px solid #86efac;color:#15803d;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif">&#10003; Approve</button>
+        <button onclick="rejectLoan('${ln.id}','${ln.userId}')" style="flex:1;padding:9px;background:#fee2e2;border:1.5px solid #fca5a5;color:#dc2626;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif">&#10007; Reject</button>`:''}
+        ${tab==='active'?`
+        ${ln.status==='approved'?`<button onclick="activateLoan('${ln.id}','${ln.userId}',${amt})" style="flex:1;padding:9px;background:#dcfce7;border:1px solid #86efac;color:#15803d;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif">Disburse</button>`:''}
+        <button onclick="markLoanRepaid('${ln.id}','${ln.userId}',${amt})" style="flex:1;padding:9px;background:#dbeafe;border:1px solid #93c5fd;color:#1d4ed8;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif">Repaid</button>
+        <button onclick="openAdminCashRepayment('${ln.id}','${ln.userId}','${userName}',${amt})" style="flex:1;padding:9px;background:#fef3c7;border:1px solid #fde047;color:#92400e;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif">&#128181; Cash</button>`:''}
+      </div>
+    </div>`;
+  });
+  cont.innerHTML=html;
+}
+
+// ── Admin: Full loan detail modal with user profile, wallet, loan history ──
+async function adminViewLoanDetail(loanId){
+  // Show loading modal
+  let modal=document.getElementById('m-admin-loan-detail');
+  if(!modal){
+    modal=document.createElement('div');modal.className='modal';modal.id='m-admin-loan-detail';
+    modal.innerHTML='<div class="mbox" id="m-ald-body" style="max-height:92vh;overflow-y:auto;padding:16px"></div>';
+    document.body.appendChild(modal);
+  }
+  document.getElementById('m-ald-body').innerHTML='<div style="padding:40px;text-align:center;color:var(--g400)"><div style="font-size:32px;margin-bottom:8px">⏳</div><p>Loading applicant details...</p></div>';
+  openM('m-admin-loan-detail');
+
+  try{
+    const lnSnap=await db.collection('loans').doc(loanId).get();
+    if(!lnSnap.exists){document.getElementById('m-ald-body').innerHTML='<p style="color:#dc2626;padding:20px">Loan not found</p>';return;}
+    const ln=lnSnap.data();
+    const g1=ln.guarantor1||ln.guarantor||{};
+    const g2=ln.guarantor2||{};
+
+    // Fetch user profile
+    const userSnap=await db.collection('users').doc(ln.userId).get();
+    const usr=userSnap.exists?userSnap.data():{};
+    const userName=usr.name&&usr.name!=='User'?usr.name:(ln.userName||ln.userEmail||'Unknown');
+
+    // Fetch user's loan history
+    const histSnap=await db.collection('loans').where('userId','==',ln.userId).orderBy('createdAt','desc').get();
+    const loanHist=histSnap.docs.map(d=>({id:d.id,...d.data()}));
+
+    function imgBox(src,label,border){
+      if(!src)return`<div style="background:#fef2f2;border-radius:9px;padding:10px;font-size:11px;color:#dc2626;text-align:center">&#9888; No ${label}</div>`;
+      return`<div style="text-align:center;cursor:pointer" onclick="adminViewImg('${src}','${label}')">
+        <img src="${src}" style="width:85px;height:85px;object-fit:cover;border-radius:10px;border:2.5px solid ${border};box-shadow:0 2px 8px rgba(0,0,0,.15)"/>
+        <div style="font-size:9px;font-weight:700;color:var(--g500);margin-top:4px">${label}</div>
+        <div style="font-size:8px;color:var(--g400)">Tap to enlarge</div>
+      </div>`;
+    }
+
+    const statusColors={pending:'#fef3c7|#92400e',active:'#dbeafe|#1d4ed8',approved:'#dbeafe|#1d4ed8',repaid:'#dcfce7|#15803d',rejected:'#fee2e2|#dc2626'};
+    const [sbg,scol]=(statusColors[ln.status]||'#f1f5f9|#334155').split('|');
+
+    let html=`
+    <div style="position:sticky;top:0;background:#fff;padding-bottom:10px;border-bottom:1px solid #f1f5f9;margin-bottom:14px;z-index:1;display:flex;align-items:center;justify-content:space-between">
+      <div><div style="font-size:17px;font-weight:800">Loan Application</div><div style="font-size:11px;color:var(--g400)">Review all details before approval</div></div>
+      <button onclick="closeM('m-admin-loan-detail')" style="background:var(--g100);border:none;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:16px">&#10005;</button>
+    </div>
+
+    <!-- Status + Amount -->
+    <div style="background:linear-gradient(135deg,#1e3a5f,#2563eb);border-radius:14px;padding:14px;color:#fff;margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div><div style="font-size:9px;opacity:.6;text-transform:uppercase;margin-bottom:3px">Loan Amount</div><div style="font-size:28px;font-weight:900">NGN ${fmt(ln.amount)}</div><div style="font-size:11px;opacity:.7;margin-top:3px">${ln.duration||'—'} · ${fdate(ln.createdAt)}</div></div>
+        <span style="background:${sbg};color:${scol};padding:4px 12px;border-radius:50px;font-size:11px;font-weight:800">${(ln.status||'pending').toUpperCase()}</span>
+      </div>
+    </div>
+
+    <!-- User Profile -->
+    <div style="background:#f8fafc;border-radius:12px;padding:13px;margin-bottom:12px">
+      <div style="font-size:11px;font-weight:800;color:var(--g600);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">&#128100; Applicant Profile</div>
+      <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:10px">
+        ${usr.photoURL?`<img src="${usr.photoURL}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid #e2e8f0;cursor:pointer;flex-shrink:0" onclick="adminViewImg('${usr.photoURL}','Profile Photo')"/>`:'<div style="width:60px;height:60px;border-radius:50%;background:#e2e8f0;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">&#128100;</div>'}
+        <div style="flex:1;font-size:12px">
+          <div style="font-weight:800;font-size:15px;margin-bottom:3px">${userName}</div>
+          <div style="color:var(--g400)">${usr.email||ln.userEmail||'—'}</div>
+          <div style="color:var(--g400)">${usr.phone||'—'}</div>
+          <div style="margin-top:6px;background:${(usr.balance||0)>=ln.amount?'#dcfce7':'#fef3c7'};border-radius:7px;padding:5px 10px;display:inline-block">
+            <span style="font-size:10px;color:var(--g500)">Wallet: </span><span style="font-weight:800;font-size:14px;color:${(usr.balance||0)>=0?'#15803d':'#dc2626'}">NGN ${fmt(usr.balance||0)}</span>
+          </div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px">
+        <div><span style="color:var(--g400)">Total Loans: </span><strong>${loanHist.length}</strong></div>
+        <div><span style="color:var(--g400)">Repaid: </span><strong style="color:#15803d">${loanHist.filter(l=>l.status==='repaid').length}</strong></div>
+        <div><span style="color:var(--g400)">Active: </span><strong style="color:#2563eb">${loanHist.filter(l=>l.status==='active').length}</strong></div>
+        <div><span style="color:var(--g400)">Rejected: </span><strong style="color:#dc2626">${loanHist.filter(l=>l.status==='rejected').length}</strong></div>
+      </div>
+    </div>
+
+    <!-- Loan Details -->
+    <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:13px;margin-bottom:12px">
+      <div style="font-size:11px;font-weight:800;color:#92400e;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">&#127974; Loan Details</div>
+      <div style="font-size:12px;display:grid;gap:6px">
+        <div><span style="color:var(--g400)">Purpose: </span><strong>${ln.purpose||'—'}</strong></div>
+        <div><span style="color:var(--g400)">Employment: </span><strong>${ln.employment||'—'}</strong></div>
+        <div><span style="color:var(--g400)">Address: </span><strong>${ln.address||'—'}</strong></div>
+        ${ln.note?`<div><span style="color:var(--g400)">Note: </span><em>${ln.note}</em></div>`:''}
+      </div>
+    </div>
+
+    <!-- Documents -->
+    <div style="background:#f8fafc;border-radius:12px;padding:13px;margin-bottom:12px">
+      <div style="font-size:11px;font-weight:800;color:var(--g600);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">&#128248; Documents (tap to enlarge)</div>
+      <div style="display:flex;gap:14px;flex-wrap:wrap">
+        ${imgBox(ln.passportUrl,'Passport Photo','#86efac')}
+        ${imgBox(ln.idUrl,(ln.idType||'ID Document'),'#c4b5fd')}
+      </div>
+    </div>
+
+    <!-- Guarantors -->
+    <div style="background:#faf5ff;border:1.5px solid #c4b5fd;border-radius:12px;padding:13px;margin-bottom:12px">
+      <div style="font-size:11px;font-weight:800;color:#5b21b6;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">&#128101; Guarantors</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11px">
+        <div style="background:#fff;border-radius:9px;padding:10px;border:1px solid #e9d5ff">
+          <div style="font-weight:700;color:#5b21b6;margin-bottom:5px">Guarantor 1</div>
+          <div style="line-height:1.8;color:var(--g700)">${g1.name||'—'}<br/>${g1.phone||'—'}<br/>${g1.relationship||'—'}<br/><span style="color:var(--g400);font-size:10px">${g1.address||''}</span></div>
+          ${g1.photo?`<img src="${g1.photo}" style="width:50px;height:50px;border-radius:8px;object-fit:cover;margin-top:7px;cursor:pointer;border:1px solid #e9d5ff" onclick="adminViewImg('${g1.photo}','Guarantor 1 Photo')"/>`:''}
+        </div>
+        ${g2.name?`<div style="background:#fff;border-radius:9px;padding:10px;border:1px solid #fed7aa">
+          <div style="font-weight:700;color:#c2410c;margin-bottom:5px">Guarantor 2</div>
+          <div style="line-height:1.8;color:var(--g700)">${g2.name}<br/>${g2.phone||'—'}<br/>${g2.relationship||'—'}<br/><span style="color:var(--g400);font-size:10px">${g2.address||''}</span></div>
+          ${g2.photo?`<img src="${g2.photo}" style="width:50px;height:50px;border-radius:8px;object-fit:cover;margin-top:7px;cursor:pointer;border:1px solid #fed7aa" onclick="adminViewImg('${g2.photo}','Guarantor 2 Photo')"/>`:''}</div>`:''}
+      </div>
+    </div>
+
+    <!-- Loan History -->
+    ${loanHist.length>1?`<div style="background:#f8fafc;border-radius:12px;padding:13px;margin-bottom:14px">
+      <div style="font-size:11px;font-weight:800;color:var(--g600);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">&#128203; Previous Loan History (${loanHist.length})</div>
+      ${loanHist.slice(0,6).map(h=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:12px">
+        <div><div style="font-weight:600">NGN ${fmt(h.approvedAmount||h.amount)}</div><div style="color:var(--g400);font-size:10px">${fdateShort(h.createdAt)}</div></div>
+        <span class="status-badge sb-${h.status}" style="font-size:9px">${h.status}</span>
+      </div>`).join('')}
+    </div>`:''}
+
+    <!-- Action Buttons -->
+    ${ln.status==='pending'?`
+    <div style="background:#f8fafc;border-radius:12px;padding:13px;margin-bottom:8px">
+      <div style="margin-bottom:8px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Approved Amount (NGN)</label><input class="inp" id="ald-amt-${loanId}" value="${ln.amount}" type="number"/></div>
+      <div style="margin-bottom:10px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Admin Note</label><input class="inp" id="ald-note-${loanId}" placeholder="Optional note for applicant..."/></div>
+      <div style="display:flex;gap:8px">
+        <button onclick="approveLoanFromDetail('${loanId}','${ln.userId}')" style="flex:1;padding:13px;background:#dcfce7;border:1.5px solid #86efac;color:#15803d;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif">&#10003; Approve &amp; Credit Wallet</button>
+        <button onclick="rejectLoanFromDetail('${loanId}','${ln.userId}')" style="flex:1;padding:13px;background:#fee2e2;border:1.5px solid #fca5a5;color:#dc2626;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif">&#10007; Reject</button>
+      </div>
+    </div>`:''}`;
+
+    document.getElementById('m-ald-body').innerHTML=html;
+  }catch(e){
+    document.getElementById('m-ald-body').innerHTML=`<div style="padding:20px;color:#dc2626">Error: ${e.message}</div>`;
+  }
+}
+
+async function approveLoanFromDetail(loanId,userId){
+  const amt=parseFloat(document.getElementById('ald-amt-'+loanId)?.value||0);
+  const note=document.getElementById('ald-note-'+loanId)?.value.trim()||'';
+  closeM('m-admin-loan-detail');
+  // Temporarily set the input IDs that approveLoan expects
+  const dummy1=document.createElement('input');dummy1.id='la-amt-'+loanId;dummy1.value=amt||'';document.body.appendChild(dummy1);
+  const dummy2=document.createElement('input');dummy2.id='la-note-'+loanId;dummy2.value=note;document.body.appendChild(dummy2);
+  await approveLoan(loanId,userId);
+  dummy1.remove();dummy2.remove();
+}
+
+async function rejectLoanFromDetail(loanId,userId){
+  closeM('m-admin-loan-detail');
+  await rejectLoan(loanId,userId);
+}
+
+async function adminQuickApproveLoan(loanId,userId){
+  // Called from compact card — inject dummy inputs then call approveLoan
+  const ln=(await db.collection('loans').doc(loanId).get()).data();
+  if(!ln)return;
+  const dummy1=document.createElement('input');dummy1.id='la-amt-'+loanId;dummy1.value=ln.amount||'';document.body.appendChild(dummy1);
+  const dummy2=document.createElement('input');dummy2.id='la-note-'+loanId;dummy2.value='';document.body.appendChild(dummy2);
+  await approveLoan(loanId,userId);
+  dummy1.remove();dummy2.remove();
+}
 async function rejectLoan(loanId,userId){
   const note=document.getElementById('ln-note-'+loanId)?.value.trim()||'Application did not meet requirements.';
   if(!confirm('Reject this loan application?'))return;
@@ -5092,27 +5256,17 @@ async function submitWithdrawal(){
   const btn=document.getElementById('wd-submit-btn');
   if(btn){btn.disabled=true;btn.textContent='Submitting...';}
   try{
-    // Hold the amount — deduct immediately, refund if rejected
-    await db.collection('users').doc(CU.uid).update({balance:firebase.firestore.FieldValue.increment(-amt)});
+    // NO wallet deduction here — amount is only deducted when admin clicks "Mark as Paid"
     const wdRef=await db.collection('withdrawals').add({
-      userId:CU.uid,userEmail:CU.email,userName:ud.name||'',
+      userId:CU.uid,userEmail:CU.email,userName:ud.name&&ud.name!=='User'?ud.name:(CU.displayName||ud.name||''),
       amount:amt,method,details,note,status:'pending',
       createdAt:firebase.firestore.FieldValue.serverTimestamp()
     });
-    await db.collection('transactions').add({
-      userId:CU.uid,type:'withdrawal',amount:amt,
-      description:'Withdrawal — '+(method==='bank'?details.bankName+' '+details.accountNumber:'Cash Pickup'),
-      status:'pending',ref:wdRef.id,
-      createdAt:firebase.firestore.FieldValue.serverTimestamp()
-    });
-    await addNotif(CU.uid,'Withdrawal Request Submitted &#128184;',`Your withdrawal of NGN ${fmt(amt)} via ${method==='bank'?'bank transfer to '+details.bankName:'cash pickup'} is pending. Processed immediately upon admin approval.`);
+    await addNotif(CU.uid,'Withdrawal Request Submitted &#128184;',`Your withdrawal of NGN ${fmt(amt)} via ${method==='bank'?'bank transfer to '+details.bankName:'cash pickup'} is pending admin review.`);
     closeM('m-withdraw');
-    UD=(await db.collection('users').doc(CU.uid).get()).data();
-    loadDash();
-    toast('✅ Withdrawal submitted! Will be processed immediately upon approval.');
+    toast('&#10003; Withdrawal request submitted! Awaiting admin review.');
   }catch(er){
-    try{await db.collection('users').doc(CU.uid).update({balance:firebase.firestore.FieldValue.increment(amt)});}catch(e2){}
-    toast('❌ Failed: '+er.message);
+    toast('&#10007; Failed: '+er.message);
   }finally{
     if(btn){btn.disabled=false;btn.textContent='&#128184; Submit Withdrawal Request';}
   }
@@ -5430,71 +5584,145 @@ async function loadAdminWithdrawals(el){
       return tb-ta;
     });
     const pending=wds.filter(w=>w.status==='pending');
-    const others=wds.filter(w=>w.status!=='pending');
-    const total=pending.reduce((s,w)=>s+w.amount,0);
-    let html=pending.length?`<div style="background:linear-gradient(135deg,#92400e,#d97706);border-radius:12px;padding:14px;margin-bottom:14px;color:#fff"><div style="font-size:10px;color:rgba(255,255,255,.6);margin-bottom:2px">PENDING WITHDRAWAL REQUESTS</div><div style="font-size:22px;font-weight:800">NGN ${fmt(total)}</div><div style="font-size:11px;color:rgba(255,255,255,.6)">${pending.length} request${pending.length!==1?'s':''} awaiting review</div></div>`:'';
-    pending.forEach(w=>{
-      html+=`<div class="card" style="padding:14px;margin-bottom:8px;border-left:4px solid #d97706">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px">
-          <div><div style="font-weight:700;font-size:14px">${w.userName||w.userEmail}</div><div style="font-size:11px;color:var(--g400)">${w.userEmail} · ${fdate(w.createdAt)}</div></div>
-          <div style="font-size:20px;font-weight:800;color:var(--black)">NGN ${fmt(w.amount)}</div>
-        </div>
-        <div style="font-size:12px;color:var(--g600);background:#f8fafc;border-radius:9px;padding:10px;margin-bottom:10px">
-          ${w.method==='bank'?`&#127974; <strong>${w.details?.bankName||'—'}</strong><br/>Account: <strong>${w.details?.accountNumber||'—'}</strong><br/>Name: <strong>${w.details?.accountName||'—'}</strong>`:`✋ Cash Pickup — <strong>${w.details?.contactName||'—'}</strong> · ${w.details?.phone||'—'}`}
-          ${w.note?`<br/><span style="color:var(--g400)">Note: ${w.note}</span>`:''}
-        </div>
-        <div style="margin-bottom:10px"><input class="inp" id="wd-admin-note-${w.id}" placeholder="Admin note / reason (optional)" style="font-size:12px;padding:9px"/></div>
-        <div style="display:flex;gap:7px">
-          <button onclick="approveWithdrawal('${w.id}','${w.userId}',${w.amount})" style="flex:1;padding:10px;background:#dcfce7;border:1.5px solid #86efac;color:#15803d;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">✅ Approve</button>
-          <button onclick="markWithdrawalPaid('${w.id}','${w.userId}',${w.amount})" style="flex:1;padding:10px;background:#dbeafe;border:1.5px solid #93c5fd;color:#1d4ed8;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">&#128179; Mark Paid</button>
-          <button onclick="rejectWithdrawal('${w.id}','${w.userId}',${w.amount})" style="flex:1;padding:10px;background:#fee2e2;border:1.5px solid #fca5a5;color:#dc2626;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">❌ Reject</button>
-        </div>
-      </div>`;
-    });
-    if(others.length){
-      html+=`<div style="font-weight:700;font-size:14px;color:var(--g500);margin:14px 0 10px">Completed (${others.length})</div>`;
-      const sc2={approved:'#dcfce7|#15803d',paid:'#f0fdf4|#166534',rejected:'#fee2e2|#dc2626'};
-      others.forEach(w=>{
-        const [bg,col]=(sc2[w.status]||'#f1f5f9|var(--g600)').split('|');
-        html+=`<div style="background:#fff;border:1px solid #eef0f3;border-radius:10px;padding:12px;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between">
-          <div><div style="font-weight:600;font-size:13px">${w.userName||w.userEmail} — NGN ${fmt(w.amount)}</div><div style="font-size:11px;color:var(--g400)">${w.method==='bank'?w.details?.bankName+' '+w.details?.accountNumber:'Cash Pickup'} · ${fdate(w.createdAt)}</div>${w.adminNote?`<div style="font-size:11px;color:var(--green-d);margin-top:2px">${w.adminNote}</div>`:''}</div>
-          <span style="font-size:10px;font-weight:700;padding:4px 10px;border-radius:50px;background:${bg};color:${col};flex-shrink:0;margin-left:8px">${w.status.toUpperCase()}</span>
-        </div>`;
-      });
-    }
-    if(!html)html='<div class="card" style="padding:32px;text-align:center;color:var(--g400)"><div style="font-size:36px;margin-bottom:10px">&#128184;</div><p>No withdrawal requests yet</p></div>';
+    const approved=wds.filter(w=>w.status==='approved');
+    const paid=wds.filter(w=>w.status==='paid');
+    const rejected=wds.filter(w=>w.status==='rejected');
+
+    // Summary bar
+    const totalPending=pending.reduce((s,w)=>s+w.amount,0);
+    const totalApproved=approved.reduce((s,w)=>s+w.amount,0);
+    let html=`
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px">
+      <div style="background:linear-gradient(135deg,#92400e,#d97706);border-radius:12px;padding:12px;color:#fff">
+        <div style="font-size:9px;opacity:.7;text-transform:uppercase;margin-bottom:2px">Pending</div>
+        <div style="font-size:18px;font-weight:800">NGN ${fmt(totalPending)}</div>
+        <div style="font-size:10px;opacity:.6">${pending.length} request${pending.length!==1?'s':''}</div>
+      </div>
+      <div style="background:linear-gradient(135deg,#1e3a5f,#2563eb);border-radius:12px;padding:12px;color:#fff">
+        <div style="font-size:9px;opacity:.7;text-transform:uppercase;margin-bottom:2px">Approved (Unpaid)</div>
+        <div style="font-size:18px;font-weight:800">NGN ${fmt(totalApproved)}</div>
+        <div style="font-size:10px;opacity:.6">${approved.length} awaiting payment</div>
+      </div>
+    </div>
+    <!-- Tab buttons -->
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
+      <button onclick="adminWdTab('pending')" id="wdt-pending" style="padding:7px 13px;border-radius:50px;font-size:11px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;background:#fef3c7;color:#92400e;border:1.5px solid #fde68a">Pending (${pending.length})</button>
+      <button onclick="adminWdTab('approved')" id="wdt-approved" style="padding:7px 13px;border-radius:50px;font-size:11px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;background:#dbeafe;color:#1d4ed8;border:1.5px solid #93c5fd">Approved (${approved.length})</button>
+      <button onclick="adminWdTab('paid')" id="wdt-paid" style="padding:7px 13px;border-radius:50px;font-size:11px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;background:#dcfce7;color:#15803d;border:1.5px solid #86efac">Paid (${paid.length})</button>
+      <button onclick="adminWdTab('rejected')" id="wdt-rejected" style="padding:7px 13px;border-radius:50px;font-size:11px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;background:#fee2e2;color:#dc2626;border:1.5px solid #fca5a5">Rejected (${rejected.length})</button>
+    </div>
+    <div id="wd-tab-content"></div>`;
+
     el.innerHTML=html;
+
+    // Store data globally for tab switching
+    window._wdData={pending,approved,paid,rejected};
+    adminWdTab('pending');
   }catch(e){el.innerHTML='<div class="card" style="padding:20px;color:#dc2626">Error: '+e.message+'</div>';}
+}
+
+function adminWdTab(tab){
+  const data=window._wdData||{pending:[],approved:[],paid:[],rejected:[]};
+  const items=data[tab]||[];
+  const cont=document.getElementById('wd-tab-content');
+  if(!cont)return;
+
+  // Highlight active tab
+  ['pending','approved','paid','rejected'].forEach(t=>{
+    const btn=document.getElementById('wdt-'+t);
+    if(!btn)return;
+    btn.style.opacity=(t===tab)?'1':'0.55';
+    btn.style.fontWeight=(t===tab)?'800':'700';
+  });
+
+  if(!items.length){
+    cont.innerHTML=`<div class="card" style="padding:32px;text-align:center;color:var(--g400)"><div style="font-size:36px;margin-bottom:10px">&#128184;</div><p>No ${tab} withdrawal requests</p></div>`;
+    return;
+  }
+
+  function wdCard(w){
+    const bankInfo=w.method==='bank'
+      ?`&#127974; <strong>${w.details?.bankName||'—'}</strong><br/>Account: <strong>${w.details?.accountNumber||'—'}</strong><br/>Name: <strong>${w.details?.accountName||'—'}</strong>`
+      :`&#128075; Cash Pickup — <strong>${w.details?.contactName||'—'}</strong> · ${w.details?.phone||'—'}`;
+    const noteVal=w.adminNote||'';
+    const userName=w.userName&&w.userName!=='User'?w.userName:(w.userEmail||'Unknown');
+    let actions='';
+    if(tab==='pending'){
+      actions=`
+        <div style="margin-bottom:8px"><input class="inp" id="wd-admin-note-${w.id}" value="${noteVal}" placeholder="Admin note (optional)" style="font-size:12px;padding:9px"/></div>
+        <div style="display:flex;gap:7px">
+          <button onclick="approveWithdrawal('${w.id}','${w.userId}',${w.amount})" style="flex:1;padding:10px;background:#dcfce7;border:1.5px solid #86efac;color:#15803d;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif">&#10003; Approve</button>
+          <button onclick="rejectWithdrawal('${w.id}','${w.userId}',${w.amount})" style="flex:1;padding:10px;background:#fee2e2;border:1.5px solid #fca5a5;color:#dc2626;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif">&#10007; Reject</button>
+        </div>`;
+    } else if(tab==='approved'){
+      actions=`
+        <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:9px;padding:10px;font-size:12px;color:#92400e;margin-bottom:8px">&#9888; Approved — waiting for you to send the money and click Mark as Paid.</div>
+        <div style="margin-bottom:8px"><input class="inp" id="wd-admin-note-${w.id}" value="${noteVal}" placeholder="Payment reference / note (optional)" style="font-size:12px;padding:9px"/></div>
+        <button onclick="markWithdrawalPaid('${w.id}','${w.userId}',${w.amount})" style="width:100%;padding:11px;background:linear-gradient(135deg,#1d4ed8,#2563eb);color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif">&#128179; Mark as Paid — Deduct from Wallet</button>`;
+    }
+    const statusColors={pending:'#fef3c7|#92400e',approved:'#dbeafe|#1d4ed8',paid:'#dcfce7|#15803d',rejected:'#fee2e2|#dc2626'};
+    const [sbg,scol]=(statusColors[w.status]||'#f1f5f9|#334155').split('|');
+    return `<div class="card" style="padding:14px;margin-bottom:8px;border-left:4px solid ${scol}">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px">
+        <div><div style="font-weight:700;font-size:14px">${userName}</div><div style="font-size:11px;color:var(--g400)">${w.userEmail||''} · ${fdate(w.createdAt)}</div></div>
+        <div style="text-align:right"><div style="font-size:20px;font-weight:800">NGN ${fmt(w.amount)}</div><span style="font-size:10px;font-weight:700;padding:3px 9px;border-radius:50px;background:${sbg};color:${scol}">${w.status.toUpperCase()}</span></div>
+      </div>
+      <div style="font-size:12px;color:var(--g600);background:#f8fafc;border-radius:9px;padding:10px;margin-bottom:10px">${bankInfo}${w.note?`<br/><span style="color:var(--g400)">Note: ${w.note}</span>`:''}</div>
+      ${w.adminNote&&tab!=='pending'&&tab!=='approved'?`<div style="font-size:11px;color:#15803d;background:#f0fdf4;border-radius:7px;padding:7px;margin-bottom:8px">&#128203; Admin note: ${w.adminNote}</div>`:''}
+      ${actions}
+    </div>`;
+  }
+
+  cont.innerHTML=items.map(w=>wdCard(w)).join('');
 }
 
 async function approveWithdrawal(wdId,userId,amount){
   const note=document.getElementById('wd-admin-note-'+wdId)?.value.trim()||'';
-  if(!confirm('Approve & immediately pay NGN '+fmt(amount)+' to user bank account?'))return;
-  await db.collection('withdrawals').doc(wdId).update({status:'paid',adminNote:note,approvedAt:firebase.firestore.FieldValue.serverTimestamp(),paidAt:firebase.firestore.FieldValue.serverTimestamp()});
-  const txQ=await db.collection('transactions').where('ref','==',wdId).get();
-  txQ.docs.forEach(d=>d.ref.update({status:'success'}));
-  await addNotif(userId,'&#128184; Withdrawal Paid!','Your withdrawal of NGN '+fmt(amount)+' has been processed and paid to your submitted bank account details.'+(note?' Note: '+note:''));
-  toast('✅ Withdrawal approved and paid immediately!');aTab('withdrawals');
+  if(!confirm('Approve withdrawal of NGN '+fmt(amount)+'? (Wallet deduction happens only when you click Mark as Paid)'))return;
+  await db.collection('withdrawals').doc(wdId).update({
+    status:'approved',adminNote:note,
+    approvedAt:firebase.firestore.FieldValue.serverTimestamp()
+  });
+  await addNotif(userId,'&#10003; Withdrawal Approved!','Your withdrawal request of NGN '+fmt(amount)+' has been approved. Payment will be sent shortly.'+(note?' Note: '+note:''));
+  toast('&#10003; Withdrawal approved! Now send the money and click Mark as Paid.');
+  aTab('withdrawals');
 }
 
 async function markWithdrawalPaid(wdId,userId,amount){
   const note=document.getElementById('wd-admin-note-'+wdId)?.value.trim()||'';
-  if(!confirm('Mark withdrawal of NGN '+fmt(amount)+' as PAID?'))return;
-  await db.collection('withdrawals').doc(wdId).update({status:'paid',adminNote:note,paidAt:firebase.firestore.FieldValue.serverTimestamp()});
-  const txQ=await db.collection('transactions').where('ref','==',wdId).get();
-  txQ.docs.forEach(d=>d.ref.update({status:'success'}));
-  await addNotif(userId,'&#128184; Withdrawal Completed!','Your withdrawal of NGN '+fmt(amount)+' has been sent to your account!'+(note?' Note: '+note:''));
-  toast('Marked as paid!');aTab('withdrawals');
+  if(!confirm('Mark NGN '+fmt(amount)+' as PAID? This will deduct the amount from the user\'s wallet.'))return;
+  try{
+    // Deduct from wallet now
+    await db.collection('users').doc(userId).update({
+      balance:firebase.firestore.FieldValue.increment(-amount)
+    });
+    await db.collection('withdrawals').doc(wdId).update({
+      status:'paid',adminNote:note,
+      paidAt:firebase.firestore.FieldValue.serverTimestamp()
+    });
+    // Save to transaction history
+    await db.collection('transactions').add({
+      userId,type:'withdrawal',amount,
+      description:'Withdrawal Paid — '+(note||'Bank Transfer'),
+      status:'success',ref:wdId,
+      createdAt:firebase.firestore.FieldValue.serverTimestamp()
+    });
+    await addNotif(userId,'&#128184; Withdrawal Paid!','Your withdrawal of NGN '+fmt(amount)+' has been sent to your account.'+(note?' Ref: '+note:''));
+    toast('&#128184; Marked as paid! NGN '+fmt(amount)+' deducted from user wallet.');
+    aTab('withdrawals');
+  }catch(e){toast('Error: '+e.message);}
 }
 
 async function rejectWithdrawal(wdId,userId,amount){
   const note=document.getElementById('wd-admin-note-'+wdId)?.value.trim()||'Withdrawal could not be processed at this time.';
-  if(!confirm('Reject and REFUND NGN '+fmt(amount)+'?'))return;
-  await db.collection('users').doc(userId).update({balance:firebase.firestore.FieldValue.increment(amount)});
-  await db.collection('withdrawals').doc(wdId).update({status:'rejected',adminNote:note,rejectedAt:firebase.firestore.FieldValue.serverTimestamp()});
-  await db.collection('transactions').add({userId,type:'credit',amount,description:'Withdrawal Refunded — Request Rejected',status:'success',createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-  await addNotif(userId,'Withdrawal Rejected — Amount Refunded','Your withdrawal of NGN '+fmt(amount)+' was rejected. Amount has been refunded. Reason: '+note);
-  toast('Rejected and refunded!');aTab('withdrawals');
+  if(!confirm('Reject withdrawal of NGN '+fmt(amount)+'? No deduction will be made.'))return;
+  // No wallet change — amount was never deducted
+  await db.collection('withdrawals').doc(wdId).update({
+    status:'rejected',adminNote:note,
+    rejectedAt:firebase.firestore.FieldValue.serverTimestamp()
+  });
+  await addNotif(userId,'Withdrawal Request Rejected','Your withdrawal request of NGN '+fmt(amount)+' was not approved. No amount has been deducted. Reason: '+note);
+  toast('Withdrawal rejected. No deduction made.');aTab('withdrawals');
 }
 
 // Admin: credit individual monthly interest payment
