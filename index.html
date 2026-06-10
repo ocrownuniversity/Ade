@@ -263,6 +263,7 @@ function toast(msg,d=3200){let t=document.querySelector('.toast');if(t)t.remove(
 function fmt(n){return parseFloat(n||0).toLocaleString('en-NG',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function fdate(ts){if(!ts)return'—';const d=ts.toDate?ts.toDate():new Date(ts);return d.toLocaleDateString('en-NG',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});}
 auth.onAuthStateChanged(async u=>{
+if(window._isPasswordResetFlow) return;
 if(u){
 CU=u;
 const ref=db.collection('users').doc(u.uid);
@@ -5599,13 +5600,26 @@ toast('Reset link copied!');
 });
 }
 async function checkResetToken() {
+// Check both ?reset= (query param) and #reset= (hash, in case WhatsApp strips query params)
 const params = new URLSearchParams(window.location.search);
-const token = params.get('reset');
+let token = params.get('reset');
+// Also check hash in case link was converted: zmonie.com.ng/#reset=TOKEN
+if (!token && window.location.hash) {
+const hashParams = new URLSearchParams(window.location.hash.replace('#',''));
+token = hashParams.get('reset');
+}
 if (!token) return false;
+// Token found — immediately show reset page, block any other page from showing
 document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
 const pg = document.getElementById('pg-reset-pw');
 if (pg) pg.classList.add('active');
+// Mark globally so onAuthStateChanged doesn't redirect away
+window._isPasswordResetFlow = true;
 try {
+// Wait for Firebase to be ready
+if (typeof db === 'undefined') {
+await new Promise(resolve => setTimeout(resolve, 1500));
+}
 const snap = await db.collection('pwResetRequests')
 .where('token', '==', token)
 .where('status', '==', 'approved')
@@ -5675,6 +5689,16 @@ toast('Error updating password: ' + e.message);
 }
 }
 window.addEventListener('load', () => {
+// Check for password reset token FIRST — before auth state changes anything
+const params = new URLSearchParams(window.location.search);
+const hashParams = new URLSearchParams(window.location.hash.replace('#',''));
+const hasToken = params.get('reset') || hashParams.get('reset');
+if (hasToken) {
+window._isPasswordResetFlow = true;
+document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+const pg = document.getElementById('pg-reset-pw');
+if (pg) pg.classList.add('active');
+}
 setTimeout(async () => {
 const handled = await checkResetToken();
 }, 600);
