@@ -748,11 +748,8 @@ const rwBal=UD.rewardsBalance||0;const cbEarned=UD.cashbackEarned||0;const rfEar
 const cbEl=document.getElementById('d-cashback');if(cbEl)cbEl.textContent='NGN '+fmt(cbEarned);
 const rfEl=document.getElementById('d-refearnings');if(rfEl)rfEl.textContent='NGN '+fmt(rfEarned);
 loadNBadge();loadDashTx();loadSlider();startRealtimeSync();
-// Run deductions for current user's loans immediately
-setTimeout(()=>{runDailyLoanDeductions();runMonthlyInvestmentPayouts();},2000);
-// Also run global deductions (covers all users) - triggered by any user login
-// This ensures deductions happen even if no user visits their dashboard
-setTimeout(()=>runGlobalDeductionsIfNeeded(),5000);
+// Only run investment payouts for this user (loans handled globally by admin/global runner)
+setTimeout(()=>{runMonthlyInvestmentPayouts();},2000);
 }
 function togBal(){bHid=!bHid;document.getElementById('d-bal').textContent=bHid?'NGN ****':'NGN '+fmt(UD?.balance||0);}
 async function loadDashTx(){
@@ -1824,61 +1821,53 @@ AD.users=us.docs.map(d=>({id:d.id,...d.data()}));AD.txs=tx.docs.map(d=>({id:d.id
 AD.loans=ls.docs.map(d=>({id:d.id,...d.data()}));
 AD.investments=ivs.docs.map(d=>({id:d.id,...d.data()}));
 aTab('overview');
-runAdminGlobalLoanDeductions().catch(e=>console.warn('Global deduction:',e.message));
+// Run deductions once per day using atomic Firestore lock - prevents all duplicates
+runGlobalDeductionsIfNeeded().catch(e=>console.warn('Deduction runner:',e.message));
 }
 
-// Run global deductions from any user session - uses a Firestore lock to run once per day
+// ── SINGLE GLOBAL DAILY DEDUCTION RUNNER ──
+// Called ONLY from admin load. Atomic Firestore lock prevents duplicate runs.
 async function runGlobalDeductionsIfNeeded(){
 try{
 const todayStr=localDateStr();
 const lockRef=db.collection('systemLocks').doc('dailyLoanDeduction');
-const lock=await lockRef.get();
-if(lock.exists&&lock.data().date===todayStr)return; // already ran today
-// Set lock first to prevent duplicate runs
-await lockRef.set({date:todayStr,runAt:firebase.firestore.FieldValue.serverTimestamp()});
-// Now run deductions for ALL active loans
-const activeLoans=await db.collection('loans').where('status','==','active').get();
-for(const doc of activeLoans.docs){
+// Atomically claim today's lock
+const alreadyRan=await db.runTransaction(async tx=>{
+const lockDoc=await tx.get(lockRef);
+if(lockDoc.exists&&lockDoc.data().date===todayStr)return true;
+tx.set(lockRef,{date:todayStr,startedAt:new Date().toISOString()});
+return false;
+});
+if(alreadyRan){console.log('Deductions already ran today:',todayStr);return;}
+console.log('Running daily loan deductions for',todayStr);
+const loanSnap=await db.collection('loans').where('status','==','active').get();
+for(const doc of loanSnap.docs){
 const ln=doc.data();
 if(ln.lastDeductionDate===todayStr)continue;
-const totalRepay=ln.totalRepayable||((ln.approvedAmount||ln.amount)*1.24);
-const daily=ln.dailyRepayment||Math.round((totalRepay/30)*100)/100;
-const bal=await db.collection('users').doc(ln.userId).get().then(s=>s.data()?.balance||0);
+const daily=ln.dailyRepayment||Math.round(((ln.totalRepayable||(ln.approvedAmount||ln.amount)*1.24)/30)*100)/100;
+const uSnap=await db.collection('users').doc(ln.userId).get();
+if(!uSnap.exists)continue;
+const bal=uSnap.data().balance||0;
 if(bal<daily){
-// Insufficient balance - mark but don't deduct
-await db.collection('loans').doc(doc.id).update({
-lastDeductionDate:todayStr,
-missedPayments:firebase.firestore.FieldValue.increment(1)
-});
-await addNotif(ln.userId,'Loan Repayment Failed - Insufficient Balance',
-'Your daily loan repayment of NGN '+fmt(daily)+' could not be deducted. Please fund your wallet.');
+await doc.ref.update({lastDeductionDate:todayStr,missedPayments:firebase.firestore.FieldValue.increment(1)});
+await addNotif(ln.userId,'Loan Repayment Failed','Daily repayment of NGN '+fmt(daily)+' failed - insufficient wallet balance. Please fund your wallet.');
 continue;
 }
-const newBalance=parseFloat((bal-daily).toFixed(2));
-const paidSchedule=(ln.repaymentSchedule||[]);
-paidSchedule.push({date:todayStr,amount:daily,paid:true});
-const totalPaid=paidSchedule.filter(s=>s.paid).length*daily;
+const sch=(ln.repaymentSchedule||[]);
+sch.push({date:todayStr,amount:daily,paid:true});
+const totalPaid=sch.filter(s=>s.paid).length*daily;
+const totalRepay=ln.totalRepayable||((ln.approvedAmount||ln.amount)*1.24);
 const remaining=Math.max(0,parseFloat((totalRepay-totalPaid).toFixed(2)));
 await db.collection('users').doc(ln.userId).update({balance:firebase.firestore.FieldValue.increment(-daily)});
-await db.collection('loans').doc(doc.id).update({
-lastDeductionDate:todayStr,
-repaymentSchedule:paidSchedule,
-remainingBalance:remaining,
-status:remaining<=0?'repaid':'active'
-});
-await db.collection('transactions').add({
-userId:ln.userId,type:'loan_repayment',amount:daily,
-description:'Daily Loan Repayment - '+todayStr,
-status:'success',loanId:doc.id,
-createdAt:firebase.firestore.FieldValue.serverTimestamp()
-});
-if(remaining<=0){
-await addNotif(ln.userId,'Loan Fully Repaid!',
-'Congratulations! Your loan of NGN '+fmt(ln.approvedAmount||ln.amount)+' has been fully repaid.');
+await doc.ref.update({lastDeductionDate:todayStr,repaymentSchedule:sch,remainingBalance:remaining,status:remaining<=0?'repaid':'active'});
+await db.collection('transactions').add({userId:ln.userId,type:'loan_repayment',amount:daily,description:'Daily Loan Repayment - '+todayStr,status:'success',loanId:doc.id,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+if(remaining<=0)await addNotif(ln.userId,'Loan Fully Repaid!','Congratulations! Your loan has been fully repaid.');
 }
-}
+await lockRef.update({completedAt:new Date().toISOString()});
+console.log('Daily deductions complete for',todayStr);
 }catch(e){console.warn('Global deduction error:',e.message);}
 }
+
 async function runAdminGlobalLoanDeductions(){
 const todayStr = localDateStr();
 const activeLoans = await db.collection('loans').where('status','==','active').get();
