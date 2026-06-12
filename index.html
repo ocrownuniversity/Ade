@@ -1,18 +1,7 @@
 <!DOCTYPE html><html lang="en"><head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<meta name="description" content="Zmonie — Nigeria's premium fintech platform. Buy airtime, data, pay bills, apply for loans, EasyBuy, invest and earn 10% monthly. Fast, secure, 24/7."/>
-<meta name="keywords" content="Zmonie, buy airtime Nigeria, cheap data plans, pay electricity bill online, loan app Nigeria, buy now pay later Nigeria, investment platform Nigeria, VTU platform, fintech Nigeria"/>
-<meta name="author" content="Zmonie Financial Technology"/>
-<meta name="robots" content="index, follow"/>
-<link rel="canonical" href="https://zmonie.com.ng/"/>
-<meta property="og:type" content="website"/>
-<meta property="og:url" content="https://zmonie.com.ng/"/>
-<meta property="og:title" content="Zmonie - Save Smart, Starts Here"/>
-<meta property="og:description" content="Nigeria's premium fintech platform. Airtime, data, bills, loans, EasyBuy and investments - 24/7."/>
-<meta property="og:image" content="https://zmonie.com.ng/icons/icon-512.png"/>
-<meta property="og:site_name" content="Zmonie"/>
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"FinancialService","name":"Zmonie","url":"https://zmonie.com.ng","description":"Nigeria's premium fintech platform.","areaServed":"NG","telephone":"+2348068886569"}</script><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><meta name="theme-color" content="#16a34a"/><meta name="mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/><meta name="apple-mobile-web-app-title" content="ZMONIE"/><meta name="application-name" content="ZMONIE"/><meta name="description" content="Nigeria's premium VTU platform. Airtime, data, bills, loans, EasyBuy &amp; investments instantly and securely, 24/7."/><link rel="manifest" href="manifest.json"/><link rel="apple-touch-icon" sizes="192x192" href="icon-192.png"/><link rel="apple-touch-icon" sizes="512x512" href="icon-512.png"/><title>ZMONIE - Save Smart Platform</title>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><meta name="theme-color" content="#16a34a"/><meta name="mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/><meta name="apple-mobile-web-app-title" content="ZMONIE"/><meta name="application-name" content="ZMONIE"/><meta name="description" content="Zmonie - Buy airtime, data, pay bills, apply for loans, EasyBuy buy now pay later, invest and earn 10% monthly. Nigeria VTU fintech platform, fast and secure 24/7."/><link rel="manifest" href="manifest.json"/><link rel="apple-touch-icon" sizes="192x192" href="icon-192.png"/><link rel="apple-touch-icon" sizes="512x512" href="icon-512.png"/><title>ZMONIE - Save Smart Platform</title>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
@@ -2928,7 +2917,7 @@ else if(errMsg.includes('network') || errMsg.includes('unavailable')) errMsg = '
 else if(errMsg.includes('quota')) errMsg = 'Service temporarily busy. Please try again in a moment.';
 else if(errMsg.includes('passportUrl') || errMsg.includes('nokPhotoUrl')) errMsg = 'Photo upload failed — please re-select your passport or Next of Kin photo and try again.';
 toast('❌ Submission failed: '+errMsg);
-if(btn){btn.textContent='&#128640; Submit Investment Request';btn.disabled=false;}
+if(btn){btn.innerHTML='&#128640; Submit Investment Request';btn.disabled=false;}
 }
 }
 function invGenderStyle(){
@@ -3525,7 +3514,7 @@ if(!firstName){toast('Enter your first name');document.getElementById('ep-firstn
 if(!phone||phone.length<10){toast('Enter a valid phone number (min 10 digits)');document.getElementById('ep-phone').focus();return;}
 const fullName=(firstName+' '+lastName).trim();
 const btn=document.querySelector('[onclick="saveProfileEdits()"]');
-if(btn){btn.disabled=true;btn.textContent='Saving...';}
+if(btn){btn.disabled=true;btn.innerHTML='Saving...';}
 try{
 await db.collection('users').doc(CU.uid).update({
 name: fullName,
@@ -3543,7 +3532,7 @@ document.getElementById('d-accnum').textContent='Account: '+phone;
 const prAccNum=document.getElementById('pr-accnum');if(prAccNum)prAccNum.textContent=phone;
 toast('&#10003; Profile updated successfully!');
 }catch(e){toast('Error: '+e.message);}
-finally{if(btn){btn.disabled=false;btn.textContent='&#10003; Save Changes';}}
+finally{if(btn){btn.disabled=false;btn.innerHTML='&#10003; Save Changes';}}
 }
 function updateAvatarUI(photoURL){
 const img = document.getElementById('d-avatar-img');
@@ -4295,7 +4284,7 @@ toast('&#10003; Withdrawal request submitted! Awaiting admin review.');
 }catch(er){
 toast('&#10007; Failed: '+er.message);
 }finally{
-if(btn){btn.disabled=false;btn.textContent='&#128184; Submit Withdrawal Request';}
+if(btn){btn.disabled=false;btn.innerHTML='&#128184; Submit Withdrawal Request';}
 }
 }
 async function loadMyWithdrawals(){
