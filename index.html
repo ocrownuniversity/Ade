@@ -847,12 +847,14 @@ const amt=parseFloat(amtEl?.value||'0');
 if(!amt||amt<=0){toast('Select a valid plan or enter an amount');return;}
 if(!UD?.pin){toast('Please set a transaction PIN in Profile first');closeM('m-svc');goPg('pg-profile');return;}
 const rwBal=UD?.rewardsBalance||0;
-if(rwBal>=amt){
 const rwNote=document.getElementById('pin-rw-note');
-if(rwNote){rwNote.style.display='flex';rwNote.querySelector('#pin-rw-bal').textContent='NGN '+fmt(rwBal);}
-}else{
-const rwNote=document.getElementById('pin-rw-note');
-if(rwNote)rwNote.style.display='none';
+if(rwBal>0 && rwNote){
+rwNote.style.display='flex';
+const covers=Math.min(rwBal,amt);
+const remainder=amt-covers;
+rwNote.querySelector('#pin-rw-bal').textContent='NGN '+fmt(rwBal)+(remainder>0?' (covers NGN '+fmt(covers)+' — remainder of NGN '+fmt(remainder)+' from wallet)':' (covers full amount)');
+}else if(rwNote){
+rwNote.style.display='none';
 }
 let extra={};
 if(type==='airtime'){
@@ -941,8 +943,12 @@ async function execSvc({type, amt, extra, useRewards}){
 if(!CU) return;
 const s   = await db.collection('users').doc(CU.uid).get();
 const ud  = s.data()||{};
-const bal = useRewards ? (ud.rewardsBalance||0) : (ud.balance||0);
-if(bal < amt){ toast('Insufficient '+(useRewards?'rewards ':'')+'balance. Please fund your wallet.'); return; }
+const rewardsAvail = ud.rewardsBalance||0;
+const walletAvail  = ud.balance||0;
+const rewardsToUse = useRewards ? Math.min(rewardsAvail, amt) : 0;
+const walletNeeded = amt - rewardsToUse;
+const bal = useRewards ? (rewardsAvail+walletAvail) : walletAvail;
+if(bal < amt){ toast('Insufficient '+(useRewards?'rewards + wallet ':'')+'balance. Please fund your wallet.'); return; }
 const descs = {
 airtime:'Airtime Purchase', data:'Data Subscription',
 cable:'Cable TV Subscription', electricity:'Electricity Payment',
@@ -982,7 +988,9 @@ const respCode = String(apiResult?.status||apiResult?.Status||apiResult?.StatusC
 const respDesc = getApiError(apiResult);
 if(success){
 if(useRewards){
-await db.collection('users').doc(CU.uid).update({rewardsBalance:firebase.firestore.FieldValue.increment(-amt)});
+const upd={rewardsBalance:firebase.firestore.FieldValue.increment(-rewardsToUse)};
+if(walletNeeded>0) upd.balance=firebase.firestore.FieldValue.increment(-walletNeeded);
+await db.collection('users').doc(CU.uid).update(upd);
 }else{
 await db.collection('users').doc(CU.uid).update({balance:firebase.firestore.FieldValue.increment(-amt)});
 }
