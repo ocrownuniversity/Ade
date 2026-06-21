@@ -2947,7 +2947,8 @@ ${networks.map(n=>`<button onclick="filterDataPlanAdmin('${n}')" class="admin-ne
 </div>
 <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
 <button onclick="importClubKonnectPlans()" style="padding:9px 16px;background:#dbeafe;border:1px solid #93c5fd;color:#1d4ed8;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">&#128260; Import/Sync ClubKonnect Plans</button>
-<button onclick="enableCheapestPlans()" style="padding:9px 16px;background:#dcfce7;border:1px solid #86efac;color:#15803d;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">&#9889; Enable Cheapest Plan (All Networks)</button>
+<button onclick="enableCheapestPlans()" style="padding:9px 16px;background:#dcfce7;border:1px solid #86efac;color:#15803d;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">&#9889; Enable 30 Cheapest Plans (All Networks)</button>
+<button onclick="enableAllPlans()" style="padding:9px 16px;background:#ede9fe;border:1px solid #c4b5fd;color:#6d28d9;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">&#9989; Enable ALL Plans (All Networks)</button>
 <button onclick="checkLiveMatchStatus()" style="padding:9px 16px;background:#fef3c7;border:1px solid #fcd34d;color:#92400e;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">&#128269; Check Live Match</button>
 </div>
 <div class="info-box" style="margin-bottom:12px"><p style="font-size:12px;color:var(--green-d)">Set custom selling prices and enable/disable individual plans. Disabled plans won't appear for users. ClubKonnect plan IDs and API logic are unchanged.<br/><span style="display:block;margin-top:4px">Tap "Check Live Match" to see which enabled plans actually exist in the provider's current live data &mdash; a plan can be enabled here but still not appear on the site if the provider no longer offers it under that code.</span></p></div>
@@ -3065,8 +3066,30 @@ toast('Imported '+total+' new plans. Cheapest plan per network enabled automatic
 aTab('data-plans');
 }catch(e){toast('Import error: '+e.message);}
 }
+async function enableAllPlans(){
+if(!confirm('Enable ALL imported data plans across every network? Users will see the full plan list, not just the cheapest one.')) return;
+toast('Enabling all data plans...');
+try{
+const s=await db.collection('dataPlans').get();
+if(s.empty){ toast('No plans found. Use Import/Sync first.'); return; }
+const toEnable=s.docs.filter(d=>d.data().active===false);
+if(!toEnable.length){ toast('All plans are already enabled.'); aTab('data-plans'); return; }
+let batch=db.batch();
+let count=0;
+for(const doc of toEnable){
+batch.update(doc.ref,{active:true});
+count++;
+if(count%400===0){ await batch.commit(); batch=db.batch(); } // stay under Firestore's 500-op batch limit
+}
+await batch.commit();
+toast('Enabled '+count+' plan(s) across all networks.');
+clearPlanCache();
+aTab('data-plans');
+}catch(e){toast('Error: '+e.message);}
+}
 async function enableCheapestPlans(){
-toast('Checking cheapest plan for each network...');
+const COUNT=30;
+toast('Enabling the '+COUNT+' cheapest plans per network...');
 try{
 const networks=Object.values(NET_MAP).map(v=>v.data).filter((v,i,a)=>a.indexOf(v)===i); // e.g. MTN, Airtel, Glo, Etisalat
 let enabled=0, missing=[];
@@ -3074,21 +3097,19 @@ for(const net of networks){
 const s=await db.collection('dataPlans').where('network','==',net).get();
 if(s.empty){ missing.push(net); continue; }
 const docs=s.docs.map(d=>({id:d.id,...d.data()}));
-let cheapest=null;
-docs.forEach(d=>{
-const price=parseFloat(d.sellPrice||d.providerPrice||0);
-if(price<=0) return;
-const curMin=cheapest?parseFloat(cheapest.sellPrice||cheapest.providerPrice||0):Infinity;
-if(price<curMin) cheapest=d;
-});
-if(cheapest && cheapest.active===false){
-await db.collection('dataPlans').doc(cheapest.id).update({active:true});
+const priced=docs.filter(d=>parseFloat(d.sellPrice||d.providerPrice||0)>0);
+priced.sort((a,b)=>parseFloat(a.sellPrice||a.providerPrice||0)-parseFloat(b.sellPrice||b.providerPrice||0));
+const cheapestN=priced.slice(0,COUNT);
+for(const d of cheapestN){
+if(d.active===false){
+await db.collection('dataPlans').doc(d.id).update({active:true});
 enabled++;
 }
 }
-let msg='Enabled cheapest plan for '+enabled+' network(s).';
+}
+let msg='Enabled up to '+COUNT+' cheapest plans per network ('+enabled+' newly turned on).';
 if(missing.length) msg+=' No plans found yet for: '+missing.join(', ')+' &mdash; use Import/Sync first.';
-toast(msg);
+toast(msg,5000);
 aTab('data-plans');
 }catch(e){toast('Error: '+e.message);}
 }
