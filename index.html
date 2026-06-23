@@ -540,6 +540,7 @@ refreshAllCurrencyDisplays();
 function fdate(ts){if(!ts)return'&mdash;';const d=ts.toDate?ts.toDate():new Date(ts);return d.toLocaleDateString('en-NG',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});}
 auth.onAuthStateChanged(async u=>{
 if(window._isPasswordResetFlow) return;
+if(window._isRegistering) return; // doReg handles navigation and data load itself
 var BUILTIN_SUBADMIN={
 'zmonieservice@gmail.com':['users','transactions','funding','withdrawals','wallet',
 'pins','pw-reset','broadcast','promos','fund-accounts','data-plans','recovery',
@@ -718,6 +719,9 @@ photoURL=await new Promise(res=>{const r=new FileReader();r.onload=e=>res(e.targ
 }
 const cr=await auth.createUserWithEmailAndPassword(em,pw);
 const uid=cr.user.uid;
+// Set flag BEFORE writing to Firestore so onAuthStateChanged
+// skips its skeleton-creation logic entirely while we write.
+window._isRegistering=true;
 const urlRef=new URLSearchParams(window.location.search).get('ref')||sessionStorage.getItem('zmonie_ref')||'';
 const refCode='ZM'+uid.slice(0,8).toUpperCase();
 const userData={
@@ -736,27 +740,39 @@ referredBy:urlRef,
 hasFundedFirst:false,
 createdAt:firebase.firestore.FieldValue.serverTimestamp()
 };
-// Write with retry -- ensures the document is confirmed saved before onAuthStateChanged
-// picks it up, preventing the blank-skeleton race condition
+// Write with retry and read-back verification
 let writeOk=false;
 for(let attempt=0;attempt<3;attempt++){
 try{
 await db.collection('users').doc(uid).set(userData);
-// Verify the write actually landed
 const verify=await db.collection('users').doc(uid).get();
-if(verify.exists&&verify.data().name){writeOk=true;break;}
+if(verify.exists&&verify.data().name){
+writeOk=true;
+console.log('[Reg] Firestore write verified on attempt '+(attempt+1));
+break;
+}
 }catch(writeErr){
 console.error('[Reg] Write attempt '+(attempt+1)+' failed:',writeErr.message);
 if(attempt<2) await new Promise(r=>setTimeout(r,500));
 }
 }
+// Clear the flag AFTER the write is confirmed, THEN let onAuthStateChanged proceed
+window._isRegistering=false;
 if(!writeOk){
-console.error('[Reg] All write attempts failed -- profile may be incomplete');
-toast('Account created but profile save had issues. Some details may be missing -- please update your profile.');
+console.error('[Reg] All write attempts failed');
+toast('Account created but profile save had issues. Please update your profile.');
 }
 await addNotif(uid,'Welcome to ZMONIE!','Your account has been created. Share your referral link and earn NGN 100 for every friend who joins and funds their wallet!');
 sessionStorage.removeItem('zmonie_ref');
-console.log('[Reg] Registration complete for',em,'name:',fn+' '+ln,'phone:',ph,'hasPin:',!!pin,'hasPhoto:',!!photoURL);
+console.log('[Reg] Complete - name:',fn+' '+ln,'phone:',ph,'hasPin:',!!pin,'hasPhoto:',!!photoURL);
+// Manually trigger the auth flow now that data is safely written
+auth.currentUser&&auth.currentUser.reload().catch(()=>{});
+// Force a clean load of the dashboard with the real data
+const finalSnap=await db.collection('users').doc(uid).get();
+CU=cr.user;
+UD=finalSnap.data()||userData;
+goPg('pg-dash');
+loadDash();
 }catch(er){
 console.error('[Reg] Error:',er.code,er.message);
 if(btn){btn.disabled=false;btn.textContent='Create Account';}
@@ -1016,16 +1032,10 @@ extra={smartcard,serviceId:validProviders.includes(provider)?provider:'dstv',var
 const meter=document.getElementById('s-meter')?.value?.trim();
 if(!meter){toast('Enter your meter number');return;}
 const disco=document.getElementById('s-phone')?.value||'';
-const discoMap={
-'EKEDC':'EKEDC','IKEDC':'IKEDC','AEDC':'AEDC',
-'IBEDC':'IBEDC','PHEDC':'PHEDC','EEDC':'EEDC',
-'KEDC':'KEDC','JED':'JED'
-};
-const svcKey=Object.keys(discoMap).find(k=>disco.includes(k));
-const serviceId=discoMap[svcKey]||'ikeja-electric';
+if(!disco){toast('Select your electricity company');return;}
 const meterType=document.getElementById('s-meter-type')?.value||'prepaid';
 const custPhone=CU?.phoneNumber||UD?.phone||'08000000000';
-extra={meter,serviceId,meterType,planName:disco+' NGN '+fmt(amt),custPhone};
+extra={meter,serviceId:disco,meterType,planName:disco+' NGN '+fmt(amt),custPhone};
 }else if(type==='result'){
 const examType=document.getElementById('s-phone')?.value||'WAEC';
 const custPhone=CU?.phoneNumber||UD?.phone||'08000000000';
