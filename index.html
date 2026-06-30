@@ -920,7 +920,10 @@ const rfEl=document.getElementById('d-refearnings');if(rfEl&&UD)rfEl.innerHTML=f
 }
 async function loadDash(){
 if(!CU)return;
+loadNBadge();loadDashTx();loadSlider();startRealtimeSync();
+try{
 const s=await db.collection('users').doc(CU.uid).get();UD=s.data();
+if(!UD){UD={};}
 if(!UD.name||UD.name==='null'||UD.name==='User'||UD.name.trim()===''){
 if(CU.displayName){
 UD.name=CU.displayName;
@@ -968,9 +971,9 @@ const _dcsel=document.getElementById('dash-currency-sel');
 if(_dcsel&&UD?.preferredCurrency) _dcsel.value=UD.preferredCurrency;
 const _pNgn=document.getElementById('pr-ngn-bal');
 if(_pNgn) _pNgn.textContent='NGN '+fmt(UD?.balance||0);
-loadNBadge();loadDashTx();loadSlider();startRealtimeSync();
 // Only run investment payouts for this user (loans handled globally by admin/global runner)
 setTimeout(()=>{runMonthlyInvestmentPayouts();},2000);
+}catch(e){console.warn('loadDash error:',e.message);}
 }
 function togBal(){bHid=!bHid;document.getElementById('d-bal').innerHTML=bHid?fmtCsym()+'****':fmtC(UD?.balance||0);}
 async function loadDashTx(){
