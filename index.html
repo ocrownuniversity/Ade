@@ -293,7 +293,92 @@ localStorage.removeItem('zmonie_banner_dismissed');
 </div>
 </div></div><!-- Modal: Add/Edit Funding Account (Admin) --><div class="modal" id="m-fund-acct"><div class="mbox"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px"><h3 style="font-size:17px;font-weight:700" id="fa-modal-title">Add Funding Account</h3><button onclick="closeM('m-fund-acct')" style="background:var(--g100);border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;color:var(--g600)">&#10005;</button></div><input type="hidden" id="fa-edit-id"/><div style="margin-bottom:11px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Bank Name</label><input class="inp" id="fa-bank" placeholder="e.g. Moniepoint, Zenith Bank"/></div><div style="margin-bottom:11px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Account Name</label><input class="inp" id="fa-acct-name" placeholder="e.g. OgaBuy Online Shopping"/></div><div style="margin-bottom:16px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Account Number</label><input class="inp" id="fa-acct-num" placeholder="10-digit account number" maxlength="10"/></div><button onclick="saveFundAcct()" class="btn-g" style="width:100%;padding:13px;border-radius:11px;font-size:15px">Save Account</button></div></div><div class="modal" id="m-pin"><div class="mbox"><div style="text-align:center;margin-bottom:20px"><div style="width:50px;height:50px;background:var(--green-xl);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 11px">
 <svg width="22" height="22" fill="none" stroke="var(--green-d)" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div><h3 style="font-size:17px;font-weight:700;margin-bottom:4px">Transaction PIN</h3><p style="color:var(--g400);font-size:13px">Enter your 4-digit PIN to continue</p></div><div style="display:flex;gap:12px;justify-content:center;margin-bottom:20px"><input class="pbox" type="password" maxlength="1" id="vp1" oninput="pn('vp1','vp2')"/><input class="pbox" type="password" maxlength="1" id="vp2" oninput="pn('vp2','vp3')"/><input class="pbox" type="password" maxlength="1" id="vp3" oninput="pn('vp3','vp4')"/><input class="pbox" type="password" maxlength="1" id="vp4" oninput="if(this.value.length===1)verPin()"/></div><!-- Rewards balance option (shown only when user has enough rewards) --><div id="pin-rw-note" style="display:none;background:#f0fdf4;border:1px solid #86efac;border-radius:11px;padding:12px;margin-bottom:14px;align-items:center;gap:10px"><div style="flex:1"><div style="font-size:12px;font-weight:700;color:var(--green-d)">&#127894; Use Rewards Balance</div><div style="font-size:11px;color:var(--green);margin-top:2px">Balance: <strong id="pin-rw-bal">NGN 0.00</strong></div></div><label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="use-rewards-chk" style="accent-color:var(--green);width:16px;height:16px"/><span style="font-size:12px;font-weight:600;color:var(--green-d)">Pay with rewards</span></label></div><button onclick="verPin()" class="btn-g" style="width:100%;padding:13px;border-radius:11px;font-size:15px;margin-bottom:9px">Confirm</button><button onclick="closeM('m-pin')" style="width:100%;padding:12px;border-radius:11px;background:var(--g100);border:none;font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;color:var(--g600)">Cancel</button></div></div><div class="modal" id="m-svc"><div class="mbox"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px"><h3 style="font-size:17px;font-weight:700" id="svc-ttl">Service</h3><button onclick="closeM('m-svc')" style="background:var(--g100);border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;color:var(--g600)">&#10005;</button></div><div id="svc-body"></div></div></div><div class="modal" id="m-chgpin"><div class="mbox"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px"><h3 style="font-size:17px;font-weight:700">Change PIN</h3><button onclick="closeM('m-chgpin')" style="background:var(--g100);border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;color:var(--g600)">&#10005;</button></div><div style="margin-bottom:14px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:7px;display:block">Current PIN</label><div style="display:flex;gap:10px;justify-content:center"><input class="pbox" type="password" maxlength="1" id="cp1" oninput="pn('cp1','cp2')"/><input class="pbox" type="password" maxlength="1" id="cp2" oninput="pn('cp2','cp3')"/><input class="pbox" type="password" maxlength="1" id="cp3" oninput="pn('cp3','cp4')"/><input class="pbox" type="password" maxlength="1" id="cp4"/></div></div><div style="margin-bottom:20px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:7px;display:block">New PIN</label><div style="display:flex;gap:10px;justify-content:center"><input class="pbox" type="password" maxlength="1" id="np1" oninput="pn('np1','np2')"/><input class="pbox" type="password" maxlength="1" id="np2" oninput="pn('np2','np3')"/><input class="pbox" type="password" maxlength="1" id="np3" oninput="pn('np3','np4')"/><input class="pbox" type="password" maxlength="1" id="np4"/></div></div><button onclick="doChgPin()" class="btn-g" style="width:100%;padding:13px;border-radius:11px;font-size:15px">Update PIN</button></div></div><div class="modal" id="m-forgotpin"><div class="mbox"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px"><h3 style="font-size:17px;font-weight:700">Forgot PIN</h3><button onclick="closeM('m-forgotpin')" style="background:var(--g100);border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;color:var(--g600)">&#10005;</button></div><div class="warn-box"><p style="font-size:13px;line-height:1.7;color:var(--g700)">A PIN reset request will be sent to admin. Once approved you will see a prompt to set a new PIN immediately from your Profile page.</p></div><button onclick="reqPinReset()" class="btn-g" style="width:100%;padding:13px;border-radius:11px;font-size:15px;margin-bottom:9px">Send Reset Request</button><button onclick="closeM('m-forgotpin')" style="width:100%;padding:12px;border-radius:11px;background:var(--g100);border:none;font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;color:var(--g600)">Cancel</button></div></div><div class="modal" id="m-setnewpin"><div class="mbox"><div style="text-align:center;margin-bottom:20px"><div style="width:50px;height:50px;background:var(--green-xl);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 11px"><svg width="22" height="22" fill="none" stroke="var(--green-d)" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><h3 style="font-size:17px;font-weight:700;margin-bottom:4px">PIN Reset Approved</h3><p style="color:var(--g600);font-size:13px">Admin approved your request. Set your new 4-digit PIN now.</p></div><div style="margin-bottom:20px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:7px;display:block">New PIN</label><div style="display:flex;gap:10px;justify-content:center"><input class="pbox" type="password" maxlength="1" id="snp1" oninput="pn('snp1','snp2')"/><input class="pbox" type="password" maxlength="1" id="snp2" oninput="pn('snp2','snp3')"/><input class="pbox" type="password" maxlength="1" id="snp3" oninput="pn('snp3','snp4')"/><input class="pbox" type="password" maxlength="1" id="snp4"/></div></div><button onclick="saveNewPin()" class="btn-g" style="width:100%;padding:13px;border-radius:11px;font-size:15px">Save New PIN</button></div></div><!-- ADMIN: USER DETAILS MODAL --><div class="modal" id="m-user-details"><div class="mbox" style="max-height:90vh;overflow-y:auto"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;position:sticky;top:0;background:#fff;z-index:10;padding-bottom:10px;border-bottom:1px solid #f1f5f9"><h3 style="font-size:17px;font-weight:700">&#128100; User Details</h3><button onclick="closeUserDetails()" style="background:var(--g100);border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;color:var(--g600)">&#10005;</button></div><div id="user-details-content"></div></div></div><!-- TRANSFER MODAL -->
-<div class="modal" id="m-transfer"><div class="mbox" style="max-height:90vh;overflow-y:auto"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px"><h3 style="font-size:17px;font-weight:700">&#128275; Transfer Money</h3><button onclick="closeM('m-transfer')" style="background:var(--g100);border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;color:var(--g600)">&#10005;</button></div><div style="background:var(--green-xl);border-radius:12px;padding:12px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:10px;color:var(--g500);font-weight:600">YOUR ACCOUNT NUMBER</div><div style="font-size:18px;font-weight:900;color:var(--green-d);letter-spacing:.05em" id="tr-my-acc">-</div><div style="font-size:11px;color:var(--g500);margin-top:2px" id="tr-my-name">-</div></div><button onclick="copyAccNum()" style="padding:6px 12px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif">Copy</button></div><div id="tr-step-1"><div style="margin-bottom:13px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px;display:block">Recipient Account Number</label><input class="inp" id="tr-acc-inp" placeholder="Enter 11-digit account number" type="tel" maxlength="11" oninput="autoLookupTransferUser(this.value)" style="font-size:18px;font-weight:700;letter-spacing:.05em"/></div><div id="tr-user-found" style="display:none;background:#f0fdf4;border:1px solid #86efac;border-radius:11px;padding:12px;margin-bottom:13px"><div style="font-size:12px;color:var(--g500)">Sending to:</div><div style="font-size:15px;font-weight:800;color:var(--green-d);margin-top:2px" id="tr-found-name">-</div></div><div id="tr-user-notfound" style="display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:11px;padding:10px;margin-bottom:13px;font-size:12px;color:#dc2626">Account not found. Check the number and try again.</div><div style="margin-bottom:13px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px;display:block">Amount (NGN)</label><input class="inp" id="tr-amount" placeholder="Enter amount" type="number" min="100" style="font-size:18px;font-weight:700"/></div><div style="margin-bottom:16px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px;display:block">Note (optional)</label><input class="inp" id="tr-note" placeholder="e.g. For lunch, Rent payment..."/></div><button onclick="initiateTransfer()" class="btn-g" style="width:100%;padding:13px;border-radius:11px;font-size:15px">Continue</button></div><div id="tr-step-2" style="display:none"><div style="background:#f8fafc;border-radius:12px;padding:14px;margin-bottom:16px"><div style="font-size:12px;color:var(--g500);margin-bottom:8px">Transfer Summary</div><div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f1f5f9"><span style="font-size:13px;color:var(--g500)">To</span><span style="font-size:13px;font-weight:700" id="tr-sum-name">-</span></div><div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f1f5f9"><span style="font-size:13px;color:var(--g500)">Account</span><span style="font-size:13px;font-weight:700" id="tr-sum-acc">-</span></div><div style="display:flex;justify-content:space-between;padding:8px 0"><span style="font-size:13px;color:var(--g500)">Amount</span><span style="font-size:16px;font-weight:900;color:var(--green-d)" id="tr-sum-amt">NGN 0</span></div></div><div style="margin-bottom:16px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:7px;display:block">Enter your PIN to confirm</label><div style="display:flex;gap:12px;justify-content:center"><input class="pbox" type="password" maxlength="1" id="trp1" oninput="pn('trp1','trp2')"/><input class="pbox" type="password" maxlength="1" id="trp2" oninput="pn('trp2','trp3')"/><input class="pbox" type="password" maxlength="1" id="trp3" oninput="pn('trp3','trp4')"/><input class="pbox" type="password" maxlength="1" id="trp4" oninput="if(this.value.length===1)confirmTransfer()"/></div></div><button onclick="confirmTransfer()" class="btn-g" style="width:100%;padding:13px;border-radius:11px;font-size:15px;margin-bottom:9px">Send Money</button><button onclick="document.getElementById('tr-step-1').style.display='block';document.getElementById('tr-step-2').style.display='none'" style="width:100%;padding:12px;border-radius:11px;background:var(--g100);border:none;font-size:14px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif;color:var(--g600)">Back</button></div></div></div>
+<div class="modal" id="m-transfer"><div class="mbox" style="max-height:90vh;overflow-y:auto"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px"><h3 style="font-size:17px;font-weight:700">&#128275; Transfer Money</h3><button onclick="closeM('m-transfer')" style="background:var(--g100);border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;color:var(--g600)">&#10005;</button></div>
+<!-- Transfer Type Tabs -->
+<div style="display:flex;gap:8px;margin-bottom:16px;background:#f8fafc;border-radius:12px;padding:4px">
+<button id="tr-tab-zmonie" onclick="switchTransferTab('zmonie')" style="flex:1;padding:9px;border-radius:9px;border:none;background:var(--green);color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;transition:all .2s">&#128275; Zmonie User</button>
+<button id="tr-tab-bank" onclick="switchTransferTab('bank')" style="flex:1;padding:9px;border-radius:9px;border:none;background:transparent;color:var(--g500);font-size:12px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif;transition:all .2s">&#127974; Other Bank</button>
+</div>
+
+<!-- ===== ZMONIE USER TAB ===== -->
+<div id="tr-zmonie-panel">
+<div style="background:var(--green-xl);border-radius:12px;padding:12px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:10px;color:var(--g500);font-weight:600">YOUR ACCOUNT NUMBER</div><div style="font-size:18px;font-weight:900;color:var(--green-d);letter-spacing:.05em" id="tr-my-acc">-</div><div style="font-size:11px;color:var(--g500);margin-top:2px" id="tr-my-name">-</div></div><button onclick="copyAccNum()" style="padding:6px 12px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif">Copy</button></div>
+<div id="tr-step-1"><div style="margin-bottom:13px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px;display:block">Recipient Account Number</label><input class="inp" id="tr-acc-inp" placeholder="Enter 11-digit account number" type="tel" maxlength="11" oninput="autoLookupTransferUser(this.value)" style="font-size:18px;font-weight:700;letter-spacing:.05em"/></div><div id="tr-user-found" style="display:none;background:#f0fdf4;border:1px solid #86efac;border-radius:11px;padding:12px;margin-bottom:13px"><div style="font-size:12px;color:var(--g500)">Sending to:</div><div style="font-size:15px;font-weight:800;color:var(--green-d);margin-top:2px" id="tr-found-name">-</div></div><div id="tr-user-notfound" style="display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:11px;padding:10px;margin-bottom:13px;font-size:12px;color:#dc2626">Account not found. Check the number and try again.</div><div style="margin-bottom:13px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px;display:block">Amount (NGN)</label><input class="inp" id="tr-amount" placeholder="Enter amount" type="number" min="100" style="font-size:18px;font-weight:700"/></div><div style="margin-bottom:16px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px;display:block">Note (optional)</label><input class="inp" id="tr-note" placeholder="e.g. For lunch, Rent payment..."/></div><button onclick="initiateTransfer()" class="btn-g" style="width:100%;padding:13px;border-radius:11px;font-size:15px">Continue</button></div>
+<div id="tr-step-2" style="display:none"><div style="background:#f8fafc;border-radius:12px;padding:14px;margin-bottom:16px"><div style="font-size:12px;color:var(--g500);margin-bottom:8px">Transfer Summary</div><div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f1f5f9"><span style="font-size:13px;color:var(--g500)">To</span><span style="font-size:13px;font-weight:700" id="tr-sum-name">-</span></div><div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f1f5f9"><span style="font-size:13px;color:var(--g500)">Account</span><span style="font-size:13px;font-weight:700" id="tr-sum-acc">-</span></div><div style="display:flex;justify-content:space-between;padding:8px 0"><span style="font-size:13px;color:var(--g500)">Amount</span><span style="font-size:16px;font-weight:900;color:var(--green-d)" id="tr-sum-amt">NGN 0</span></div></div><div style="margin-bottom:16px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:7px;display:block">Enter your PIN to confirm</label><div style="display:flex;gap:12px;justify-content:center"><input class="pbox" type="password" maxlength="1" id="trp1" oninput="pn('trp1','trp2')"/><input class="pbox" type="password" maxlength="1" id="trp2" oninput="pn('trp2','trp3')"/><input class="pbox" type="password" maxlength="1" id="trp3" oninput="pn('trp3','trp4')"/><input class="pbox" type="password" maxlength="1" id="trp4" oninput="if(this.value.length===1)confirmTransfer()"/></div></div><button onclick="confirmTransfer()" class="btn-g" style="width:100%;padding:13px;border-radius:11px;font-size:15px;margin-bottom:9px">Send Money</button><button onclick="document.getElementById('tr-step-1').style.display='block';document.getElementById('tr-step-2').style.display='none'" style="width:100%;padding:12px;border-radius:11px;background:var(--g100);border:none;font-size:14px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif;color:var(--g600)">Back</button></div>
+</div>
+
+<!-- ===== OTHER BANK TAB ===== -->
+<div id="tr-bank-panel" style="display:none">
+<!-- Step 1: Bank + Account -->
+<div id="tr-bank-step-1">
+<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:11px 14px;margin-bottom:16px;display:flex;align-items:center;gap:10px">
+<div style="font-size:20px">&#127974;</div>
+<div style="font-size:12px;color:#1e40af;line-height:1.6">Send money to <strong>any Nigerian bank account</strong> via Paystack. A transfer fee applies.</div>
+</div>
+<div style="margin-bottom:13px">
+<label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px;display:block">Select Bank</label>
+<select class="inp" id="ob-bank-sel" onchange="onBankOrAccChange()" style="font-size:14px">
+<option value="">-- Loading banks... --</option>
+</select>
+</div>
+<div style="margin-bottom:13px">
+<label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px;display:block">Account Number <span style="font-weight:400;color:var(--g400)">(10 digits)</span></label>
+<input class="inp" id="ob-acc-num" placeholder="0000000000" type="tel" maxlength="10" oninput="onBankOrAccChange()" style="font-size:20px;font-weight:700;letter-spacing:.08em"/>
+</div>
+<!-- Account name result -->
+<div id="ob-name-loading" style="display:none;background:#f0fdf4;border:1px solid #86efac;border-radius:11px;padding:12px;margin-bottom:13px;text-align:center">
+<div style="font-size:12px;color:var(--g500)">&#8987; Verifying account...</div>
+</div>
+<div id="ob-name-found" style="display:none;background:#f0fdf4;border:1px solid #86efac;border-radius:11px;padding:12px;margin-bottom:13px">
+<div style="font-size:11px;color:var(--g500)">Account Name:</div>
+<div style="font-size:16px;font-weight:800;color:var(--green-d);margin-top:3px" id="ob-acc-name">-</div>
+<div style="font-size:10px;color:var(--g400);margin-top:3px">&#9989; Verified by Paystack</div>
+</div>
+<div id="ob-name-error" style="display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:11px;padding:10px;margin-bottom:13px;font-size:12px;color:#dc2626" id="ob-name-error-msg">Could not verify account. Check the number and bank.</div>
+<div style="margin-bottom:13px">
+<label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px;display:block">Amount (NGN)</label>
+<input class="inp" id="ob-amount" placeholder="Enter amount" type="number" min="100" style="font-size:18px;font-weight:700" oninput="updateBankTransferFee()"/>
+</div>
+<div id="ob-fee-box" style="display:none;background:#fff7ed;border:1px solid #fed7aa;border-radius:11px;padding:11px 14px;margin-bottom:13px">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+<span style="font-size:12px;color:var(--g500)">Transfer Amount</span>
+<span style="font-size:13px;font-weight:700" id="ob-fee-amount">NGN 0</span>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+<span style="font-size:12px;color:var(--g500)">Transfer Fee</span>
+<span style="font-size:13px;font-weight:700;color:#c2410c" id="ob-fee-charge">NGN 0</span>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #fed7aa;padding-top:8px;margin-top:4px">
+<span style="font-size:12px;font-weight:700;color:var(--g700)">Total Deducted</span>
+<span style="font-size:14px;font-weight:900;color:#c2410c" id="ob-fee-total">NGN 0</span>
+</div>
+</div>
+<div style="margin-bottom:16px">
+<label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px;display:block">Narration (optional)</label>
+<input class="inp" id="ob-narration" placeholder="e.g. Payment for goods"/>
+</div>
+<button onclick="initiateBankTransfer()" class="btn-g" style="width:100%;padding:13px;border-radius:11px;font-size:15px">Continue</button>
+</div>
+
+<!-- Step 2: Summary + PIN -->
+<div id="tr-bank-step-2" style="display:none">
+<div style="background:#f8fafc;border-radius:12px;padding:14px;margin-bottom:16px">
+<div style="font-size:12px;color:var(--g500);margin-bottom:10px;font-weight:600">&#127974; BANK TRANSFER SUMMARY</div>
+<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f1f5f9"><span style="font-size:12px;color:var(--g500)">To</span><span style="font-size:13px;font-weight:700" id="ob-sum-name">-</span></div>
+<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f1f5f9"><span style="font-size:12px;color:var(--g500)">Bank</span><span style="font-size:13px;font-weight:700" id="ob-sum-bank">-</span></div>
+<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f1f5f9"><span style="font-size:12px;color:var(--g500)">Account No.</span><span style="font-size:13px;font-weight:700" id="ob-sum-acc">-</span></div>
+<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f1f5f9"><span style="font-size:12px;color:var(--g500)">Amount</span><span style="font-size:14px;font-weight:800;color:var(--green-d)" id="ob-sum-amt">NGN 0</span></div>
+<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f1f5f9"><span style="font-size:12px;color:var(--g500)">Fee</span><span style="font-size:13px;font-weight:700;color:#c2410c" id="ob-sum-fee">NGN 0</span></div>
+<div style="display:flex;justify-content:space-between;padding:10px 0 2px"><span style="font-size:13px;font-weight:700;color:var(--g700)">Total</span><span style="font-size:16px;font-weight:900;color:#dc2626" id="ob-sum-total">NGN 0</span></div>
+</div>
+<div style="background:#fef3c7;border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:#92400e">&#9888;&#65039; Bank transfers are processed by Paystack and may take up to 24 hours to reflect.</div>
+<div style="margin-bottom:16px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:7px;display:block">Enter your PIN to confirm</label><div style="display:flex;gap:12px;justify-content:center"><input class="pbox" type="password" maxlength="1" id="obp1" oninput="pn('obp1','obp2')"/><input class="pbox" type="password" maxlength="1" id="obp2" oninput="pn('obp2','obp3')"/><input class="pbox" type="password" maxlength="1" id="obp3" oninput="pn('obp3','obp4')"/><input class="pbox" type="password" maxlength="1" id="obp4" oninput="if(this.value.length===1)confirmBankTransfer()"/></div></div>
+<button onclick="confirmBankTransfer()" class="btn-g" style="width:100%;padding:13px;border-radius:11px;font-size:15px;margin-bottom:9px">&#9989; Confirm &amp; Send</button>
+<button onclick="document.getElementById('tr-bank-step-1').style.display='block';document.getElementById('tr-bank-step-2').style.display='none'" style="width:100%;padding:12px;border-radius:11px;background:var(--g100);border:none;font-size:14px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif;color:var(--g600)">Back</button>
+</div>
+</div>
+
+</div></div>
 <!-- AIRTIME TO CASH MODAL -->
 <div class="modal" id="m-airtime-cash"><div class="mbox"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><h3 style="font-size:17px;font-weight:700">&#128176; Airtime to Cash</h3><button onclick="closeM('m-airtime-cash')" style="background:var(--g100);border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;color:var(--g600)">&#10005;</button></div><p style="font-size:12px;color:var(--g400);margin-bottom:16px">Convert unused airtime to wallet cash. Rate: 70 kobo per NGN 1 airtime.</p><div style="margin-bottom:13px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px;display:block">Network</label><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px"><button onclick="selAirtimeCashNet(this,'MTN')" style="padding:9px 2px;border:1.5px solid var(--g200);border-radius:9px;background:#fff;font-size:10px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif">MTN</button><button onclick="selAirtimeCashNet(this,'Airtel')" style="padding:9px 2px;border:1.5px solid var(--g200);border-radius:9px;background:#fff;font-size:10px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif">Airtel</button><button onclick="selAirtimeCashNet(this,'Glo')" style="padding:9px 2px;border:1.5px solid var(--g200);border-radius:9px;background:#fff;font-size:10px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif">Glo</button><button onclick="selAirtimeCashNet(this,'9mobile')" style="padding:9px 2px;border:1.5px solid var(--g200);border-radius:9px;background:#fff;font-size:10px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif">9mobile</button></div></div><div style="margin-bottom:13px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px;display:block">Airtime Amount (NGN)</label><input class="inp" id="ac-amount" placeholder="Minimum NGN 100" type="number" min="100" oninput="calcAirtimeCash()" style="font-size:18px;font-weight:700"/></div><div style="background:var(--green-xl);border-radius:12px;padding:14px;margin-bottom:16px"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:12px;color:var(--g500)">Airtime Value</span><span style="font-size:13px;font-weight:700" id="ac-airtime-val">NGN 0.00</span></div><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:12px;color:var(--g500)">Rate</span><span style="font-size:12px;color:var(--g500)">70%</span></div><div style="display:flex;justify-content:space-between;border-top:1px dashed #86efac;padding-top:8px;margin-top:4px"><span style="font-size:13px;font-weight:700;color:var(--green-d)">You Receive</span><span style="font-size:18px;font-weight:900;color:var(--green-d)" id="ac-cash-val">NGN 0.00</span></div></div><div style="background:#fef3c7;border-radius:11px;padding:11px;margin-bottom:16px;font-size:12px;color:#92400e;line-height:1.7">Send your airtime to <strong>08068886569</strong> then submit this form. Admin will verify and credit your wallet within 10 minutes.</div><div style="margin-bottom:16px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:6px;display:block">Your Phone Number (the number sending airtime)</label><input class="inp" id="ac-phone" placeholder="08XXXXXXXXX" type="tel"/></div><button onclick="submitAirtimeCash()" class="btn-g" style="width:100%;padding:13px;border-radius:11px;font-size:15px">Submit Conversion Request</button></div></div>
 <!-- CURRENCY CONVERTER MODAL -->
@@ -2833,6 +2918,7 @@ document.getElementById('tr-user-found').style.display='block';
 }
 function openTransfer(){
 if(!CU){goPg('pg-login');return;}
+// Reset Zmonie tab
 document.getElementById('tr-step-1').style.display='block';
 document.getElementById('tr-step-2').style.display='none';
 document.getElementById('tr-acc-inp').value='';
@@ -2841,6 +2927,16 @@ document.getElementById('tr-note').value='';
 document.getElementById('tr-user-found').style.display='none';
 const _nf=document.getElementById('tr-user-notfound');if(_nf)_nf.style.display='none';
 _transferTarget=null;
+// Reset Other Bank tab
+document.getElementById('tr-bank-step-1').style.display='block';
+document.getElementById('tr-bank-step-2').style.display='none';
+const obAcc=document.getElementById('ob-acc-num');if(obAcc)obAcc.value='';
+const obAmt=document.getElementById('ob-amount');if(obAmt)obAmt.value='';
+const obNarr=document.getElementById('ob-narration');if(obNarr)obNarr.value='';
+['ob-name-found','ob-name-error','ob-name-loading','ob-fee-box'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none';});
+_obResolvedName='';_obBankCode='';_obBankName='';
+// Default to Zmonie tab
+switchTransferTab('zmonie');
 const myAcc=UD?.phone||'';
 document.getElementById('tr-my-acc').textContent=myAcc||'-';
 document.getElementById('tr-my-name').textContent=UD?.name||'';
@@ -2884,6 +2980,164 @@ batch.set(db.collection('transactions').doc(),{userId:_transferTarget.uid,type:'
 await batch.commit();
 closeM('m-transfer');_transferTarget=null;await loadUser();
 toast('NGN '+fmt(amt)+' sent successfully!');
+}catch(e){toast('Transfer failed: '+friendlyError(e));}
+}
+
+// ============================================================
+// OTHER BANK TRANSFER (Paystack)
+// ============================================================
+var _obBankList=[];var _obResolvedName='';var _obBankCode='';var _obBankName='';var _obAccLookupTimer=null;var _obTransferFee=0;
+function switchTransferTab(tab){
+var zm=document.getElementById('tr-zmonie-panel');
+var bk=document.getElementById('tr-bank-panel');
+var tbZ=document.getElementById('tr-tab-zmonie');
+var tbB=document.getElementById('tr-tab-bank');
+if(tab==='zmonie'){
+zm.style.display='block';bk.style.display='none';
+tbZ.style.background='var(--green)';tbZ.style.color='#fff';
+tbB.style.background='transparent';tbB.style.color='var(--g500)';
+}else{
+zm.style.display='none';bk.style.display='block';
+tbB.style.background='var(--green)';tbB.style.color='#fff';
+tbZ.style.background='transparent';tbZ.style.color='var(--g500)';
+if(!_obBankList.length)loadPaystackBanksList();
+}
+}
+async function loadPaystackBanksList(){
+var sel=document.getElementById('ob-bank-sel');
+if(!sel)return;
+sel.innerHTML='<option value="">-- Loading banks... --</option>';
+try{
+if(!_psConfig)await loadPaystackConfig();
+var sk=_psConfig?.secretKey||'';
+if(!sk){sel.innerHTML='<option value="">-- Bank transfer not configured --</option>';return;}
+var r=await fetch('https://api.paystack.co/bank?currency=NGN&perPage=100',{headers:{Authorization:'Bearer '+sk}});
+var d=await r.json();
+if(!d.status||!d.data){sel.innerHTML='<option value="">-- Could not load banks --</option>';return;}
+_obBankList=d.data;
+sel.innerHTML='<option value="">-- Select Bank --</option>'+d.data.map(b=>'<option value="'+b.code+'">'+b.name+'</option>').join('');
+}catch(e){sel.innerHTML='<option value="">-- Error loading banks --</option>';console.warn('Bank list error:',e);}
+}
+function onBankOrAccChange(){
+var sel=document.getElementById('ob-bank-sel');
+var acc=(document.getElementById('ob-acc-num').value||'').replace(/\D/g,'');
+_obBankCode=sel?.value||'';
+_obBankName=sel?.options[sel.selectedIndex]?.text||'';
+_obResolvedName='';
+document.getElementById('ob-name-found').style.display='none';
+document.getElementById('ob-name-error').style.display='none';
+document.getElementById('ob-name-loading').style.display='none';
+clearTimeout(_obAccLookupTimer);
+if(_obBankCode&&acc.length===10){
+document.getElementById('ob-name-loading').style.display='block';
+_obAccLookupTimer=setTimeout(()=>resolvePaystackAccount(acc,_obBankCode),600);
+}
+}
+async function resolvePaystackAccount(accNum,bankCode){
+try{
+if(!_psConfig)await loadPaystackConfig();
+var sk=_psConfig?.secretKey||'';
+if(!sk){toast('Bank transfer not configured. Contact admin.');document.getElementById('ob-name-loading').style.display='none';return;}
+var r=await fetch('https://api.paystack.co/bank/resolve?account_number='+accNum+'&bank_code='+bankCode,{headers:{Authorization:'Bearer '+sk}});
+var d=await r.json();
+document.getElementById('ob-name-loading').style.display='none';
+if(d.status&&d.data?.account_name){
+_obResolvedName=d.data.account_name;
+document.getElementById('ob-acc-name').textContent=_obResolvedName;
+document.getElementById('ob-name-found').style.display='block';
+document.getElementById('ob-name-error').style.display='none';
+updateBankTransferFee();
+}else{
+_obResolvedName='';
+document.getElementById('ob-name-found').style.display='none';
+document.getElementById('ob-name-error').style.display='block';
+document.getElementById('ob-name-error').textContent=d.message||'Could not verify account. Check the number and bank.';
+}
+}catch(e){
+document.getElementById('ob-name-loading').style.display='none';
+document.getElementById('ob-name-error').style.display='block';
+document.getElementById('ob-name-error').textContent='Network error. Check connection and try again.';
+}
+}
+async function getBankTransferFee(){
+try{
+if(!_psConfig)await loadPaystackConfig();
+return parseFloat(_psConfig?.bankTransferFee||50);
+}catch(e){return 50;}
+}
+async function updateBankTransferFee(){
+var amt=parseFloat(document.getElementById('ob-amount')?.value||0);
+if(!amt||amt<1){document.getElementById('ob-fee-box').style.display='none';return;}
+var fee=await getBankTransferFee();
+_obTransferFee=fee;
+document.getElementById('ob-fee-box').style.display='block';
+document.getElementById('ob-fee-amount').textContent='NGN '+fmt(amt);
+document.getElementById('ob-fee-charge').textContent='NGN '+fmt(fee);
+document.getElementById('ob-fee-total').textContent='NGN '+fmt(amt+fee);
+}
+async function initiateBankTransfer(){
+if(!_psConfig)await loadPaystackConfig();
+var btEnabled=_psConfig?.bankTransferEnabled===true;
+if(!btEnabled){toast('Bank transfers are currently not available. Contact admin.');return;}
+var acc=(document.getElementById('ob-acc-num').value||'').trim();
+if(!_obBankCode){toast('Please select a bank');return;}
+if(acc.length!==10){toast('Account number must be exactly 10 digits');return;}
+if(!_obResolvedName){toast('Please wait for account verification to complete');return;}
+var amt=parseFloat(document.getElementById('ob-amount').value||0);
+if(!amt||amt<100){toast('Minimum transfer is NGN 100');return;}
+var fee=await getBankTransferFee();
+_obTransferFee=fee;
+var total=amt+fee;
+if(total>(UD?.balance||0)){toast('Insufficient balance. You need NGN '+fmt(total)+' (including NGN '+fmt(fee)+' fee)');return;}
+document.getElementById('ob-sum-name').textContent=_obResolvedName;
+document.getElementById('ob-sum-bank').textContent=_obBankName;
+document.getElementById('ob-sum-acc').textContent=acc;
+document.getElementById('ob-sum-amt').textContent='NGN '+fmt(amt);
+document.getElementById('ob-sum-fee').textContent='NGN '+fmt(fee);
+document.getElementById('ob-sum-total').textContent='NGN '+fmt(total);
+['obp1','obp2','obp3','obp4'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+document.getElementById('tr-bank-step-1').style.display='none';
+document.getElementById('tr-bank-step-2').style.display='block';
+}
+async function confirmBankTransfer(){
+var pin=['obp1','obp2','obp3','obp4'].map(id=>document.getElementById(id)?.value||'').join('');
+if(pin.length<4)return;
+var savedPin=UD?.pin||'';
+if(!savedPin){toast('Set a transaction PIN in Profile first.');return;}
+if(hp(pin)!==savedPin){toast('Incorrect PIN.');['obp1','obp2','obp3','obp4'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});document.getElementById('obp1')?.focus();return;}
+var acc=(document.getElementById('ob-acc-num').value||'').trim();
+var amt=parseFloat(document.getElementById('ob-amount').value||0);
+var narr=(document.getElementById('ob-narration').value||'').trim()||'Bank Transfer';
+var total=amt+_obTransferFee;
+try{
+var sSnap=await db.collection('users').doc(CU.uid).get();
+if((sSnap.data()?.balance||0)<total){toast('Insufficient balance');return;}
+// 1) Deduct balance immediately
+await db.collection('users').doc(CU.uid).update({balance:firebase.firestore.FieldValue.increment(-total)});
+// 2) Create Paystack transfer recipient
+var sk=_psConfig?.secretKey||'';
+var rRes=await fetch('https://api.paystack.co/transferrecipient',{method:'POST',headers:{'Authorization':'Bearer '+sk,'Content-Type':'application/json'},body:JSON.stringify({type:'nuban',name:_obResolvedName,account_number:acc,bank_code:_obBankCode,currency:'NGN'})});
+var rData=await rRes.json();
+if(!rData.status){
+// Refund and abort
+await db.collection('users').doc(CU.uid).update({balance:firebase.firestore.FieldValue.increment(total)});
+toast('Transfer setup failed: '+(rData.message||'Unknown error'));return;
+}
+var recipientCode=rData.data.recipient_code;
+// 3) Initiate transfer
+var tRes=await fetch('https://api.paystack.co/transfer',{method:'POST',headers:{'Authorization':'Bearer '+sk,'Content-Type':'application/json'},body:JSON.stringify({source:'balance',amount:amt*100,recipient:recipientCode,reason:narr,currency:'NGN'})});
+var tData=await tRes.json();
+var txStatus=tData.status?'pending':'failed';
+var txRef='OBTR'+Date.now();
+// 4) Record transaction
+await db.collection('transactions').doc().set({userId:CU.uid,type:'bank_transfer',amount:amt,fee:_obTransferFee,total,description:'Bank Transfer to '+_obResolvedName+' | '+_obBankName+' | '+acc,narration:narr,toBankName:_obBankName,toBankCode:_obBankCode,toAccNumber:acc,toAccName:_obResolvedName,paystackRef:tData.data?.reference||txRef,paystackTransferCode:tData.data?.transfer_code||'',status:txStatus,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+closeM('m-transfer');
+await loadUser();
+if(txStatus==='pending'){
+toast('&#127974; Transfer of NGN '+fmt(amt)+' initiated! Processing within 24hrs.');
+}else{
+toast('Transfer submitted (ref: '+txRef+')');
+}
 }catch(e){toast('Transfer failed: '+friendlyError(e));}
 }
 // ============================================================
@@ -6484,6 +6738,8 @@ const mode=cfg.mode||'test';
 const pubKey=cfg.publicKey||'';
 const secKey=cfg.secretKey||'';
 const whSec=cfg.webhookSecret||'';
+const btEnabled=cfg.bankTransferEnabled===true;
+const btFee=cfg.bankTransferFee!==undefined?cfg.bankTransferFee:50;
 el.innerHTML=
 '<div style="max-width:560px">'+
 '<div style="background:'+(enabled?'#dcfce7':'#fef9c3')+';border:1.5px solid '+(enabled?'#86efac':'#fde047')+';border-radius:14px;padding:16px 18px;margin-bottom:18px;display:flex;align-items:center;gap:14px">'+
@@ -6512,6 +6768,26 @@ el.innerHTML=
 '<input class="inp" id="ps-webhook" placeholder="whsec_xxxxxxxx" value="'+whSec+'"/></div>'+
 '<button onclick="savePaystackSettings()" class="btn-g" style="width:100%;padding:13px;border-radius:11px;font-size:15px">&#128190; Save &mdash; Takes Effect Instantly</button>'+
 '<div id="ps-save-msg" style="display:none;margin-top:10px;padding:10px;background:#dcfce7;border-radius:10px;text-align:center;font-size:13px;font-weight:600;color:#15803d">&#9989; Settings saved and live!</div>'+
+'</div>'+
+'<div class="card" style="padding:22px;margin-bottom:16px;border:2px solid '+(btEnabled?'#86efac':'#e2e8f0')+'">'+
+'<div style="font-size:15px;font-weight:800;margin-bottom:4px">&#127974; Bank Transfer Settings</div>'+
+'<div style="font-size:12px;color:var(--g400);margin-bottom:16px">Controls the &ldquo;Other Bank&rdquo; tab in the Transfer modal. Uses your Paystack secret key to resolve account names and send transfers.</div>'+
+'<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#f8fafc;border-radius:11px;margin-bottom:16px">'+
+'<div><div style="font-weight:700;font-size:14px">Enable Bank Transfer</div>'+
+'<div style="font-size:12px;color:var(--g400);margin-top:2px">Allow users to send to other bank accounts via Paystack</div></div>'+
+'<div class="tsw '+(btEnabled?'on':'')+'" id="ps-bt-toggle" onclick="this.classList.toggle(\'on\')"></div></div>'+
+'<div style="margin-bottom:16px"><label style="font-size:12px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block">Transfer Fee per Transaction (NGN)</label>'+
+'<input class="inp" id="ps-bt-fee" type="number" min="0" placeholder="e.g. 50" value="'+btFee+'" style="font-size:16px;font-weight:700"/>'+
+'<div style="font-size:11px;color:var(--g400);margin-top:4px">This flat fee is charged on top of the transfer amount and stays in your Zmonie wallet/revenue. Paystack charges separately from their end.</div></div>'+
+'<div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:12px;margin-bottom:16px">'+
+'<div style="font-size:12px;font-weight:700;color:#92400e;margin-bottom:6px">&#128161; Important Notes</div>'+
+'<div style="font-size:12px;color:#92400e;line-height:1.8">'+
+'&#8226; Your Paystack account must have <strong>Transfer</strong> enabled (go to Paystack Dashboard &rarr; Settings &rarr; Enable Transfers)<br/>'+
+'&#8226; Paystack must have sufficient balance to fund outbound transfers<br/>'+
+'&#8226; Use <strong>Live Mode keys</strong> for real money transfers<br/>'+
+'&#8226; Account name lookup works in both test and live mode'+
+'</div></div>'+
+'<button onclick="savePaystackSettings()" class="btn-g" style="width:100%;padding:13px;border-radius:11px;font-size:15px">&#128190; Save Bank Transfer Settings</button>'+
 '</div>'+
 '<div class="card" style="padding:20px;margin-bottom:16px">'+
 '<div style="font-size:14px;font-weight:800;margin-bottom:12px">&#128214; How to Get Your Paystack Keys</div>'+
@@ -6549,14 +6825,18 @@ var secretKey=(document.getElementById('ps-sec-key').value||'').trim();
 var webhookSecret=(document.getElementById('ps-webhook').value||'').trim();
 var testBtn=document.getElementById('ps-mode-test');
 var mode=(testBtn&&testBtn.dataset.selected==='1')?'test':'live';
+var bankTransferEnabled=document.getElementById('ps-bt-toggle')?.classList.contains('on')||false;
+var bankTransferFee=parseFloat(document.getElementById('ps-bt-fee')?.value||50);
 if(enabled&&!publicKey){toast('Enter your Paystack Public Key before enabling');return;}
 if(enabled&&!secretKey){toast('Enter your Paystack Secret Key before enabling');return;}
 if(enabled&&publicKey&&!publicKey.startsWith('pk_')){toast('Public key should start with pk_test_ or pk_live_');return;}
+if(bankTransferEnabled&&!secretKey){toast('Enter your Paystack Secret Key to enable bank transfers');return;}
 try{
 await db.collection('settings').doc('paystack').set(
-{enabled,publicKey,secretKey,webhookSecret,mode,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},
+{enabled,publicKey,secretKey,webhookSecret,mode,bankTransferEnabled,bankTransferFee,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},
 {merge:true}
 );
+_psConfig=null; // reset cache so next transfer picks up new settings
 var msg=document.getElementById('ps-save-msg');
 if(msg){msg.style.display='block';setTimeout(function(){msg.style.display='none';},4000);}
 toast(enabled?'&#9989; Paystack enabled! Pay button is now live for all users.':'&#128190; Settings saved. Paystack is disabled.');
